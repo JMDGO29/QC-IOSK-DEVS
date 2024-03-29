@@ -2,48 +2,41 @@ import React, { useEffect, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import Clouds from "../Clouds";
 import { Icon } from "@iconify/react";
-import {
-  Bounds,
-  CameraControls,
-  OrbitControls,
-  Stage,
-  useGLTF,
-} from "@react-three/drei";
+import { OrbitControls, useGLTF } from "@react-three/drei";
 import { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
-import animation from "../../../../assets/animation/yellow/animation.glb";
 import * as THREE from "three";
 import { useHistory } from "react-router";
 import ModelViewer from "../ModelViewer";
-import openGrounds from "../../../../assets/models/others/sb_floor_final_joined.glb";
-import techvoc from "../../../../assets/models/sb_buildings/techvoc_final.glb";
-import multipurpose from "../../../../assets/models/sb_buildings/multipurpose_final.glb";
-import chineseB from "../../../../assets/models/sb_buildings/chineseb_final.glb";
-import ched from "../../../../assets/models/sb_buildings/ched_final.glb";
-import simon from "../../../../assets/models/sb_buildings/yellow_final.glb";
-import admin from "../../../../assets/models/sb_buildings/admin_final.glb";
-import bautista from "../../../../assets/models/sb_buildings/bautista_final.glb";
-import belmonte from "../../../../assets/models/sb_buildings/belmonte_final.glb";
-import academic from "../../../../assets/models/sb_buildings/academic_final.glb";
-import ballroom from "../../../../assets/models/sb_buildings/ballroom_final.glb";
-import urbanFarming from "../../../../assets/models/sb_buildings/urbanfarming_final.glb";
-import korPhil from "../../../../assets/models/sb_buildings/korPhil_final.glb";
-import landscape from "../../../../assets/models/others/landscape.glb";
-
-interface RoomData {
-  name: string;
-  textGuide: string[];
-}
+import { collection, getDocs, query } from "firebase/firestore";
+import { db } from "../../../utils/firebase";
 
 interface ContainerProps {
   name: string;
   roomName: string;
   modelPath: string;
-  voice: string;
-  shortPath: string;
-  roomData: Record<string, Record<string, RoomData[]>>;
+  voice?: string;
+  shortPath?: string;
+
   selectedBuilding: string;
   selectedFloor: string;
   selectedRoom: string;
+}
+
+interface Building {
+  id: string;
+  buildingName: string;
+  buildingPath: string;
+  buildingPosition: [number, number, number];
+  buildingScale: [number, number, number];
+  buildingLabelPosition: [number, number, number];
+  status: string;
+}
+
+interface otherModel {
+  id: string;
+  modelPath: string;
+  modelPosition: [number, number, number];
+  modelScale: [number, number, number];
 }
 
 const AnimatedModelViewer = ({ modelPath, mixer }: any) => {
@@ -91,7 +84,6 @@ const Animation: React.FC<ContainerProps> = ({
   modelPath,
   voice,
   shortPath,
-  roomData,
   selectedBuilding,
   selectedFloor,
   selectedRoom,
@@ -101,23 +93,14 @@ const Animation: React.FC<ContainerProps> = ({
   const [activeCameraIndex, setActiveCameraIndex] = useState(0);
   const mixerRef = useRef<THREE.AnimationMixer | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
-  const [currentPath, setCurrentPath] = useState(modelPath);
+
+  const [buildings, setBuildings] = useState<Building[]>([]);
+  const [otherModel, setOtherModel] = useState<otherModel[]>([]);
 
   const handleCameraSwitch = () => {
     setActiveCameraIndex((prevIndex) => (prevIndex === 0 ? 1 : 0));
   };
 
-  // const handlePathSwitch = () => {
-  //   if (mixerRef.current) {
-  //     mixerRef.current.stopAllAction(); // Stop all animation actions
-  //   }
-
-  //   setCurrentPath((prevPath) =>
-  //     prevPath === modelPath ? shortPath : modelPath
-  //   );
-  // };
-
-  // Audio playback logic
   useEffect(() => {
     let timeoutId: any;
 
@@ -128,7 +111,7 @@ const Animation: React.FC<ContainerProps> = ({
         audio
           .play()
           .catch((error) => console.error("Audio play error:", error));
-      }, 1000); // Delay audio playback by 2 seconds
+      }, 10000); // Delay audio playback
     }
 
     return () => {
@@ -150,14 +133,46 @@ const Animation: React.FC<ContainerProps> = ({
     mixerRef.current = new THREE.AnimationMixer(scene);
   }
 
+  useEffect(() => {
+    const fetchBuildings = async () => {
+      try {
+        const buildingsCollection = collection(db, "buildingData");
+        const queryBuilding = query(buildingsCollection);
+        const buildingsSnapshot = await getDocs(queryBuilding);
+        const buildingsData = buildingsSnapshot.docs.map((doc) => {
+          const buildingData = doc.data() as Building;
+          return { ...buildingData, id: doc.id } as Building;
+        });
+        setBuildings(buildingsData);
+      } catch (error) {
+        console.error("Error fetching buildings: ", error);
+      }
+    };
+
+    fetchBuildings();
+  }, []);
+
+  useEffect(() => {
+    const fetchModels = async () => {
+      try {
+        const modelsCollection = collection(db, "otherModelData");
+        const queryModel = query(modelsCollection);
+        const modelsSnapshot = await getDocs(queryModel);
+        const modelsData = modelsSnapshot.docs.map((doc) => {
+          const modelData = doc.data() as otherModel;
+          return { ...modelData, id: doc.id } as otherModel;
+        });
+        setOtherModel(modelsData);
+      } catch (error) {
+        console.error("Error fetching models: ", error);
+      }
+    };
+
+    fetchModels();
+  }, []);
+
   return (
     <>
-      {/* <button
-        onClick={handlePathSwitch}
-        className="absolute z-10 mt-32 ml-20 btn btn-secondary"
-      >
-        {currentPath === modelPath ? "Short Path" : "Model Path"}
-      </button> */}
       <div className="fixed z-20 w-full h-auto bottom-2 ">
         <div className="flex items-start justify-center space-x-3">
           <div
@@ -167,32 +182,6 @@ const Animation: React.FC<ContainerProps> = ({
             <input type="checkbox" />
             <div className="flex items-center justify-between collapse-title">
               <p className="text-xl font-bold">Room: {roomName}</p>
-            </div>
-            <div className="collapse-content">
-              {selectedBuilding &&
-                selectedFloor &&
-                selectedRoom &&
-                roomData[selectedBuilding][selectedFloor]?.map(
-                  (room, roomIndex) => {
-                    if (room.name === selectedRoom) {
-                      return (
-                        <div key={roomIndex}>
-                          <ul className="steps steps-vertical">
-                            {room.textGuide.map((guide, guideIndex) => (
-                              <li
-                                key={guideIndex}
-                                className="step step-primary"
-                              >
-                                {guide}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      );
-                    }
-                    return null;
-                  }
-                )}
             </div>
           </div>
           <button
@@ -243,101 +232,25 @@ const Animation: React.FC<ContainerProps> = ({
           cameras={cameras}
         />
 
-        {/* SB FLOORING */}
-        <ModelViewer modelPath={openGrounds} position={[0, 0, 0]} />
-        {/* BUILDINGS */}
+        {buildings.map((building) => (
+          <ModelViewer
+            key={building.id}
+            name={building.buildingName}
+            modelPath={building.buildingPath}
+            position={building.buildingPosition}
+            scale={building.buildingScale}
+            textPosition={building.buildingLabelPosition}
+          />
+        ))}
 
-        {/* TECHVOC */}
-        {/* <ModelViewer
-          modelPath={techvoc}
-          position={[-3.5, -0.95, 34]}
-          scale={[2.2, 2, 2]}
-          textPosition={[-3.5, 2, 34]}
-        /> */}
-        {/* MULTIPURPOSE */}
-        {/* <ModelViewer
-          modelPath={multipurpose}
-          position={[10.5, -0.25, 34]}
-          textPosition={[10.5, 2, 34]}
-        /> */}
-        {/* CHINESE B */}
-        {/* <ModelViewer
-          modelPath={chineseB}
-          position={[10.5, -0.64, 28]}
-          scale={[1.7, 1.7, 1.7]}
-          textPosition={[10.5, 1, 28]}
-        /> */}
-
-        {/* YELLOW */}
-        {/* <ModelViewer
-          modelPath={simon}
-          position={[0.3, -0.5, 16.5]}
-          textPosition={[0.3, 3, 16.5]}
-        /> */}
-
-        {/* BALLROOM */}
-        {/* <ModelViewer
-          modelPath={ballroom}
-          position={[-20.5, -1.4, 30.5]}
-          scale={[1.7, 1.7, 1.7]}
-          textPosition={[-20.5, 0.5, 30.5]}
-        /> */}
-
-        {/* CHED */}
-        {/* <ModelViewer
-          modelPath={ched}
-          position={[-21, -0.5, 21.6]}
-          scale={[1, 1, 1]}
-          textPosition={[-21, 1.5, 21.6]}
-        /> */}
-
-        {/* BELMONTE */}
-        {/* <ModelViewer
-          modelPath={belmonte}
-          position={[7, 1, 5.8]}
-          scale={[2, 2, 2]}
-          textPosition={[7, 4.5, 5.8]}
-        /> */}
-
-        {/* ACADEMIC */}
-        {/* <ModelViewer
-          modelPath={academic}
-          position={[6.5, 1.6, -8]}
-          scale={[2.2, 2.2, 2.2]}
-          textPosition={[6.5, 5.5, -8]}
-        /> */}
-
-        {/* ADMIN */}
-        {/* <ModelViewer
-          modelPath={admin}
-          position={[-8.7, 0.2, 6.5]}
-          scale={[1.1, 1.1, 1.1]}
-          textPosition={[-8.7, 4.5, 6.5]}
-        /> */}
-
-        {/* BAUTISTA */}
-        {/* <ModelViewer
-          modelPath={bautista}
-          position={[-9.45, -2.8, -8.55]}
-          scale={[2.4, 2.4, 2.4]}
-          textPosition={[-9.45, 6, -8.55]}
-        /> */}
-
-        {/* URBAN FARMING */}
-        {/* <ModelViewer
-          modelPath={urbanFarming}
-          position={[-1, -2.9, -25]}
-          scale={[4, 4, 4]}
-          textPosition={[-1, 0, -25]}
-        /> */}
-
-        {/* KORPHIL */}
-        {/* <ModelViewer
-          modelPath={korPhil}
-          position={[-33, -5.5, -5]}
-          scale={[1, 1, 1]}
-          textPosition={[-33, 1, -5]}
-        /> */}
+        {otherModel.map((model) => (
+          <ModelViewer
+            key={model.id}
+            modelPath={model.modelPath}
+            position={model.modelPosition}
+            scale={model.modelScale}
+          />
+        ))}
       </Canvas>
       <audio ref={audioRef} src={voice} />
     </>
