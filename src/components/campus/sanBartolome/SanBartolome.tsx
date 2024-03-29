@@ -50,6 +50,10 @@ interface RoomData {
 interface BuildingsData {
   name: string;
   floors: number;
+  totalRooms: string;
+  area: string;
+  eta: string;
+  distance: string;
 }
 
 const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
@@ -61,7 +65,6 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
 
   const gltfLoader = new GLTFLoader();
   gltfLoader.setDRACOLoader(dracoLoader); // Pass the DRACOLoader instance
-
   const [isNight, setIsNight] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [selectedBuilding, setSelectedBuilding] = useState("");
@@ -77,6 +80,7 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
   const [showOverview, setShowOverview] = useState(false); // State to toggle overview
   const [modalContent, setModalContent] = useState("");
   const [showError, setErrorModal] = useState(false);
+  const [showBuildingInfo, setBuildingInfoModal] = useState(false);
 
   useEffect(() => {
     const checkTime = () => {
@@ -94,6 +98,7 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
 
     return () => clearInterval(intervalId);
   }, []);
+
 
   const handleModelClick = async (modelName: string) => {
     setSelectedBuilding(modelName);
@@ -124,7 +129,12 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
     setShowModal(false);
     setIsAnimationActive(false);
     setErrorModal(false);
+    setBuildingInfoModal(false);
   };
+
+  const closeBuildingInfoModal = () => {
+    setBuildingInfoModal(false);
+  }
 
   const clickFloor = (floor: string) => {
     setSelectedFloor(floor);
@@ -161,21 +171,23 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
 
   // Define building data
   const buildingsData: BuildingsData[] = [
-    { name: "Belmonte Building", floors: 4 },
-    { name: "Bautista Building", floors: 9 },
-    { name: "Techvoc Building", floors: 2 },
-    { name: "Ched Building", floors: 2 },
-    { name: "Simon Building", floors: 2 },
-    { name: "Admin Building", floors: 5 },
-    { name: "Academic Building", floors: 7 },
-    { name: "Ballroom Building", floors: 1 },
-    { name: "Admin Building", floors: 1 },
-    { name: "Multipurpose Building", floors: 1 },
-    { name: "ChineseB Building", floors: 1 },
-    { name: "KorPhil Building", floors: 5 },
+    { name: "Belmonte Building", floors: 4, totalRooms: "", eta: "10mins", area: "100sqm", distance: "1.9km" },
+    { name: "Bautista Building", floors: 9, totalRooms: "", eta: "10mins", area: "100sqm", distance: "1.9km" },
+    { name: "Techvoc Building", floors: 2, totalRooms: "", eta: "10mins", area: "100sqm", distance: "1.9km" },
+    { name: "Ched Building", floors: 2, totalRooms: "", eta: "10mins", area: "100sqm", distance: "1.9km" },
+    { name: "Simon Building", floors: 2, totalRooms: "", eta: "10mins", area: "100sqm", distance: "1.9km" },
+    { name: "Admin Building", floors: 5, totalRooms: "", eta: "10mins", area: "100sqm", distance: "1.9km" },
+    { name: "Academic Building", floors: 7, totalRooms: "", eta: "10mins", area: "100sqm", distance: "1.9km" },
+    { name: "Ballroom Building", floors: 1, totalRooms: "", eta: "10mins", area: "100sqm", distance: "1.9km" },
+    { name: "Multipurpose Building", floors: 1, totalRooms: "", eta: "10mins", area: "100sqm", distance: "1.9km" },
+    { name: "ChineseB Building", floors: 1, totalRooms: "", eta: "10mins", area: "100sqm", distance: "1.9km" },
+    { name: "KorPhil Building", floors: 3, totalRooms: "", eta: "10mins", area: "100sqm", distance: "1.9km" },
     // Add more buildings as needed
   ];
 
+  const handleBuildingInfoClick = async () => {
+    setBuildingInfoModal(true);
+  }
 
   const handleOverviewClick = () => {
     setShowOverview(true); // Toggle the showOverview state
@@ -389,12 +401,10 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                     )}
                   </div>
                   {showOverview ? (
-                    <div className="h-full overflow-y-auto">
-                      <p className="p-2 text-2xl font-semibold">Directories</p>
-                      <p className="p-2 text-base">Gymnasium</p>
-                      <p className="p-2 text-base">Rooms: </p>
-                      <p className="p-2 text-base">Area: </p>
-                    </div>
+                    <>
+                      <div className="h-full overflow-y-auto">
+
+                      </div></>
                   ) : (
                     <div>
                       {selectedBuildingData && selectedBuildingData.floors > 1 && !showOverview && (
@@ -479,12 +489,20 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                     >
                       {selectedBuilding}
                     </button>
-                    <button
-                      onClick={closeModal}
-                      className="mt-5 mr-5 btn btn-square hover:bg-red-500 hover:text-white"
-                    >
-                      <Icon icon="line-md:close-small" className="w-10 h-10" />
-                    </button>
+                    <div className="">
+                      <button
+                        onClick={handleBuildingInfoClick}
+                        className="mt-5 mr-5 bg-transparent btn btn-square hover:bg-base-content hover:text-white"
+                      >
+                        <Icon icon="akar-icons:chat-question" className="w-10 h-10" />
+                      </button>
+                      <button
+                        onClick={closeModal}
+                        className="mt-5 mr-5 bg-transparent btn btn-square hover:bg-red-400 hover:text-white"
+                      >
+                        <Icon icon="line-md:close-small" className="w-10 h-10" />
+                      </button>
+                    </div>
                   </div>
 
                   <div className="flex items-start justify-center w-full h-full transition-all duration-150 ease-in-out ">
@@ -502,7 +520,7 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                             selectedFloor &&
                             roomData[selectedBuilding][selectedFloor]?.map((room, roomIndex) => (
                               <div key={roomIndex} className="flex flex-col">
-                                <button className="btn" onClick={() => selectRoom(room.name)}>
+                                <button className="text-xl btn" onClick={() => selectRoom(room.name)}>
                                   {room.name}
                                 </button>
                               </div>
@@ -515,8 +533,31 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                         <div className="flex items-center p-6 pt-0 pl-0">
                           <div className="w-full p-6 shadow-inner bg-base-200 h-96 rounded-2xl">
                             <div className="flex w-full h-full space-x-3 ">
-                              <div className="flex items-center justify-center w-full h-5 rounded-2xl ">
+                              <div className="flex flex-col pr-3 space-y-3 overflow-x-auto"> {/* Render building information here */}
+                                {buildingsData.map((building, index) => (
+                                  <button
+                                    key={index}
+                                    className={`h-10 z-50 bg-base-100 btn text-sm ${selectedBuilding === building.name ? "bg-base-content text-base-100" : "hover:bg-base-200"}`}
+                                    onClick={() => handleModelClick(building.name)}
+                                  >
+                                    {building.name}
+                                  </button>
+                                ))}
+                              </div>
+                              <div className="flex flex-col items-center justify-center w-full h-5 rounded-2xl ">
                                 <h1 className="text-3xl font-semibold text-base-content">Details</h1>
+                                {/* Render building data here */}
+                                {selectedBuilding && (
+                                  <div className="p-2 bg-gray-200 rounded">
+                                    <h3 className="font-semibold">{selectedBuilding.name}</h3>
+                                    <p>Floors: {selectedBuilding.floors}</p>
+                                    <p>Total Rooms: {selectedBuilding.totalRooms}</p>
+                                    <p>ETA: {selectedBuilding.eta}</p>
+                                    <p>Area: {selectedBuilding.area}</p>
+                                    <p>Distance: {selectedBuilding.distance}</p>
+                                  </div>
+                                )}
+
                               </div>
                             </div>
                           </div>
@@ -535,17 +576,28 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                                 {selectedBuilding &&
                                   selectedFloor &&
                                   roomData[selectedBuilding][selectedFloor]
-                                    ?.filter((room) => room.name === selectedRoom)
+                                    ?.filter((room) => room.details.roomName === selectedRoom)
+                                    .slice(0, 1) // Take only the first matching room
                                     .map((room, roomIndex) => (
                                       <div key={roomIndex}>
-                                        <ul>
-                                          <h1 className="mb-5 -mt-0 font-bold text-center">Details</h1>
-                                          {room.details.map((detail, detailIndex) => (
-                                            <li key={detailIndex}>{detail}</li>
-                                          ))}
+                                        <ul className="space-y-2 text-2xl">
+                                          <h1 className="mb-5 -mt-0 text-3xl font-bold text-center">Details</h1>
+                                          <li><b>Room Name:</b> {room.details.roomName}</li>
+                                          <li><b>Room Type:</b> {room.details.roomType}</li>
+                                          <li><b>Floor:</b> {room.floorNumber}</li>
+                                          <li><b>Distance:</b> {room.details.distance}</li>
+                                          <li><b>Area:</b> {room.details.sqm}</li>
+                                          <li><b>ETA:</b> {room.details.eta}</li>
+                                          {room.details.occupiedBy && (
+                                            <li><b>Occupied by:</b> {room.details.occupiedBy}</li>
+                                          )}
+                                          {room.details.status && (
+                                            <li><b>Status:</b> {room.details.status}</li>
+                                          )}
                                         </ul>
                                       </div>
                                     ))}
+
 
                               </div>
 
@@ -584,6 +636,99 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                 >
                   <Icon icon="line-md:close-small" className="w-10 h-10" /> Close
                 </button>
+              </div>
+            </div>
+          </Modal>
+
+          {/* Modal for General Building Information */}
+          <Modal
+            className="flex items-center justify-center w-screen h-screen transition-all duration-150 ease-in-out bg-black/60"
+            isOpen={showBuildingInfo}
+            onRequestClose={() => setBuildingInfoModal(false)}
+            contentLabel="Alert"
+          >
+            <div className="p-6 shadow-xl h-auto w-6/12 bg-base-100 rounded-2xl text-base-content">
+              <div className="flex justify-evenly">
+              <div className="">
+                <div className="flex justify-center items-center pb-2">
+                  <h1 className="font-bold">Classification of Buildings</h1>
+                </div>
+                <div className="">
+
+                  <div className="flex justify-between px-6 pb-3 bg-base-300 shadow-inner rounded-2xl h-auto">
+                    <div className="flex flex-col">
+                      <h1 className="text-base font-semibold">Building Name</h1>
+                      <div className="">
+                        <p>Techvoc Building </p>
+                        <p>Yellow Building (Old Academic Building)</p>
+                        <p>SB (Belmonte Hall)</p>
+                        <p>Admin Building</p>
+                        <p>Metalcasting Building</p>
+                        <p>KorPhil Building</p>
+                        <p>PHilChi Building</p>
+                        <p>Chem Lab</p>
+                        <p>Canteen</p>
+                        <p>Auditorium (Bautista Building)</p>
+                        <p>New Academic Building</p>
+                      </div>
+                    </div>
+                    <div>
+                      <h1 className="text-base font-semibold">Reference Code</h1>
+                      <div className="text-center">
+                        <p>IA</p>
+                        <p>IB</p>
+                        <p>IC</p>
+                        <p>ID</p>
+                        <p>IE</p>
+                        <p>IF</p>
+                        <p>IG</p>
+                        <p>IH</p>
+                        <p>IJ</p>
+                        <p>IK</p>
+                        <p>IL</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="">
+                <div className="flex justify-center items-center pb-2">
+                  <h1 className="font-bold">Classification of Rooms</h1>
+                </div>
+                <div className="">
+
+                  <div className="flex justify-between px-6 pb-3 bg-base-300 shadow-inner rounded-2xl h-auto">
+                    <div className="flex flex-col">
+                      <h1 className="text-base font-semibold">Room Type</h1>
+                      <div className="">
+                        <p>Lecture Room</p>
+                        <p>Computer Lab Room</p>
+                        <p>Working Lab Room</p>
+                        <p>Science Lab Room</p>
+                      </div>
+                    </div>
+                    <div>
+                      <h1 className="text-base font-semibold">Reference Code</h1>
+                      <div className="text-center">
+                        <p>a</p>
+                        <p>b</p>
+                        <p>c</p>
+                        <p>d</p>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-center pt-4 pb-2">Room Allocation as of January 2023</p>
+                  <p className="text-center py-3">Building Codes as of January 2023</p>
+                  <div className="flex justify-center items-center mt-5">
+                    <button
+                      onClick={closeBuildingInfoModal}
+                      className="btn bg-base-300 text-xl hover:bg-accent btn-block"
+                    >
+                      <Icon icon="mingcute:check-2-line" className="w-10 h-10" />I, Understand.
+                    </button>
+                  </div>
+                </div>
+              </div>
               </div>
             </div>
           </Modal>
