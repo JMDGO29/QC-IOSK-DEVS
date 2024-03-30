@@ -3,10 +3,7 @@ import { Icon } from "@iconify/react";
 import { themeChange } from "theme-change";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
-import {
-  signInWithEmailAndPassword,
-  sendEmailVerification,
-} from "firebase/auth";
+import { signInWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
 import { auth } from "../../utils/firebase";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -20,37 +17,41 @@ const AdminLogin: React.FC = () => {
     setEmail("");
     setPassword("");
   };
-
   const onLogin = (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Log email and password
-    console.log("Email:", email);
-    console.log("Password:", password);
 
     signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         const user = userCredential.user;
-        if (user.emailVerified) {
-          toast.success("Sign in successfully!", {
-            position: toast.POSITION.BOTTOM_RIGHT,
-            className: " bg-base-100 font-bold rounded-2xl text-base-content ",
-            theme: "dark",
-            icon: (
-              <Icon
-                icon="line-md:clipboard-check"
-                className="w-10 h-10 text-xl"
-              />
-            ),
-            progressClassName: "bg-accent rounded-full mx-3 mb-1 w-72",
-            autoClose: 1000,
-          });
-          console.log(user);
-          setTimeout(() => {
-            history.push("/Dashboard");
-          }, 2500);
+        if (user) {
+          console.log("User email verified:", user.emailVerified); // Console log verification status
+          if (user.emailVerified) {
+            storeUserInformation(user);
+            toast.success("Sign in successfully!", {
+              position: toast.POSITION.BOTTOM_RIGHT,
+              className: " bg-base-100 font-bold rounded-2xl text-base-content ",
+              theme: "dark",
+              icon: (
+                <Icon
+                  icon="line-md:clipboard-check"
+                  className="w-10 h-10 text-xl"
+                />
+              ),
+              progressClassName: "bg-accent rounded-full mx-3 mb-1 w-72",
+              autoClose: 1000,
+            });
+            setTimeout(() => {
+              history.push("/Dashboard");
+            }, 2500);
+          } else {
+            // Send verification email if not verified
+            sendVerificationEmail(email);
+            toast.warning("Please verify your account first", {
+              position: toast.POSITION.BOTTOM_RIGHT,
+            });
+          }
         } else {
-          toast.error("Please verify your email before signing in.", {
+          toast.warning("Please verify your account first", {
             position: toast.POSITION.BOTTOM_RIGHT,
           });
         }
@@ -62,17 +63,27 @@ const AdminLogin: React.FC = () => {
         console.error(error.code, error.message);
       });
   };
+  const storeUserInformation = (user: any) => {
+    localStorage.setItem("currentUser", JSON.stringify(user));
+  };
 
-  const sendVerificationEmail = () => {
+  const handleResendVerification = () => {
+    sendVerificationEmail(email);
+  };
+
+  const sendVerificationEmail = (email: string) => {
     const user = auth.currentUser;
     if (user) {
       sendEmailVerification(user)
         .then(() => {
-          toast.success("Verification email sent!", {
+          toast.success("Verification email has been sent!", {
             position: toast.POSITION.BOTTOM_RIGHT,
           });
         })
         .catch((error) => {
+          toast.error("Failed to send verification email, please try again later", {
+            position: toast.POSITION.BOTTOM_RIGHT,
+          });
           console.error("Error sending verification email:", error);
         });
     } else {
@@ -143,7 +154,7 @@ const AdminLogin: React.FC = () => {
                       onClick={onLogin}
                       className="inline-flex items-center justify-center w-full px-4 py-3 text-sm font-semibold border-2 text-base-content bg-base-300 gap-x-2 rounded-xl hover:bg-base-200 disabled:opacity-50 disabled:pointer-events-none"
                     >
-                      Sign in
+                      Login
                     </button>
                     <button
                       onClick={clearInputs}
@@ -154,10 +165,11 @@ const AdminLogin: React.FC = () => {
                   </div>
                   <div className="flex justify-center">
                     <button
-                      onClick={sendVerificationEmail}
+                      type="button"
+                      onClick={handleResendVerification}
                       className="text-blue-500 underline focus:outline-none"
                     >
-                      Resend verification email
+                      Resend Verification Email
                     </button>
                   </div>
                 </div>

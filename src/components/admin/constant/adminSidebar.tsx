@@ -6,16 +6,18 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "../../utils/firebase";
 import logo from "../../../assets/imgs/logo/qculogo.png";
 import { NavLink } from "react-router-dom";
+import React from "react";
+
 interface ContainerProps {
   name: string;
 }
 
 const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
   const history = useHistory();
-
+  
   const handleLogout = () => {
-    // Clear email from local storage
-    localStorage.removeItem('userEmail');
+    // Clear user information from local storage
+    localStorage.removeItem("currentUser");
 
     // Sign out the user
     signOut(auth)
@@ -26,6 +28,7 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
       })
       .catch((error) => {
         // An error happened.
+        console.error("Sign-out error:", error);
       });
   };
 
