@@ -34,7 +34,6 @@
     "maath": "^0.10.4",
     "material-react-table": "^2.12.1",
     "postprocessing": "^6.33.3",
-    "preline": "^2.0.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-fps": "^1.0.6",
