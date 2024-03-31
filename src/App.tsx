@@ -44,7 +44,11 @@ import "./assets/css/variables.css";
 import { IonApp, IonRouterOutlet, setupIonicReact } from "@ionic/react";
 import ManageAnnouncements from "./components/admin/management/manageAnnoucements";
 import RoomManagement from "./components/admin/management/manageRooms";
+import CreateRoom from "../src/components/admin/management/roomComponent/createRoom";
+import UpdateRoom from "./components/admin/management/roomComponent/updateRoom";
 import BuildingManagement from "./components/admin/management/manageBuilding";
+import CreateBuilding from "../src/components/admin/management/buildingComponent/createBuilding";
+import UpdateBuilding from "../src/components/admin/management/buildingComponent/updateBuilding";
 import AdminSettings from "./components/admin/management/adminSettings";
 import EventManagement from "./components/admin/management/manageEvents";
 import CreateEvent from "./components/admin/management/eventsComponent/createEvent";
@@ -57,8 +61,7 @@ import CreateManual from "./components/admin/management/mikeComponent/createManu
 import UpdateManual from "./components/admin/management/mikeComponent/updateManual";
 import { Suspense } from "react";
 import Loading from "../src/pages/loading";
-import UpdateRoom from "./components/admin/management/roomComponent/updateRoom";
-import SBMapScene from "../src/components/admin/management/manage3DMap";
+import SBMapScene from "./components/admin/management/manageSBMap";
 import Create3DModel from "../src/components/admin/management/3DMapComponent/create3DModel";
 import Update3DModel from "./components/admin/management/3DMapComponent/update3DMode";
 
@@ -135,12 +138,28 @@ const App: React.FC<ContainerProps> = ({ name }) => (
           <RoomManagement name={"Room Management"} />
         </Route>
 
-        <Route exact path="/Buildings">
+        <Route exact path="/createRoom">
+          <CreateRoom name={"Create Room"} />
+        </Route>
+
+        <Route path="/updateRoom/:roomId">
+          <UpdateRoom name="Update Room" />
+        </Route>
+
+        <Route exact path="/Building">
           <BuildingManagement name={"Building Management"} />
         </Route>
 
-        <Route exact path="/SBMapScene">
-          <SBMapScene name={"3D Map Management"} />
+        <Route exact path="/createBuilding">
+          <CreateBuilding name={"Create Building"} />
+        </Route>
+
+        <Route exact path="/updateBuilding/:buildingId">
+          <UpdateBuilding name={"Update Building"} />
+        </Route>
+
+        <Route exact path="/SBMap">
+          <SBMapScene name={"SB Map Management"} />
         </Route>
 
         <Route exact path="/create3DModel">
@@ -189,10 +208,6 @@ const App: React.FC<ContainerProps> = ({ name }) => (
 
         <Route exact path="/updateManual/:manualId">
           <UpdateManual name={"Update Manual"} />
-        </Route>
-
-        <Route path="/updateRoom/:roomName">
-          <UpdateRoom />
         </Route>
 
         {/* sheeesh */}
