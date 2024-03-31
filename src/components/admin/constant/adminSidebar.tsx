@@ -83,13 +83,23 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
           <li>
             <NavLink
               className="w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm  rounded-lg hover:bg-base-100 text-base-content dark:focus:outline-none"
-              to="/SBMapScene"
+              to="/SBMap"
             >
               <Icon
-                icon="material-symbols:room-preferences-outline-rounded"
+                icon="material-symbols:file-map-outline-rounded"
                 className="w-7 h-7"
               />
-              3D Map
+              SB Map
+            </NavLink>
+          </li>
+
+          <li>
+            <NavLink
+              className="w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm  rounded-lg hover:bg-base-100 text-base-content dark:focus:outline-none"
+              to="/Building"
+            >
+              <Icon icon="bi:building-gear" className="w-7 h-7" />
+              Building
             </NavLink>
           </li>
 
@@ -103,16 +113,6 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
                 className="w-7 h-7"
               />
               Rooms
-            </NavLink>
-          </li>
-
-          <li>
-            <NavLink
-              className="w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm  rounded-lg hover:bg-base-100 text-base-content dark:focus:outline-none"
-              to="/Buildings"
-            >
-              <Icon icon="bi:building-gear" className="w-7 h-7" />
-              Building
             </NavLink>
           </li>
 
