@@ -24,7 +24,6 @@ export const roomData: Record<
         roomName: string;
         roomType: string;
         distance: string;
-        sqm: "",
         eta: string;
         occupiedBy?: string;
         status?: string;
@@ -974,7 +973,6 @@ export const roomData: Record<
           roomName: "Auditorium",
           roomType: "Auditorium, Function Room, VIP Room, Dance Studio, Dressing Room",
           distance: "",
-          sqm: "",
           sqm: "",
           eta: "",
           occupiedBy: "",
@@ -3359,6 +3357,28 @@ export const roomData: Record<
     "1": [
       {
         buildingName: "ChineseB Building",
+        floorNumber: "",
+        name: "",
+        modelPath: "",
+        voice: "",
+        details: {
+          roomName: "",
+          roomType: "",
+          distance: "",
+          sqm: "",
+          eta: "",
+          occupiedBy: "",
+          status: "", // Example status
+        },
+
+        textGuide: ["Text Guide: 1asdasdasdasd", "Room Info 2"],
+      },
+    ],
+  },
+  "Urban Farming": {
+    "1": [
+      {
+        buildingName: "Urban Farming",
         floorNumber: "",
         name: "",
         modelPath: "",

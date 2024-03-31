@@ -182,6 +182,7 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
     { name: "Multipurpose Building", floors: 1, totalRooms: "", eta: "10mins", area: "100sqm", distance: "1.9km" },
     { name: "ChineseB Building", floors: 1, totalRooms: "", eta: "10mins", area: "100sqm", distance: "1.9km" },
     { name: "KorPhil Building", floors: 3, totalRooms: "", eta: "10mins", area: "100sqm", distance: "1.9km" },
+    { name: "Urban Farming", floors: 1, totalRooms: "", eta: "10mins", area: "100sqm", distance: "1.9km" },
     // Add more buildings as needed
   ];
 
@@ -549,12 +550,12 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                                 {/* Render building data here */}
                                 {selectedBuilding && (
                                   <div className="p-2 bg-gray-200 rounded">
-                                    <h3 className="font-semibold">{selectedBuilding.name}</h3>
+                                    {/* <h3 className="font-semibold">{selectedBuilding.name}</h3>
                                     <p>Floors: {selectedBuilding.floors}</p>
                                     <p>Total Rooms: {selectedBuilding.totalRooms}</p>
                                     <p>ETA: {selectedBuilding.eta}</p>
                                     <p>Area: {selectedBuilding.area}</p>
-                                    <p>Distance: {selectedBuilding.distance}</p>
+                                    <p>Distance: {selectedBuilding.distance}</p> */}
                                   </div>
                                 )}
 
