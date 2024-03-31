@@ -72,11 +72,7 @@ const App: React.FC<ContainerProps> = ({ name }) => (
     <IonReactRouter>
       <IonRouterOutlet>
         <Route path="/">
-          <Redirect to="/Home" />
-        </Route>
-
-        <Route path="/Home">
-          <Home name={"Home"} buildingName={""} />
+          <Redirect to="/SanBartolome" />
         </Route>
 
         <Route path="/Maps">
