@@ -9,12 +9,13 @@ import { roomData } from "../data/roomData";
 import Animation from "../components/campus/sanBartolome/animation/Animation";
 import SideBar from "../components/sidebar/sidebarLayout";
 import Loading from "../pages/loading";
+import { useTranslation } from "react-i18next";
 
 export interface KeyboardRef {
   setInput: (input: string) => void;
   // Add other methods if needed
 }
-
+const { t } = useTranslation();
 const SearchTab: React.FC = () => {
   const [input, setInput] = useState("");
   const [suggestions, setSuggestions] = useState<any[]>([]);
@@ -125,7 +126,7 @@ const SearchTab: React.FC = () => {
                   onClick={clickSearch}
                   className="absolute z-10 mt-10 btn btn-secondary ml-60"
                 >
-                  Back
+                  {t("Back")}
                 </button>
               </Suspense>
             </>
@@ -136,7 +137,7 @@ const SearchTab: React.FC = () => {
                   <div className="max-h-screen px-4 mx-auto max-w-screen sm:px-6 lg:px-8">
                     <div className="flex flex-col items-center justify-center w-screen h-screen text-center mt-72">
                       <h1 className="w-screen text-4xl font-bold text-center text-white sm:text-6xl">
-                        Search
+                      {t("Search")}
                       </h1>
                       
 
@@ -199,10 +200,10 @@ const SearchTab: React.FC = () => {
                               ) : (
                                 <div className="w-full py-6 overflow-auto h-96">
                                   <h1 className="text-black">
-                                    No rooms found.
+                                  {t("No rooms found.")}
                                   </h1>
                                   <h1 className="text-black">
-                                    Enter another entry.
+                                    {t("Enter another entry.")}
                                   </h1>
                                 </div>
                               )}

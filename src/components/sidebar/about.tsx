@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 import { credits } from "../../data/creditsData";
 
+
 const About: React.FC = () => {
   const history = useHistory();
 
@@ -32,34 +33,28 @@ const About: React.FC = () => {
           <input type="checkbox" />
           <div className="flex text-lg font-medium collapse-title">
             <Icon icon="humbleicons:certificate" className=" w-7 h-7" />
-            <p className="ml-3 text-base-content">Purpose of QC-iosk</p>
+            <p className="ml-3 text-base-content">{t("Purpose of QC-iosk")}</p>
           </div>
           <div className="collapse-content bg-base-200">
             <div className="py-4 mx-auto">
-              <h1 className="text-2xl font-bold text-center">QC-IOSK by pathfinders.</h1>
+              <h1 className="text-2xl font-bold text-center">{t("QC-IOSK by pathfinders.")}</h1>
               <div className="grid grid-cols-1 mx-auto text-center text-base-content rounded-3xl hover:drop-shadow-xl backdrop-blur-lg ">
                 <div className="flex items-center gap-x-4">
                   <div className="grow">
                     <p className="text-base text-justify uppercase text-base-content">
-                      We developed the QC-IOSK (Kiosk for Quezon City University) with the primary aim of enhancing navigation within the university campus.
-                      Despite not being extensive, the campus layout can be confusing, particularly for newcomers.
-                      Navigating through various buildings and seeking assistance from individuals who might inadvertently provide incorrect information or
-                      explanations that are difficult to comprehend can be challenging. Therefore, the creation of the QC-IOSK serves as a solution to this issue,
-                      providing accurate and accessible information to aid students and visitors in navigating the campus effectively and efficiently.
+                      {t("We developed the QC-IOSK (Kiosk for Quezon City University) with the primary aim of enhancing navigation within the university campus. Despite not being extensive, the campus layout can be confusing, particularly for newcomers. Navigating through various buildings and seeking assistance from individuals who might inadvertently provide incorrect information or explanations that are difficult to comprehend can be challenging. Therefore, the creation of the QC-IOSK serves as a solution to this issue, providing accurate and accessible information to aid students and visitors in navigating the campus effectively and efficiently.")}
                     </p>
                   </div>
                 </div>
               </div>
             </div>
             <div className="py-4 mx-auto">
-              <h1 className="text-2xl font-bold text-center">Primary Objective</h1>
+              <h1 className="text-2xl font-bold text-center">{t("Primary Objective")}</h1>
               <div className="grid grid-cols-1 mx-auto text-center text-base-content rounded-3xl hover:drop-shadow-xl backdrop-blur-lg ">
                 <div className="flex items-center gap-x-4">
                   <div className="grow">
                     <p className="text-base text-justify uppercase text-base-content">
-                      The primary goal of this project is to create the QC-IOSK, a user-friendly navigation tool tailored for Quezon City University campuses.
-                      This system aims to enhance the navigation experience for students, university staff, and visitors by providing precise location information
-                      and a visual representation of the university's grounds.
+                     {t("The primary goal of this project is to create the QC-IOSK, a user-friendly navigation tool tailored for Quezon City University campuses. This system aims to enhance the navigation experience for students, university staff, and visitors by providing precise location information and a visual representation of the university's grounds.")}
                     </p>
                   </div>
                 </div>
@@ -79,11 +74,11 @@ const About: React.FC = () => {
           <input type="checkbox" />
           <div className="flex text-lg font-medium collapse-title">
             <Icon icon="humbleicons:certificate" className=" w-7 h-7" />
-            <p className="ml-3 text-base-content">Acknowledgements</p>
+            <p className="ml-3 text-base-content">{t("Acknowledgements")}</p>
           </div>
           <div className="collapse-content bg-base-200">
             <div className="py-4 mx-auto">
-              <h1 className="text-2xl font-bold text-center">Project Managers</h1>
+              <h1 className="text-2xl font-bold text-center">{t("Project Managers")}</h1>
               {credits.projectManagers.map((person, index) => (
                 <div
                   key={index}
@@ -103,7 +98,7 @@ const About: React.FC = () => {
               ))}
             </div>
             <div className="py-4 mx-auto">
-              <h1 className="text-2xl font-bold text-center">Documentators</h1>
+              <h1 className="text-2xl font-bold text-center">{t("Documentators")}</h1>
               {credits.documentors.map((person, index) => (
                 <div
                   key={index}
@@ -123,7 +118,7 @@ const About: React.FC = () => {
               ))}
             </div>
             <div className="py-4 mx-auto">
-              <h1 className="text-2xl font-bold text-center">UI Designers</h1>
+              <h1 className="text-2xl font-bold text-center">{t("UI Designers")}</h1>
               {credits.uidesigners.map((person, index) => (
                 <div
                   key={index}
@@ -143,7 +138,7 @@ const About: React.FC = () => {
               ))}
             </div>
             <div className="py-4 mx-auto">
-              <h1 className="text-2xl font-bold text-center">Researchers</h1>
+              <h1 className="text-2xl font-bold text-center">{t("Researchers")}</h1>
               {credits.researchers.map((person, index) => (
                 <div
                   key={index}
@@ -163,7 +158,7 @@ const About: React.FC = () => {
               ))}
             </div>
             <div className="py-4 mx-auto">
-              <h1 className="text-2xl font-bold text-center">System Analyst</h1>
+              <h1 className="text-2xl font-bold text-center">{t("System Analyst")}</h1>
               {credits.systemAnalyst.map((person, index) => (
                 <div
                   key={index}
@@ -183,7 +178,7 @@ const About: React.FC = () => {
               ))}
             </div>
             <div className="py-4 mx-auto">
-              <h1 className="text-2xl font-bold text-center">3D Modelers</h1>
+              <h1 className="text-2xl font-bold text-center">{t("3D Modelers")}</h1>
               {credits.modelers.map((person, index) => (
                 <div
                   key={index}
@@ -203,7 +198,7 @@ const About: React.FC = () => {
               ))}
             </div>
             <div className="py-4 mx-auto">
-              <h1 className="text-2xl font-bold text-center">The Programmers</h1>
+              <h1 className="text-2xl font-bold text-center">{t("The Programmers")}</h1>
               {credits.programmers.map((person, index) => (
                 <div
                   key={index}
@@ -232,7 +227,7 @@ const About: React.FC = () => {
               ))}
             </div>
             <div className="py-4 mx-auto">
-              <h1 className="text-2xl font-bold text-center">Special Thanks to:</h1>
+              <h1 className="text-2xl font-bold text-center">{t("Special Thanks to:")}</h1>
               {credits.translator.map((person, index) => (
                 <div
                   key={index}
@@ -270,10 +265,10 @@ const About: React.FC = () => {
           <input type="checkbox" />
           <div className="flex text-lg font-medium collapse-title">
             <Icon icon="tabler:adjustments-star" className=" w-7 h-7" />
-            <p className="ml-3 text-base-content">Evacuation Plan</p>
+            <p className="ml-3 text-base-content">{t("Evacuation Plan")}</p>
           </div>
           <div className="collapse-content bg-base-200">
-            make this as a image modal
+            {t("Make this as a image modal")}
           </div>
         </div>
         <div
@@ -283,10 +278,10 @@ const About: React.FC = () => {
           <input type="checkbox" />
           <div className="flex text-lg font-medium collapse-title">
             <Icon icon="tabler:adjustments-star" className=" w-7 h-7" />
-            <p className="ml-3 text-base-content">Developmental Plan</p>
+            <p className="ml-3 text-base-content">{t("Developmental Plan")}</p>
           </div>
           <div className="collapse-content bg-base-200">
-            make this as a image modal
+          {t("Make this as a image modal")}
           </div>
         </div>
       </div>

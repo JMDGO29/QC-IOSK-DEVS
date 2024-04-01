@@ -19,9 +19,9 @@ interface Event {
   startDate: string;
   endDate: string;
 }
-
+const { t } = useTranslation();
 const Events: React.FC<ContainerProps> = ({ name }) => {
-  const { t } = useTranslation();
+  
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -74,7 +74,7 @@ const Events: React.FC<ContainerProps> = ({ name }) => {
       <div className="h-screen py-10 space-y-2 bg-base-100">
         <div className="sticky top-0 z-50 px-3 py-1 transition-all duration-150 ease-in-out bg-base-100">
           <h1 className="text-4xl font-bold text-left ">{t("Events")}</h1>
-          <p className="text-sm 0">Showing events for the current month</p>
+          <p className="text-sm 0">{t("Showing events for the current month")}</p>
         </div>
         {loading ? (
           <>
@@ -93,7 +93,7 @@ const Events: React.FC<ContainerProps> = ({ name }) => {
               <div className="px-3 mt-10 space-y-4">
                 <div role="alert" className="flex justify-center shadow-inner alert h-28 rounded-2xl">
                 <Icon icon="uil:comment-info-alt" className="w-8 h-8" />
-                  <span className="text-xl">No events found.</span>
+                  <span className="text-xl">{t("No events found.")}</span>
                 </div>
               </div>
             ) : (

@@ -5,10 +5,13 @@ import Sample from '../assets/vids/sample4.mp4';
 import { useHistory } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import React from 'react';
+import { useTranslation } from "react-i18next";
 
 interface ContainerProps {
   name: string;
 };
+
+const { t } = useTranslation();
 
 const Home: React.FC<ContainerProps> = ({ name }) => {
   const history = useHistory();
@@ -32,7 +35,7 @@ const Home: React.FC<ContainerProps> = ({ name }) => {
               </h2>
               {/* Use onClick to handle the redirection */}
               <div className="absolute inset-x-0 flex items-center justify-center py-3 animate-bounce bottom-1 drop-shadow-md">
-                <Icon icon="clarity:cursor-hand-click-line" className="w-10 h-10 mr-2" /> touch anywhere to Start<span className="text-lg font-extrabold"></span>
+                <Icon icon="clarity:cursor-hand-click-line" className="w-10 h-10 mr-2" /> {t("Touch anywhere to start")}<span className="text-lg font-extrabold"></span>
               </div>
             </div>
           </div>

@@ -39,6 +39,8 @@ import IB103 from "../../../assets/animation/yellow/103a.glb";
 import IB101Voice from "../../../assets/audio/voice101a.mp3";
 import { roomData } from "../../../data/roomData";
 import IL401a from "../../../assets/animation/academic/Academic-IL401a.glb";
+import { useTranslation } from "react-i18next";
+
 
 
 interface ContainerProps {
@@ -77,6 +79,7 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
   const [showOverview, setShowOverview] = useState(false); // State to toggle overview
   const [modalContent, setModalContent] = useState("");
   const [showError, setErrorModal] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const checkTime = () => {
@@ -383,17 +386,17 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                           onClick={handleFloorsClick}
                           className={`h-10 btn  hover:bg-base-content hover:text-base-300 ${!showOverview ? "bg-transparent btn-block shadow-none text-lg text-base-content" : ""}`}
                         >
-                          Floors
+                          {t("Floors")}
                         </button>
                       </>
                     )}
                   </div>
                   {showOverview ? (
                     <div className="h-full overflow-y-auto">
-                      <p className="p-2 text-2xl font-semibold">Directories</p>
-                      <p className="p-2 text-base">Gymnasium</p>
-                      <p className="p-2 text-base">Rooms: </p>
-                      <p className="p-2 text-base">Area: </p>
+                      <p className="p-2 text-2xl font-semibold">{t("Directories")}</p>
+                      <p className="p-2 text-base">{t("Gymnasium")}</p>
+                      <p className="p-2 text-base">{t("Rooms: ")}</p>
+                      <p className="p-2 text-base">{t("Area: ")}</p>
                     </div>
                   ) : (
                     <div>
@@ -495,7 +498,7 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                           {!selectedFloor && (
                             <div className="flex flex-col items-center justify-center w-full p-6 text-lg text-center text-base-content">
                               <Icon icon="typcn:warning-outline" className="w-10 h-10" />
-                              <h1>Please select a desired floor from the sidebar on the left</h1>
+                              <h1>{t("Please select a desired floor from the sidebar on the left")}</h1>
                             </div>
                           )}
                           {selectedBuilding &&
@@ -516,7 +519,7 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                           <div className="w-full p-6 shadow-inner bg-base-200 h-96 rounded-2xl">
                             <div className="flex w-full h-full space-x-3 ">
                               <div className="flex items-center justify-center w-full h-5 rounded-2xl ">
-                                <h1 className="text-3xl font-semibold text-base-content">Details</h1>
+                                <h1 className="text-3xl font-semibold text-base-content">{t("Details")}</h1>
                               </div>
                             </div>
                           </div>
@@ -539,7 +542,7 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                                     .map((room, roomIndex) => (
                                       <div key={roomIndex}>
                                         <ul>
-                                          <h1 className="mb-5 -mt-0 font-bold text-center">Details</h1>
+                                          <h1 className="mb-5 -mt-0 font-bold text-center">{t("Details")}</h1>
                                           {room.details.map((detail, detailIndex) => (
                                             <li key={detailIndex}>{detail}</li>
                                           ))}
@@ -556,7 +559,7 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                               className=" btn btn-secondary btn-block"
                               onClick={() => clickAnimation(selectedRoom)}
                             >
-                              Get Direction {selectedRoom}
+                              {t("Get Direction")} {selectedRoom}
                             </button>
                           </div>
                         </div>
@@ -582,7 +585,7 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                   onClick={closeModal}
                   className="btn bg-base-300"
                 >
-                  <Icon icon="line-md:close-small" className="w-10 h-10" /> Close
+                  <Icon icon="line-md:close-small" className="w-10 h-10" /> {t("Close")}
                 </button>
               </div>
             </div>
