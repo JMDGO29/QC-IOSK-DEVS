@@ -62,6 +62,7 @@ import SBMapScene from "../src/components/admin/management/manage3DMap";
 import Create3DModel from "../src/components/admin/management/3DMapComponent/create3DModel";
 import SanFrancisco from './components/campus/sanFrancisco/SanFrancisco';
 import Batasan from './components/campus/batasan/Batasan';
+import layout from './pages/layout';
 setupIonicReact();
 interface ContainerProps {
   name: string;
@@ -71,10 +72,8 @@ const App: React.FC<ContainerProps> = ({ name }) => (
   <IonApp>
     <IonReactRouter>
       <IonRouterOutlet>
-        <Route path="/">
-          <Redirect to="/SanBartolome" />
-        </Route>
-
+        <Route path="/" exact component={layout} />
+       
         <Route path="/Maps">
           <Maps name={''} />
         </Route>
