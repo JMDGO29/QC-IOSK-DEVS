@@ -1,4 +1,5 @@
 import { IonContent, IonPage } from "@ionic/react";
+import React from 'react';
 import { useHistory } from "react-router-dom";
 import "../assets/css/Campuses.css";
 import { useTranslation } from "react-i18next";
@@ -21,21 +22,14 @@ declare global {
   }
 }
 
-const SelectCampus: React.FC<ContainerProps> = ({ name }) => {
-  const history = useHistory();
-  const { t } = useTranslation();
 
-  const ClickSB = () => {
-    // Redirect to the "/Map" route
-    history.push("/SanBartolome");
-  };
-  const ClickB = () => {
-    // Redirect to the "/Map" route
-    history.push("/Batasan");
-  };
-  const ClickSF = () => {
-    // Redirect to the "/Map" route
-    history.push("/SanFrancisco");
+const SelectCampus: React.FC<ContainerProps> = ({ name }) => {
+  const { t } = useTranslation();
+  const history = useHistory();
+
+  const handleClick = (location: string) => {
+    // Navigate to the clicked location
+    history.push(`/${location.toLowerCase()}`);
   };
 
   return (
@@ -50,7 +44,7 @@ const SelectCampus: React.FC<ContainerProps> = ({ name }) => {
               </p>
             </div>
             <div className="container grid justify-center gap-4 mx-auto sm:grid-cols-2 lg:grid-cols-3">
-              <div className="flex flex-col items-center p-4" onClick={ClickSB}>
+              <div className="flex flex-col items-center p-4" onClick={() => handleClick('SanBartolome')}>
                 <img
                   src={sb}
                   className="h-64 duration-150 cursor-pointer w-96 rounded-2xl hover:scale-110"
@@ -62,7 +56,7 @@ const SelectCampus: React.FC<ContainerProps> = ({ name }) => {
               {/* BATASAN */}
              
                 
-                <div className="flex flex-col items-center p-4" onClick={ClickB}>
+                <div className="flex flex-col items-center p-4" onClick={() => handleClick('Batasan')}>
                   <img
                     src={b}
                     className="h-64 duration-150 cursor-pointer w-96 rounded-2xl hover:scale-110"
@@ -76,7 +70,7 @@ const SelectCampus: React.FC<ContainerProps> = ({ name }) => {
               {/* SAN FRANCISCO */}
             
                 
-                <div className="flex flex-col items-center p-4" onClick={ClickSF}>
+                <div className="flex flex-col items-center p-4" onClick={() => handleClick('SanFrancisco')}>
                   <img
                     src={sf}
                     className="h-64 duration-150 cursor-pointer w-96 rounded-2xl hover:scale-110"

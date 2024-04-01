@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, Suspense, lazy } from "react";
 import { IonContent, IonPage } from "@ionic/react";
+import { Switch, Route } from "react-router-dom";
 import { themeChange } from "theme-change";
 import { Icon } from "@iconify/react";
 import WidgetPanel from "../components/widgets/widgetPanel";
@@ -7,8 +8,10 @@ import Sidebar from "../components/sidebar/sidebarLayout";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Loading from './loading';
-import SanBartolome from "../components/campus/sanBartolome/SanBartolome";
 import { Analytics } from "@vercel/analytics/react";
+import SanBartolome from "../components/campus/sanBartolome/SanBartolome";
+import Batasan from "../components/campus/batasan/Batasan";
+import SanFrancisco from "../components/campus/sanFrancisco/SanFrancisco";
 
 // Import your components here
 // const SanBartolome = lazy(() => import("../components/campus/sanBartolome/SanBartolome"));
@@ -54,11 +57,13 @@ const layout: React.FC<ContainerProps> = ({ name }) => {
 
 
         {/* Rendering selected option */}
-        <Suspense fallback={<Loading />}>
-          <div className=" cursor-grab">
-            <SanBartolome name={""} />
-          </div>
+      <Switch>
+        <Suspense fallback={<Loading/>}>
+        <Route path="/SanBartolome" component={SanBartolome} />
+        <Route path="/Batasan" component={Batasan} />
+        <Route path="/SanFrancisco" component={SanFrancisco} />
         </Suspense>
+      </Switch>
       </IonContent>
     </IonPage>
   );
