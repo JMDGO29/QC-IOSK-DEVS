@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "tauri": "tauri",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test.e2e": "cypress run",
@@ -54,6 +55,7 @@
   "devDependencies": {
     "@capacitor/cli": "5.5.1",
     "@iconify/react": "^4.1.1",
+    "@tauri-apps/cli": "^1.5.11",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.4.3",
