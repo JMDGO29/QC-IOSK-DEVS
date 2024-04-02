@@ -19,9 +19,9 @@ interface Event {
   startDate: string;
   endDate: string;
 }
-const { t } = useTranslation();
+
 const Events: React.FC<ContainerProps> = ({ name }) => {
-  
+  const { t } = useTranslation();
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);

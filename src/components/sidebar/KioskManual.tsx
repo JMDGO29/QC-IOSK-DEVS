@@ -22,11 +22,12 @@ interface Manual {
 }
 
 const KioskManual: React.FC<ContainerProps> = ({ name }) => {
+    const { t } = useTranslation();
     const [manuals, setManuals] = useState<Manual[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedManual, setSelectedManual] = useState<Manual | null>(null);
-    const { t } = useTranslation();
+    
 
     const openModal = (manual: Manual) => {
         setSelectedManual(manual);

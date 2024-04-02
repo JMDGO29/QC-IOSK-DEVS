@@ -13,8 +13,9 @@ import { useTranslation } from "react-i18next";
 // import required modules
 // import { Pagination } from 'swiper/modules';
 import { Icon } from '@iconify/react';
-const { t } = useTranslation();
+
 const KioskModal: React.FC = () => {
+    const { t } = useTranslation();
 
     return (
         <dialog id="KioskManual" className="modal">

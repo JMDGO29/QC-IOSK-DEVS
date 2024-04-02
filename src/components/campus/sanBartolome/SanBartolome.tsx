@@ -54,8 +54,10 @@ interface BuildingsData {
   floors: number;
 }
 
-const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
 
+const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
+  
+  const { t } = useTranslation();
   // Create DRACO loader instance with the decoder path
   const dracoLoader = new DRACOLoader();
   dracoLoader.setDecoderPath("https://www.gstatic.com/draco/versioned/decoders/1.5.7/");
@@ -79,7 +81,6 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
   const [showOverview, setShowOverview] = useState(false); // State to toggle overview
   const [modalContent, setModalContent] = useState("");
   const [showError, setErrorModal] = useState(false);
-  const { t } = useTranslation();
 
   useEffect(() => {
     const checkTime = () => {

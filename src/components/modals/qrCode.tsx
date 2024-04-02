@@ -5,8 +5,9 @@ import Mp4 from '../../../assets/Vids/sb/r_simon.mp4';
 import QRcode from '../../../assets/imgs/qr.png';
 import { useTranslation } from "react-i18next";
 
-const { t } = useTranslation();
+
 const qrCode: React.FC = () => {
+  const { t } = useTranslation();
 
   return (
     <dialog id="qrcode" className="modal">

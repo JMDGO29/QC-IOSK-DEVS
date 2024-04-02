@@ -11,9 +11,9 @@ interface ContainerProps {
   name: string;
 };
 
-const { t } = useTranslation();
 
 const Home: React.FC<ContainerProps> = ({ name }) => {
+  const { t } = useTranslation();
   const history = useHistory();
 
   const handleClick = () => {

@@ -15,7 +15,7 @@ export interface KeyboardRef {
   setInput: (input: string) => void;
   // Add other methods if needed
 }
-const { t } = useTranslation();
+
 const SearchTab: React.FC = () => {
   const [input, setInput] = useState("");
   const [suggestions, setSuggestions] = useState<any[]>([]);
@@ -28,6 +28,7 @@ const SearchTab: React.FC = () => {
   const [selectedFloor, setSelectedFloor] = useState("");
   const [selectedRoom, setSelectedRoom] = useState("");
   const [selectedOffice, setSelectedOffice] = useState("");
+  const { t } = useTranslation();
 
   const onChangeInput = (event: ChangeEvent<HTMLInputElement>): void => {
     const input = event.target.value;

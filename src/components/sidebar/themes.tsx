@@ -8,12 +8,13 @@ import { useHistory } from "react-router-dom";
 import { credits } from "../../data/creditsData";
 
 const Themes: React.FC = () => {
+  const { t } = useTranslation();
   const history = useHistory();
   const ClickLogin = () => {
     history.push("/Login");
   };
 
-  const { t } = useTranslation();
+
   useEffect(() => {
     themeChange(false);
   });
