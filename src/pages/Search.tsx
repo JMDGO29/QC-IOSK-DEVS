@@ -1,25 +1,54 @@
-import React, { useState, ChangeEvent, useRef, Suspense } from "react";
+import React, {
+  useState,
+  ChangeEvent,
+  useRef,
+  Suspense,
+  useEffect,
+} from "react";
 import { IonContent, IonPage } from "@ionic/react";
 import "react-simple-keyboard/build/css/index.css";
 import Backbtn from "../components/navigation/Backbtn";
 import "../assets/css/search.css";
 import "../assets/css/keyboard.css";
 import KeyboardWrapper from "./keyboard/Keyboard";
-import { roomData } from "../data/roomData";
 import Animation from "../components/campus/sanBartolome/animation/Animation";
 import SideBar from "../components/sidebar/sidebarLayout";
 import WidgetPanel from "../components/widgets/widgetPanel";
 import Loading from "../pages/loading";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { db } from "../components/utils/firebase";
 
 export interface KeyboardRef {
   setInput: (input: string) => void;
   // Add other methods if needed
 }
 
+interface Room {
+  id: string;
+  buildingName: string;
+  floors: {
+    [floorName: string]: {
+      [roomCodeMap: string]: {
+        description: string;
+        roomCode: string;
+        squareMeter: number;
+        textGuide: string;
+        roomAnimation: string;
+        voiceGuide: string;
+        status: string;
+      };
+    };
+  };
+}
+
+interface Suggestion {
+  description: string;
+  roomCode: string;
+  // Add other properties as needed
+}
+
 const SearchTab: React.FC = () => {
   const [input, setInput] = useState("");
-  const [suggestions, setSuggestions] = useState<any[]>([]);
-  const [isClicked, setIsClicked] = useState(false);
   const [selectedModelPath, setSelectedModelPath] = useState<string>("");
   const [selectedVoice, setSelectedVoice] = useState("");
   const [isAnimationActive, setIsAnimationActive] = useState(false);
@@ -27,26 +56,75 @@ const SearchTab: React.FC = () => {
   const [selectedBuilding, setSelectedBuilding] = useState("");
   const [selectedFloor, setSelectedFloor] = useState("");
   const [selectedRoom, setSelectedRoom] = useState("");
-  const [selectedOffice, setSelectedOffice] = useState("");
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [isClicked, setIsClicked] = useState(false);
 
-  const onChangeInput = (event: ChangeEvent<HTMLInputElement>): void => {
-    const input = event.target.value;
+  useEffect(() => {
+    // Fetch data when component mounts
+    fetchRooms();
+  }, []);
+
+  const fetchRooms = async () => {
+    try {
+      const roomsCollection = collection(db, "roomData");
+      const queryRoom = query(roomsCollection);
+      const roomsSnapshot = await getDocs(queryRoom);
+      const roomsData = roomsSnapshot.docs.map((doc) => {
+        const roomData = doc.data() as Room;
+        return { ...roomData, id: doc.id } as Room;
+      });
+
+      setRooms(roomsData);
+    } catch (error) {
+      console.error("Error fetching rooms: ", error);
+    }
+  };
+
+  const onChangeInput = async (
+    event: ChangeEvent<HTMLInputElement>
+  ): Promise<void> => {
+    const input = event.target.value.toLowerCase();
     setInput(input);
     keyboard.current?.setInput(input);
 
-    // Find matching room names
-    const matchingRooms = Object.values(roomData).flatMap((building) =>
-      Object.values(building).flatMap((rooms) =>
-        rooms.filter(
-          (room) =>
-            room.name.toLowerCase().includes(input) ||
-            room.buildingName.toLowerCase().includes(input) ||
-            (room.officeName && room.officeName.toLowerCase().includes(input))
-        )
-      )
-    );
+    // Filter room names based on input
+    const filteredSuggestions: Suggestion[] = [];
+    // Filter and map rooms to suggestions
+    for (const buildingName in rooms) {
+      const floors = rooms[buildingName].floors;
+      for (const floorName in floors) {
+        const roomCodeMap = floors[floorName];
+        for (const roomCode in roomCodeMap) {
+          const room = roomCodeMap[roomCode];
+          if (
+            room.roomCode.toLowerCase().includes(input) ||
+            room.description.toLowerCase().includes(input)
+          ) {
+            // Map room to suggestion
+            const suggestion: Suggestion = {
+              description: room.description,
+              roomCode: room.roomCode,
+              // Add other properties as needed
+            };
+            filteredSuggestions.push(suggestion);
+          }
+        }
+      }
+    }
+    // Set suggestions state
+    setSuggestions(filteredSuggestions);
+  };
 
-    setSuggestions(matchingRooms);
+  const onSuggestionsUpdate = (suggestions: Suggestion[]) => {
+    // Update suggestions state
+    setSuggestions(suggestions);
+  };
+
+  const clickSearch = () => {
+    setIsAnimationActive(false);
+
+    return;
   };
 
   const handleSearchBarClick = () => {
@@ -57,51 +135,44 @@ const SearchTab: React.FC = () => {
     setIsClicked(false);
   };
 
-  const handleRoomButtonClick = (
-    roomName: string,
-    buildingName: string,
-    floorNumber: string,
-    officeName: string
-  ) => {
-    // Find the matching room
-    let selectedRoomModelPath = "";
-    let selectedRoomVoice = "";
-    let building = "";
-    let floor = "";
-    let office = null;
-    Object.entries(roomData).forEach(([building, floors]) => {
-      Object.entries(floors).forEach(([floor, rooms]) => {
-        rooms.forEach((room) => {
-          if (room.name === roomName) {
-            selectedRoomModelPath = room.modelPath;
-            selectedRoomVoice = room.voice;
-            building = room.buildingName;
-            floor = floor; // Assuming the floor number is a single-digit string
-            office = room.officeName;
+  const handleSuggestionClick = async (selectedRoom: Suggestion) => {
+    try {
+      const roomsCollection = collection(db, "roomData");
+      const q = query(roomsCollection);
+
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        querySnapshot.forEach((doc) => {
+          const roomData = doc.data() as Room;
+          const roomAnimation = findRoomAnimation(
+            roomData,
+            selectedRoom.roomCode
+          );
+          if (roomAnimation !== null) {
+            console.log("Room Animation:", roomAnimation);
+            setSelectedModelPath(roomAnimation); // Set selectedModelPath with roomAnimation
+            setIsAnimationActive(true);
           }
         });
-      });
-    });
-
-    if (selectedRoomModelPath) {
-      console.log("Selected room:", roomName);
-      console.log("Model path:", selectedRoomModelPath);
-      setSelectedModelPath(selectedRoomModelPath); // Update selected model path state
-      setSelectedVoice(selectedRoomVoice);
-      setSelectedBuilding(buildingName);
-      setSelectedFloor(floorNumber);
-      setSelectedOffice(officeName);
-      setSelectedRoom(roomName);
-      setIsAnimationActive(true);
-    } else {
-      console.log("Model path not found for the selected room.");
+      } else {
+        console.log("No rooms found.");
+      }
+    } catch (error) {
+      console.error("Error fetching room data:", error);
     }
   };
 
-  const clickSearch = () => {
-    setIsAnimationActive(false);
-
-    return;
+  const findRoomAnimation = (roomData: Room, roomCode: string) => {
+    for (const floorName in roomData.floors) {
+      const floor = roomData.floors[floorName];
+      for (const roomCodeMap in floor) {
+        if (roomCodeMap === roomCode) {
+          return floor[roomCodeMap].roomAnimation;
+        }
+      }
+    }
+    return null; // Room not found
   };
 
   return (
@@ -110,25 +181,21 @@ const SearchTab: React.FC = () => {
         <>
           {selectedModelPath && isAnimationActive ? (
             <>
-              <Suspense fallback={<Loading name={""} />}>
-                <Animation
-                  name={""}
-                  roomName={"selectedRoom"}
-                  modelPath={selectedModelPath}
-                  voice={selectedVoice}
-                  shortPath={"selectedShortPath"}
-                  roomData={roomData}
-                  selectedBuilding={selectedBuilding}
-                  selectedFloor={selectedFloor}
-                  selectedRoom={selectedRoom}
-                />
-                <button
-                  onClick={clickSearch}
-                  className="absolute z-10 mt-10 btn btn-secondary ml-60"
-                >
-                  Back
-                </button>
-              </Suspense>
+              <Animation
+                name={""}
+                roomName={selectedRoom}
+                modelPath={selectedModelPath}
+                voice={selectedVoice}
+                selectedBuilding={selectedBuilding}
+                selectedFloor={selectedFloor}
+                selectedRoom={selectedRoom}
+              />
+              <button
+                onClick={clickSearch}
+                className="absolute z-10 mt-10 btn btn-secondary ml-60"
+              >
+                Back
+              </button>
             </>
           ) : (
             <>
@@ -156,6 +223,7 @@ const SearchTab: React.FC = () => {
                             />
                           </div>
                         </div>
+                        {/* Suggestions Section */}
                         {input && (
                           <div className="flex items-center justify-center w-screen py-2 -mt-7 ">
                             <div className="w-5/12 h-auto bg-white  rounded-b-3xl">
@@ -166,22 +234,12 @@ const SearchTab: React.FC = () => {
                                     {suggestions.map((room, index) => (
                                       <li key={index}>
                                         <button
-                                          className="btn btn-secondary w-auto m-1"
                                           onClick={() =>
-                                            handleRoomButtonClick(
-                                              room.name,
-                                              room.buildingName,
-                                              room.floorNumber,
-                                              room.officeName
-                                            )
+                                            handleSuggestionClick(room)
                                           }
+                                          className="btn btn-secondary w-auto m-1"
                                         >
-                                          {room.name} - {room.buildingName} -{" "}
-                                          {""}
-                                          {room.floorNumber} Floor
-                                          {room.officeName && (
-                                            <> - Office: {room.officeName}</>
-                                          )}
+                                          {room.description || room.roomCode}
                                         </button>
                                       </li>
                                     ))}
@@ -200,11 +258,13 @@ const SearchTab: React.FC = () => {
                             </div>
                           </div>
                         )}
+
                         <div className="sticky flex items-center justify-center w-screen bottom-10 ">
                           <div className="w-5/12 h-auto mt-56  ">
                             <KeyboardWrapper
                               keyboardRef={keyboard}
                               onChange={setInput}
+                              onSuggestionsUpdate={onSuggestionsUpdate}
                             />
                           </div>
                         </div>
