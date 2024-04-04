@@ -18,6 +18,7 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Icon } from "@iconify/react";
 import { useHistory } from "react-router";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
 interface ContainerProps {
   name: string;
@@ -26,14 +27,20 @@ interface ContainerProps {
 const CreateRoom: React.FC<ContainerProps> = ({ name }) => {
   const history = useHistory();
 
-  const [textGuides, setTextGuides] = useState<string[]>([""]); // Initial text guide input field
   const [buildingNames, setBuildingNames] = useState<string[]>([]);
   const [selectedBuilding, setSelectedBuilding] = useState<string>("");
-  const [selectedFloor, setSelectedFloor] = useState<string>("");
+  const [selectedFloor, setSelectedFloor] = useState<string>("Floor 1");
   const [roomCode, setRoomCode] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [squareMeter, setSquareMeter] = useState<string>("");
   const [status, setStatus] = useState<string>("");
+  const [textGuides, setTextGuides] = useState<string[]>([""]);
+
+  const [roomType, setRoomType] = useState<string>("");
+  const [distance, setDistance] = useState<string>("");
+  const [eta, setEta] = useState<string>("");
+  const [occupiedBy, setOccupiedBy] = useState<string>("");
+
   const [floorLevels, setFloorLevels] = useState<string[]>([]);
 
   useEffect(() => {
@@ -68,17 +75,11 @@ const CreateRoom: React.FC<ContainerProps> = ({ name }) => {
         )
       );
       const floors: string[] = [];
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        if (data.floors) {
-          Object.keys(data.floors).forEach((key) => {
-            floors.push(key); // Assuming the floor levels are the keys of the subfields
-          });
-        }
-      });
-      setFloorLevels(floors);
-      if (floors.length > 0) {
-        setSelectedFloor(floors[0]);
+      if (!querySnapshot.empty) {
+        const floorsData = querySnapshot.docs[0].data().floors;
+        const floors = Object.keys(floorsData);
+        setFloorLevels(floors);
+        setSelectedFloor("Floor 1"); // Set default selected floor to "Floor 1"
       }
     } catch (error) {
       console.error("Error fetching floor levels: ", error);
@@ -119,20 +120,75 @@ const CreateRoom: React.FC<ContainerProps> = ({ name }) => {
 
   const createRoom = async () => {
     try {
-      // Check if all required fields are filled
+      const now = serverTimestamp();
+
+      const animationFileInput = document.querySelector<HTMLInputElement>(
+        'input[type="file"][accept=".glb"]'
+      );
+
+      const voiceGuideFileInput = document.querySelector<HTMLInputElement>(
+        'input[type="file"][accept=".mp3"]'
+      );
+
+      let roomAnimation = "";
+      let voiceGuide = "";
+
+      if (
+        animationFileInput &&
+        animationFileInput.files &&
+        animationFileInput.files[0]
+      ) {
+        const animationFile = animationFileInput.files[0];
+        const animationFileRef = ref(
+          storage,
+          `roomAnimations/${selectedBuilding}/${animationFile.name}`
+        );
+
+        try {
+          await uploadBytes(animationFileRef, animationFile);
+          roomAnimation = await getDownloadURL(animationFileRef);
+        } catch (error) {
+          console.error("Error uploading animation file:", error);
+          toast.error(
+            "Failed to upload animation file. Please try again later."
+          );
+          return;
+        }
+      }
+
+      if (
+        voiceGuideFileInput &&
+        voiceGuideFileInput.files &&
+        voiceGuideFileInput.files[0]
+      ) {
+        const voiceGuideFile = voiceGuideFileInput.files[0];
+        const voiceGuideFileRef = ref(
+          storage,
+          `voiceGuide/${selectedBuilding}/${voiceGuideFile.name}`
+        );
+
+        try {
+          await uploadBytes(voiceGuideFileRef, voiceGuideFile);
+          voiceGuide = await getDownloadURL(voiceGuideFileRef);
+        } catch (error) {
+          console.error("Error uploading voice guide file:", error);
+          toast.error(
+            "Failed to upload voice guide file. Please try again later."
+          );
+          return;
+        }
+      }
+
       if (!selectedBuilding || !selectedFloor || !roomCode) {
         toast.error("Please fill all required fields");
         return;
       }
 
-      // Reference to the document in roomData collection
       const roomRef = doc(db, "roomData", selectedBuilding);
 
-      // Fetch the current data of the selected building
       const roomSnapshot = await getDoc(roomRef);
       const roomData = roomSnapshot.data();
 
-      // Check if the selected floor exists in the building's data
       if (!roomData || !roomData.floors || !roomData.floors[selectedFloor]) {
         toast.error("Selected floor does not exist");
         return;
@@ -141,10 +197,19 @@ const CreateRoom: React.FC<ContainerProps> = ({ name }) => {
       // Update the roomCode for the selected floor
       await updateDoc(roomRef, {
         [`floors.${selectedFloor}.${roomCode}`]: {
+          roomCode,
           description,
           squareMeter,
           status,
           textGuides,
+          roomType,
+          distance,
+          eta,
+          occupiedBy,
+          roomAnimation,
+          voiceGuide,
+          createdAt: now,
+          updatedAt: now,
         },
       });
 
@@ -187,7 +252,7 @@ const CreateRoom: React.FC<ContainerProps> = ({ name }) => {
                           onChange={handleBuildingChange}
                         >
                           <option value="">Select Building Name</option>
-                          {buildingNames.map((name, index) => (
+                          {buildingNames.sort().map((name, index) => (
                             <option key={index} value={name}>
                               {name}
                             </option>
@@ -202,7 +267,7 @@ const CreateRoom: React.FC<ContainerProps> = ({ name }) => {
                           onChange={handleFloorChange}
                         >
                           <option value="">Select Floor Level</option>
-                          {floorLevels.map((floor, index) => (
+                          {floorLevels.sort().map((floor, index) => (
                             <option key={index} value={floor}>
                               {floor}
                             </option>
@@ -229,6 +294,50 @@ const CreateRoom: React.FC<ContainerProps> = ({ name }) => {
                           className="w-full max-w-xs input input-bordered"
                           value={description}
                           onChange={(e) => setDescription(e.target.value)}
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>Room Type:</th>
+                      <td>
+                        <input
+                          type="text"
+                          placeholder="Room Type"
+                          className="w-full max-w-xs input input-bordered"
+                          value={roomType}
+                          onChange={(e) => setRoomType(e.target.value)}
+                        />
+                      </td>
+                      <th>Distance:</th>
+                      <td>
+                        <input
+                          type="text"
+                          placeholder="Distance"
+                          className="w-full max-w-xs input input-bordered"
+                          value={distance}
+                          onChange={(e) => setDistance(e.target.value)}
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>ETA:</th>
+                      <td>
+                        <input
+                          type="text"
+                          placeholder="Estimated Time of Arrival"
+                          className="w-full max-w-xs input input-bordered"
+                          value={eta}
+                          onChange={(e) => setEta(e.target.value)}
+                        />
+                      </td>
+                      <th>Occupied By:</th>
+                      <td>
+                        <input
+                          type="text"
+                          placeholder="Occupied By"
+                          className="w-full max-w-xs input input-bordered"
+                          value={occupiedBy}
+                          onChange={(e) => setOccupiedBy(e.target.value)}
                         />
                       </td>
                     </tr>

@@ -18,6 +18,7 @@ import {
   useMaterialReactTable,
   type MRT_ColumnDef,
 } from "material-react-table";
+import { ToastContainer } from "react-toastify";
 
 interface ContainerProps {
   name: string;
@@ -26,12 +27,12 @@ interface ContainerProps {
 interface Room {
   id: string;
   buildingName: string;
-  floors?: {
+  floors: {
     [floorName: string]: {
-      [roomCode: string]: {
+      [roomCodeMap: string]: {
         description: string;
         roomCode: string;
-        squareMeter: number;
+        squareMeter: string;
         textGuide: string;
         roomAnimation: string;
         voiceGuide: string;
@@ -48,36 +49,50 @@ const RoomManagement: React.FC<ContainerProps> = ({ name }) => {
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    let unsubscribeBuildings: () => void;
+    let unsubscribeRooms: () => void;
 
-    const fetchBuildings = async () => {
+    const fetchRooms = async () => {
       try {
-        const buildingsCollection = collection(db, "roomData");
-        const q = query(buildingsCollection, orderBy("buildingName", "asc"));
+        const roomsCollection = collection(db, "roomData");
+        const q = query(roomsCollection, orderBy("buildingName", "asc"));
 
-        unsubscribeBuildings = onSnapshot(q, (querySnapshot) => {
-          const buildingsData = querySnapshot.docs.map((doc) => {
+        unsubscribeRooms = onSnapshot(q, (querySnapshot) => {
+          const roomsData: Room[] = [];
+          querySnapshot.forEach((doc) => {
             const data = doc.data();
-            const building: Room = {
-              id: doc.id,
-              buildingName: data.buildingName,
-            };
-            return building;
+            const { buildingName, floors } = data;
+
+            // Flatten the floors data and generate individual rooms
+            for (const floorName in floors) {
+              const floorData = floors[floorName];
+              for (const roomCode in floorData) {
+                const room: Room = {
+                  id: doc.id,
+                  buildingName,
+                  floors: {
+                    [floorName]: {
+                      [roomCode]: floorData[roomCode],
+                    },
+                  },
+                };
+                roomsData.push(room);
+              }
+            }
           });
-          setRooms(buildingsData);
+          setRooms(roomsData);
           setLoading(false);
         });
       } catch (error) {
-        console.error("Error fetching buildings: ", error);
+        console.error("Error fetching rooms: ", error);
         setLoading(false);
       }
     };
 
-    fetchBuildings();
+    fetchRooms();
 
     return () => {
-      if (unsubscribeBuildings) {
-        unsubscribeBuildings();
+      if (unsubscribeRooms) {
+        unsubscribeRooms();
       }
     };
   }, []);
@@ -108,6 +123,32 @@ const RoomManagement: React.FC<ContainerProps> = ({ name }) => {
         accessorKey: "buildingName",
         header: "Building Name",
         size: 150,
+      },
+      {
+        accessorKey: "roomCode",
+        header: "Room Code",
+        Cell: ({ row }) => (
+          <>
+            {Object.values(row.original.floors).flatMap((floor) =>
+              Object.values(floor).map((room) => (
+                <div key={room.roomCode}>{room.roomCode}</div>
+              ))
+            )}
+          </>
+        ),
+      },
+      {
+        accessorKey: "roomAnimation",
+        header: "Room Animation",
+        Cell: ({ row }) => (
+          <>
+            {Object.values(row.original.floors).flatMap((floor) =>
+              Object.values(floor).map((room) => (
+                <div key={room.roomCode}>{room.roomAnimation}</div>
+              ))
+            )}
+          </>
+        ),
       },
     ],
     []
@@ -182,6 +223,7 @@ const RoomManagement: React.FC<ContainerProps> = ({ name }) => {
             </div>
           </div>
         </div>
+        <ToastContainer />
       </IonContent>
     </IonPage>
   );

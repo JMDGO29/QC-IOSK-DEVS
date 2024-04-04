@@ -626,10 +626,7 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                                                   Description:{" "}
                                                   {roomDetails.description}
                                                 </p>
-                                                <p>
-                                                  Animation:{" "}
-                                                  {roomDetails.roomAnimation}
-                                                </p>
+
                                                 {/* Render other room details as needed */}
                                                 <div className="w-full p-3">
                                                   <button

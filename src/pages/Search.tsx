@@ -50,7 +50,7 @@ interface Suggestion {
 const SearchTab: React.FC = () => {
   const [input, setInput] = useState("");
   const [selectedModelPath, setSelectedModelPath] = useState<string>("");
-  const [selectedVoice, setSelectedVoice] = useState("");
+  const [selectedVoice, setSelectedVoice] = useState<string>("");
   const [isAnimationActive, setIsAnimationActive] = useState(false);
   const keyboard = useRef<KeyboardRef | undefined>(undefined);
   const [selectedBuilding, setSelectedBuilding] = useState("");
@@ -145,14 +145,19 @@ const SearchTab: React.FC = () => {
       if (!querySnapshot.empty) {
         querySnapshot.forEach((doc) => {
           const roomData = doc.data() as Room;
-          const roomAnimation = findRoomAnimation(
+          const selectedRoomData = findRoomData(
             roomData,
             selectedRoom.roomCode
           );
-          if (roomAnimation !== null) {
-            console.log("Room Animation:", roomAnimation);
-            setSelectedModelPath(roomAnimation); // Set selectedModelPath with roomAnimation
+          if (selectedRoomData !== null) {
+            console.log("Room Animation:", selectedRoomData.roomAnimation);
+            setSelectedModelPath(selectedRoomData.roomAnimation);
             setIsAnimationActive(true);
+
+            if (selectedRoomData) {
+              console.log("Voice Guide:", selectedRoomData.voiceGuide);
+              setSelectedVoice(selectedRoomData.voiceGuide);
+            }
           }
         });
       } else {
@@ -163,12 +168,12 @@ const SearchTab: React.FC = () => {
     }
   };
 
-  const findRoomAnimation = (roomData: Room, roomCode: string) => {
+  const findRoomData = (roomData: Room, roomCode: string) => {
     for (const floorName in roomData.floors) {
       const floor = roomData.floors[floorName];
       for (const roomCodeMap in floor) {
         if (roomCodeMap === roomCode) {
-          return floor[roomCodeMap].roomAnimation;
+          return floor[roomCodeMap];
         }
       }
     }
@@ -181,92 +186,94 @@ const SearchTab: React.FC = () => {
         <>
           {selectedModelPath && isAnimationActive ? (
             <>
-              <Animation
-                name={""}
-                roomName={selectedRoom}
-                modelPath={selectedModelPath}
-                voice={selectedVoice}
-                selectedBuilding={selectedBuilding}
-                selectedFloor={selectedFloor}
-                selectedRoom={selectedRoom}
-              />
-              <button
-                onClick={clickSearch}
-                className="absolute z-10 mt-10 btn btn-secondary ml-60"
-              >
-                Back
-              </button>
+              <Suspense fallback={<Loading name="" />}>
+                <Animation
+                  name={""}
+                  roomName={selectedRoom}
+                  modelPath={selectedModelPath}
+                  voice={selectedVoice}
+                  selectedBuilding={selectedBuilding}
+                  selectedFloor={selectedFloor}
+                  selectedRoom={selectedRoom}
+                />
+                <button
+                  onClick={clickSearch}
+                  className="absolute z-10 mt-10 btn btn-secondary ml-60"
+                >
+                  Back
+                </button>
+              </Suspense>
             </>
           ) : (
             <>
               <div className="h-screen overflow-hidden">
                 <div className="relative overflow-hidden ">
-                  <div className="px-4 py-10 mx-auto max-w-screen sm:px-6 lg:px-8 sm:py-5">
-                    <div className="text-center mt-[10px]">
+                  <div className="max-h-screen px-4 mx-auto max-w-screen sm:px-6 lg:px-8">
+                    <div className="flex flex-col items-center justify-center w-screen h-screen text-center mt-72">
                       <h1 className="w-screen text-4xl font-bold text-center text-white sm:text-6xl">
                         Search
                       </h1>
-                      <br />
 
                       <div className="z-50 flex-col items-center justify-center w-screen h-screen ">
-                        <div className="flex items-center justify-center w-screen ">
-                          <div className="w-5/12">
-                            <input
-                              value={input}
-                              placeholder={
-                                "Tap on the virtual keyboard to start"
-                              }
-                              onChange={(e) => onChangeInput(e)}
-                              onClick={handleSearchBarClick}
-                              onBlur={handleSearchBarBlur}
-                              className="z-50 w-full h-16 p-5 text-black bg-white outline-none rounded-3xl"
-                            />
-                          </div>
-                        </div>
-                        {/* Suggestions Section */}
-                        {input && (
-                          <div className="flex items-center justify-center w-screen py-2 -mt-7 ">
-                            <div className="w-5/12 h-auto bg-white  rounded-b-3xl">
-                              {suggestions.length > 0 ? (
-                                <div className="w-full h-56 py-6 overflow-auto">
-                                  <h1 className="text-black">Result:</h1>
-                                  <ul>
-                                    {suggestions.map((room, index) => (
-                                      <li key={index}>
-                                        <button
-                                          onClick={() =>
-                                            handleSuggestionClick(room)
-                                          }
-                                          className="btn btn-secondary w-auto m-1"
-                                        >
-                                          {room.description || room.roomCode}
-                                        </button>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              ) : (
-                                <div className="w-full h-56 py-6 overflow-auto">
-                                  <h1 className="text-black">
-                                    No rooms found.
-                                  </h1>
-                                  <h1 className="text-black">
-                                    Enter another entry.
-                                  </h1>
-                                </div>
-                              )}
+                        <div className="flex items-start justify-center w-screen space-x-3 ">
+                          <div className="flex flex-col w-5/12 space-y-3 ">
+                            <div className="w-full">
+                              <input
+                                value={input}
+                                placeholder={
+                                  "Tap on the virtual keyboard to start"
+                                }
+                                onChange={(e) => onChangeInput(e)}
+                                onClick={handleSearchBarClick}
+                                onBlur={handleSearchBarBlur}
+                                className="z-50 w-full h-16 p-5 text-black bg-white outline-none rounded-3xl"
+                              />
+                            </div>
+
+                            <div className="w-full">
+                              <div className="w-auto h-auto ">
+                                <KeyboardWrapper
+                                  keyboardRef={keyboard}
+                                  onChange={setInput}
+                                  onSuggestionsUpdate={onSuggestionsUpdate}
+                                />
+                              </div>
                             </div>
                           </div>
-                        )}
-
-                        <div className="sticky flex items-center justify-center w-screen bottom-10 ">
-                          <div className="w-5/12 h-auto mt-56  ">
-                            <KeyboardWrapper
-                              keyboardRef={keyboard}
-                              onChange={setInput}
-                              onSuggestionsUpdate={onSuggestionsUpdate}
-                            />
-                          </div>
+                          {input && (
+                            <div className="w-96">
+                              <div className="h-auto p-3 bg-white w-96 rounded-3xl">
+                                {suggestions.length > 0 ? (
+                                  <div className="w-full py-6 overflow-auto h-96">
+                                    <h1 className="text-black">Result:</h1>
+                                    <ul className="px-1 space-y-1">
+                                      {suggestions.map((room, index) => (
+                                        <li key={index} className="space-">
+                                          <button
+                                            onClick={() =>
+                                              handleSuggestionClick(room)
+                                            }
+                                            className=" btn btn-block btn-secondary"
+                                          >
+                                            {room.description || room.roomCode}
+                                          </button>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                ) : (
+                                  <div className="w-full py-6 overflow-auto h-96">
+                                    <h1 className="text-black">
+                                      No rooms found.
+                                    </h1>
+                                    <h1 className="text-black">
+                                      Enter another entry.
+                                    </h1>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -279,9 +286,6 @@ const SearchTab: React.FC = () => {
 
           <div className="absolute top-0 left-0 z-50 ">
             <SideBar />
-          </div>
-          <div className="absolute top-0 right-0 z-50 ">
-            <WidgetPanel name={""} />
           </div>
         </>
       </IonContent>

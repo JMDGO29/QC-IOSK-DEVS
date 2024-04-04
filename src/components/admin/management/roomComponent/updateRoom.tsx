@@ -1,243 +1,112 @@
 import { IonContent, IonPage } from "@ionic/react";
 import AdminSideBar from "../../constant/adminSidebar";
 import AdminHeader from "../../constant/adminHeader";
-import { useEffect, useState } from "react";
-import { useHistory, useParams } from "react-router";
+import { useState, useEffect } from "react";
+import {
+  doc,
+  serverTimestamp,
+  setDoc,
+  collection,
+  getDocs,
+  query,
+  where,
+  updateDoc,
+  getDoc,
+} from "firebase/firestore";
+import { db, storage } from "../../../utils/firebase";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { Icon } from "@iconify/react";
-import { doc, getDoc, updateDoc } from "firebase/firestore"; // Import updateDoc
-import { db } from "../../../utils/firebase";
+import { useHistory, useParams } from "react-router";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
 interface ContainerProps {
   name: string;
+  roomId?: string;
 }
 
 interface Room {
   id: string;
   buildingName: string;
-  floors?: {
+  floors: {
     [floorName: string]: {
-      [roomCode: string]: {
+      [roomCodeMap: string]: {
         description: string;
         roomCode: string;
-        squareMeter: string;
+        squareMeter: number;
         textGuide: string;
         roomAnimation: string;
         voiceGuide: string;
+        roomType: string;
+        distance: string;
+        eta: string;
+        occupiedBy: string;
         status: string;
+        updatedAt: firebase.default.firestore.Timestamp;
       };
     };
   };
 }
 
-const CreateRoom: React.FC<ContainerProps> = ({ name }) => {
+const UpdateRoom: React.FC<ContainerProps> = ({ name }) => {
   const history = useHistory();
-
-  const [building, setBuilding] = useState<Room | null>(null);
-  const [buildingName, setBuildingName] = useState<string>("");
+  const [room, setRoom] = useState<Room | null>(null);
   const { roomId } = useParams<{ roomId: string }>();
 
-  const [roomCode, setRoomCode] = useState<string[]>([]);
-  const [floorLevel, setFloorLevel] = useState<string[]>([]);
-  const [descriptions, setDescriptions] = useState<string[]>([]);
-  const [statuses, setStatuses] = useState<string[]>([]);
-  const [squareMeter, setSquareMeter] = useState<string[]>([]);
-  const [floors, setFloors] = useState<string[]>([]);
+  const [selectedBuilding, setSelectedBuilding] = useState<string>("");
+  const [buildingNames, setBuildingNames] = useState<string[]>([]);
+  const [textGuides, setTextGuides] = useState<string[]>([""]);
 
   useEffect(() => {
-    const fetchBuilding = async () => {
-      try {
-        const buildingRef = doc(db, "roomData", roomId);
-        const buildingDoc = await getDoc(buildingRef);
+    fetchRoomAndBuildingNames();
+  }, []);
 
-        if (buildingDoc.exists()) {
-          const buildingData = buildingDoc.data() as Room;
-          setBuilding(buildingData);
-          setBuildingName(buildingData.buildingName);
-
-          if (buildingData.floors) {
-            const fetchedFloors = Object.keys(buildingData.floors);
-            setFloors(fetchedFloors);
-
-            let roomCodes: string[] = [];
-            let floorLevels: string[] = [];
-            let descriptions: string[] = [];
-            let statuses: string[] = [];
-            let squareMeter: string[] = [];
-
-            fetchedFloors.forEach((floor) => {
-              const rooms = buildingData.floors?.[floor];
-              if (rooms) {
-                const roomCodesFloor = Object.keys(rooms);
-                roomCodes = [...roomCodes, ...roomCodesFloor];
-                floorLevels = [
-                  ...floorLevels,
-                  ...roomCodesFloor.map(() => floor),
-                ];
-                roomCodesFloor.forEach((code) => {
-                  const room = rooms[code];
-                  descriptions.push(room.description);
-                  statuses.push(room.status);
-                  squareMeter.push(room.squareMeter);
-                });
-              }
-            });
-
-            setRoomCode(roomCodes);
-            setFloorLevel(floorLevels);
-            setDescriptions(descriptions);
-            setStatuses(statuses);
-            setSquareMeter(squareMeter);
-          }
-        } else {
-          console.error("Building not found");
-          history.push("/Building");
-        }
-      } catch (error) {
-        console.error("Error fetching building: ", error);
-      }
-    };
-
-    fetchBuilding();
-  }, [roomId, history]);
-
-  const handleAddRoom = () => {
-    setRoomCode([...roomCode, ""]);
-    setFloorLevel([...floorLevel, "Floor 1"]);
-    setDescriptions([...descriptions, ""]);
-    setStatuses([...statuses, "available"]);
-    setSquareMeter([...squareMeter, ""]);
-  };
-
-  // Inside your component
-  const handleRemoveRoom = async (index: number) => {
-    const updatedRoomCode = [...roomCode];
-    const updatedFloorLevel = [...floorLevel];
-    const updatedDescriptions = [...descriptions];
-    const updatedStatuses = [...statuses];
-    const updatedSquareMeter = [...squareMeter];
-
-    const fetchBuilding = async () => {
-      try {
-        const buildingRef = doc(db, "roomData", roomId);
-        const buildingDoc = await getDoc(buildingRef);
-
-        if (buildingDoc.exists()) {
-          const buildingData = buildingDoc.data() as Room;
-          setBuilding(buildingData);
-          setBuildingName(buildingData.buildingName);
-
-          if (buildingData.floors) {
-            const fetchedFloors = Object.keys(buildingData.floors);
-            setFloors(fetchedFloors);
-
-            // Fetch all room codes and floor levels
-            const allRoomCodes: string[] = [];
-            const allFloorLevels: string[] = [];
-
-            fetchedFloors.forEach((floor) => {
-              const rooms = buildingData.floors?.[floor]; // Safe navigation operator
-              if (rooms) {
-                const roomCodes = Object.keys(rooms);
-                allRoomCodes.push(...roomCodes);
-                allFloorLevels.push(...roomCodes.map(() => floor));
-              }
-            });
-
-            setRoomCode(allRoomCodes);
-            setFloorLevel(allFloorLevels);
-          }
-        } else {
-          console.error("Building not found");
-          history.push("/Building");
-        }
-      } catch (error) {
-        console.error("Error fetching building: ", error);
-      }
-    };
-
-    const codeToDelete = updatedRoomCode[index];
-    const floorToDelete = updatedFloorLevel[index];
-    const squareMeterToDelete = updatedSquareMeter[index];
-
+  const fetchRoomAndBuildingNames = async () => {
     try {
-      const buildingRef = doc(db, "roomData", roomId);
-      const buildingDoc = await getDoc(buildingRef);
-
-      if (buildingDoc.exists()) {
-        const buildingData = buildingDoc.data() as Room;
-
-        if (
-          buildingData.floors &&
-          buildingData.floors[floorToDelete] &&
-          buildingData.floors[floorToDelete][codeToDelete]
-        ) {
-          const shouldDelete = window.confirm(
-            "Are you sure you want to delete this room?"
-          );
-
-          if (shouldDelete) {
-            delete buildingData.floors[floorToDelete][codeToDelete];
-            const updatedData = { floors: buildingData.floors };
-            await updateDoc(buildingRef, updatedData);
-            console.log("Room deleted successfully");
-
-            // Trigger fetch of data again after successful deletion
-            fetchBuilding(); // Assuming fetchBuilding is your fetch function
-          } else {
-            console.log("Deletion canceled");
-          }
-        } else {
-          updatedRoomCode.splice(index, 1);
-          updatedFloorLevel.splice(index, 1);
-          updatedDescriptions.splice(index, 1);
-          updatedStatuses.splice(index, 1);
-          updatedSquareMeter.splice(index, 1);
-
-          setRoomCode(updatedRoomCode);
-          setFloorLevel(updatedFloorLevel);
-          setDescriptions(updatedDescriptions);
-          setStatuses(updatedStatuses);
-          setSquareMeter(updatedSquareMeter);
-
-          console.log("Room not found in database. Removed from local state.");
+      const querySnapshot = await getDocs(collection(db, "roomData"));
+      const names: string[] = [];
+      let selectedBuildingName = ""; // Initialize the selected building name variable
+      querySnapshot.forEach((doc) => {
+        const data = doc.data() as Room;
+        names.push(data.buildingName);
+        // If the room ID matches, set the default selected building
+        if (doc.id === roomId) {
+          selectedBuildingName = data.buildingName;
         }
-      }
+      });
+      setBuildingNames(names);
+      setSelectedBuilding(selectedBuildingName);
+      console.log(selectedBuilding);
     } catch (error) {
-      console.error("Error removing room: ", error);
+      console.error("Error fetching building names: ", error);
     }
   };
 
-  const handleUpdateAllRooms = async () => {
-    try {
-      const buildingRef = doc(db, "roomData", roomId);
-      const buildingDoc = await getDoc(buildingRef);
+  const handleBuildingChange = (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const selected = event.target.value;
+    setSelectedBuilding(selected);
+  };
 
-      if (buildingDoc.exists()) {
-        const buildingData = buildingDoc.data() as Room;
+  const addTextGuide = () => {
+    setTextGuides([...textGuides, ""]);
+  };
 
-        roomCode.forEach(async (code, index) => {
-          if (buildingData.floors && buildingData.floors[floorLevel[index]]) {
-            buildingData.floors[floorLevel[index]][code] = {
-              description: descriptions[index] || "",
-              roomCode: code,
-              squareMeter: squareMeter[index] || "",
-              textGuide: "",
-              roomAnimation: "",
-              voiceGuide: "",
-              status: statuses[index] || "",
-            };
-          }
-        });
+  const removeTextGuide = (index: number) => {
+    const updatedTextGuides = [...textGuides];
+    updatedTextGuides.splice(index, 1);
+    setTextGuides(updatedTextGuides);
+  };
 
-        const updatedData = { floors: buildingData.floors }; // Create the updated data object
+  const handleTextGuideChange = (index: number, value: string) => {
+    const updatedTextGuides = [...textGuides];
+    updatedTextGuides[index] = value;
+    setTextGuides(updatedTextGuides);
+  };
 
-        await updateDoc(buildingRef, updatedData);
-        console.log("All rooms updated successfully");
-        history.push("/Rooms");
-      }
-    } catch (error) {
-      console.error("Error updating rooms: ", error);
-    }
+  const Room = () => {
+    history.push("/Rooms");
   };
 
   return (
@@ -252,139 +121,219 @@ const CreateRoom: React.FC<ContainerProps> = ({ name }) => {
               <div className="flex items-center space-x-2">
                 <h1 className="text-4xl font-bold">Update Room</h1>
               </div>
-
               <div className="overflow-x-auto">
-                {roomCode.map((code, index) => (
-                  <div key={index}>
-                    <table className="table">
-                      <thead>
-                        <tr>
-                          <th>
-                            <label>Room Code:</label>
-                          </th>
-                          <th>
-                            <label>Description:</label>
-                          </th>
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th>Building Name:</th>
+                      <td>
+                        <select
+                          className="w-full max-w-xs input input-bordered"
+                          onChange={handleBuildingChange}
+                          value={selectedBuilding} // Make sure this is set correctly
+                        >
+                          <option value="">Select Building Name</option>
+                          {buildingNames.sort().map((name, index) => (
+                            <option key={index} value={name}>
+                              {name}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                      {/* <th>Floor Level:</th>
+                      <td>
+                        <select
+                          className="w-full max-w-xs input input-bordered"
+                          value={selectedFloor}
+                          onChange={handleFloorChange}
+                        >
+                          <option value="">Select Floor Level</option>
+                          {floorLevels.sort().map((floor, index) => (
+                            <option key={index} value={floor}>
+                              {floor}
+                            </option>
+                          ))}
+                        </select>
+                      </td> */}
+                    </tr>
+                    {/* <tr>
+                      <th>Room Code:</th>
+                      <td>
+                        <input
+                          type="text"
+                          placeholder="Room Code"
+                          className="w-full max-w-xs input input-bordered"
+                          value={roomCode}
+                          onChange={(e) => setRoomCode(e.target.value)}
+                        />
+                      </td>
+                      <th>Description:</th>
+                      <td>
+                        <input
+                          type="text"
+                          placeholder="Description"
+                          className="w-full max-w-xs input input-bordered"
+                          value={description}
+                          onChange={(e) => setDescription(e.target.value)}
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>Room Type:</th>
+                      <td>
+                        <input
+                          type="text"
+                          placeholder="Room Type"
+                          className="w-full max-w-xs input input-bordered"
+                          value={roomType}
+                          onChange={(e) => setRoomType(e.target.value)}
+                        />
+                      </td>
+                      <th>Distance:</th>
+                      <td>
+                        <input
+                          type="text"
+                          placeholder="Distance"
+                          className="w-full max-w-xs input input-bordered"
+                          value={distance}
+                          onChange={(e) => setDistance(e.target.value)}
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>ETA:</th>
+                      <td>
+                        <input
+                          type="text"
+                          placeholder="Estimated Time of Arrival"
+                          className="w-full max-w-xs input input-bordered"
+                          value={eta}
+                          onChange={(e) => setEta(e.target.value)}
+                        />
+                      </td>
+                      <th>Occupied By:</th>
+                      <td>
+                        <input
+                          type="text"
+                          placeholder="Occupied By"
+                          className="w-full max-w-xs input input-bordered"
+                          value={occupiedBy}
+                          onChange={(e) => setOccupiedBy(e.target.value)}
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>Square Meter:</th>
+                      <td>
+                        <input
+                          type="text"
+                          placeholder="Square Meter"
+                          className="w-full max-w-xs input input-bordered"
+                          value={squareMeter}
+                          onChange={(e) => setSquareMeter(e.target.value)}
+                        />
+                      </td>
+                      <th>Status:</th>
+                      <td>
+                        <select
+                          className="w-full max-w-xs input input-bordered"
+                          value={status}
+                          onChange={(e) => setStatus(e.target.value)}
+                        >
+                          <option value="available">Available</option>
+                          <option value="not available">Not Available</option>
+                        </select>
+                      </td>
+                    </tr>
 
-                          <th>
-                            <label>Square Meter:</label>
-                          </th>
-                          <th>
-                            <label>Floor Level:</label>
-                          </th>
-                          <th>
-                            <label>Status:</label>
-                          </th>
-                          <th></th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td>
+                    <tr>
+                      <th>Animation File:</th>
+                      <td>
+                        <input
+                          type="file"
+                          accept=".glb"
+                          className="w-full max-w-xs file-input input-bordered"
+                        />
+                      </td>
+                      <th>Current Animation File:</th>
+                      <td>
+                        <input
+                          type="text"
+                          placeholder="Animation"
+                          className="w-full max-w-xs input input-bordered"
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>Voice Guide File:</th>
+                      <td>
+                        <input
+                          type="file"
+                          accept=".mp3"
+                          className="w-full max-w-xs file-input input-bordered"
+                        />
+                      </td>
+                      <th>Current Voice Guide File:</th>
+                      <td>
+                        <input
+                          type="text"
+                          placeholder="Voice Guide"
+                          className="w-full max-w-xs input input-bordered"
+                        />
+                      </td>
+                    </tr> */}
+                    <tr>
+                      <th>Text Guide:</th>
+                      <td colSpan={2}>
+                        {textGuides.map((textGuide, index) => (
+                          <div key={index} className="flex items-center mb-2">
                             <input
                               type="text"
-                              placeholder="Room Code"
+                              value={textGuide}
+                              onChange={(e) =>
+                                handleTextGuideChange(index, e.target.value)
+                              }
+                              placeholder="Text Guide"
                               className="w-full max-w-xs input input-bordered"
-                              value={code}
-                              onChange={(e) => {
-                                const updatedRoomCode = [...roomCode];
-                                updatedRoomCode[index] = e.target.value;
-                                setRoomCode(updatedRoomCode);
-                              }}
                             />
-                          </td>
-
-                          <td>
-                            <input
-                              type="text"
-                              placeholder="Description:"
-                              className="w-full max-w-xs input input-bordered"
-                              value={descriptions[index]}
-                              onChange={(e) => {
-                                const updatedDescriptions = [...descriptions];
-                                updatedDescriptions[index] = e.target.value;
-                                setDescriptions(updatedDescriptions);
-                              }}
-                            />
-                          </td>
-
-                          <td>
-                            <input
-                              type="text"
-                              placeholder="Square Meter:"
-                              className="w-full max-w-xs input input-bordered"
-                              value={squareMeter[index]}
-                              onChange={(e) => {
-                                const updatedSquareMeter = [...squareMeter];
-                                updatedSquareMeter[index] = e.target.value;
-                                setSquareMeter(updatedSquareMeter);
-                              }}
-                            />
-                          </td>
-
-                          <td>
-                            <select
-                              value={floorLevel[index] || ""}
-                              onChange={(e) => {
-                                const updatedFloorLevel = [...floorLevel];
-                                updatedFloorLevel[index] = e.target.value;
-                                setFloorLevel(updatedFloorLevel);
-                              }}
-                              className="w-full max-w-xs input input-bordered"
-                            >
-                              {floors.map((floorOption) => (
-                                <option key={floorOption} value={floorOption}>
-                                  {floorOption}
-                                </option>
-                              ))}
-                            </select>
-                          </td>
-
-                          <td>
-                            <select
-                              className="w-full max-w-xs input input-bordered"
-                              value={statuses[index]}
-                              onChange={(e) => {
-                                const updatedStatuses = [...statuses];
-                                updatedStatuses[index] = e.target.value;
-                                setStatuses(updatedStatuses);
-                              }}
-                            >
-                              <option value="available">Available</option>
-                              <option value="not available">
-                                Not Available
-                              </option>
-                            </select>
-                          </td>
-
-                          <td>
                             <button
-                              onClick={() => handleRemoveRoom(index)}
-                              className="btn btn-square hover:bg-base-300"
+                              onClick={() => removeTextGuide(index)}
+                              className="ml-2 btn btn-sm btn-error"
                             >
-                              <Icon
-                                icon="icon-park-outline:close"
-                                className="w-10 h-10"
-                              />
+                              Remove
                             </button>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                ))}
+                          </div>
+                        ))}
+                        <button
+                          onClick={addTextGuide}
+                          className="btn btn-sm btn-secondary"
+                        >
+                          Add Text Guide
+                        </button>
+                      </td>
+                      <td></td>
+                    </tr>
+                  </tbody>
+                </table>
+
                 <div className="flex items-center justify-between mx-5 mt-5">
                   <button
-                    onClick={handleAddRoom}
+                    onClick={Room}
                     className="btn btn-square hover:bg-base-300"
                   >
-                    <Icon icon="icon-park-outline:add" className="w-10 h-10" />
+                    <Icon icon="icon-park-outline:back" className="w-10 h-10" />
                   </button>
-                  <button
-                    onClick={handleUpdateAllRooms}
-                    className="btn btn-square hover:bg-base-300"
-                  >
-                    Update
+                  <button className="float-right btn">
+                    <Icon
+                      icon="icon-park-outline:add-three"
+                      className="w-10 h-10"
+                    />
+                    <span>Save</span>
                   </button>
                 </div>
               </div>
@@ -396,4 +345,4 @@ const CreateRoom: React.FC<ContainerProps> = ({ name }) => {
   );
 };
 
-export default CreateRoom;
+export default UpdateRoom;
