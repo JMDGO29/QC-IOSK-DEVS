@@ -60,8 +60,8 @@ const layout: React.FC<ContainerProps> = ({ name }) => {
       <Switch>
         <Suspense fallback={<Loading/>}>
         <Route path="/SanBartolome" component={SanBartolome} />
-        <Route path="/Batasan" component={Batasan} />
-        <Route path="/SanFrancisco" component={SanFrancisco} />
+        {/* <Route path="/Batasan" component={Batasan} />
+        <Route path="/SanFrancisco" component={SanFrancisco} /> */}
         </Suspense>
       </Switch>
       </IonContent>

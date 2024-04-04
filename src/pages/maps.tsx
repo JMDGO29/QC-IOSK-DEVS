@@ -29,7 +29,7 @@ const SelectCampus: React.FC<ContainerProps> = ({ name }) => {
 
   const handleClick = (location: string) => {
     // Navigate to the clicked location
-    history.push(`/${location.toLowerCase()}`);
+    history.push(`${location}`);
   };
 
   return (
@@ -44,7 +44,7 @@ const SelectCampus: React.FC<ContainerProps> = ({ name }) => {
               </p>
             </div>
             <div className="container grid justify-center gap-4 mx-auto sm:grid-cols-2 lg:grid-cols-3">
-              <div className="flex flex-col items-center p-4" onClick={() => handleClick('SanBartolome')}>
+              <div className="flex flex-col items-center p-4" onClick={() => handleClick('/SanBartolome')}>
                 <img
                   src={sb}
                   className="h-64 duration-150 cursor-pointer w-96 rounded-2xl hover:scale-110"
@@ -56,7 +56,7 @@ const SelectCampus: React.FC<ContainerProps> = ({ name }) => {
               {/* BATASAN */}
              
                 
-                <div className="flex flex-col items-center p-4" onClick={() => handleClick('Batasan')}>
+                <div className="flex flex-col items-center p-4" onClick={() => handleClick('/Batasan')}>
                   <img
                     src={b}
                     className="h-64 duration-150 cursor-pointer w-96 rounded-2xl hover:scale-110"
@@ -70,7 +70,7 @@ const SelectCampus: React.FC<ContainerProps> = ({ name }) => {
               {/* SAN FRANCISCO */}
             
                 
-                <div className="flex flex-col items-center p-4" onClick={() => handleClick('SanFrancisco')}>
+                <div className="flex flex-col items-center p-4" onClick={() => handleClick('/SanFrancisco')}>
                   <img
                     src={sf}
                     className="h-64 duration-150 cursor-pointer w-96 rounded-2xl hover:scale-110"
