@@ -72,7 +72,7 @@ const App: React.FC<ContainerProps> = ({ name }) => (
   <IonApp>
     <IonReactRouter>
       <IonRouterOutlet>
-        <Route path="/" exact component={SanBartolome}/>
+        <Route path="/" exact component={Home}/>
        
         <Route path="/Maps">
           <Maps name={''} />
