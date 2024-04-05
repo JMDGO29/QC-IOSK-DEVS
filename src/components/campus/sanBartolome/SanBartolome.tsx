@@ -292,7 +292,6 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                   <Stars radius={50} depth={30} count={100} factor={3} />
                 </>
               ) : null}
-              <Clouds />
               {otherModel.map((model) => (
                 <ModelViewer
                   key={model.id}
