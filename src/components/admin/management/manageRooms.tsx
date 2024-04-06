@@ -5,12 +5,14 @@ import AdminHeader from "../constant/adminHeader";
 import { IonPage, IonContent } from "@ionic/react";
 import React, { useEffect, useMemo, useState } from "react";
 import {
+  addDoc,
   collection,
+  deleteDoc,
+  doc,
   getDocs,
   onSnapshot,
   orderBy,
   query,
-  where,
 } from "firebase/firestore";
 import { db } from "../../utils/firebase";
 import {
@@ -18,7 +20,8 @@ import {
   useMaterialReactTable,
   type MRT_ColumnDef,
 } from "material-react-table";
-import { ToastContainer } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
+import Modal from "react-modal";
 
 interface ContainerProps {
   name: string;
@@ -27,25 +30,23 @@ interface ContainerProps {
 interface Room {
   id: string;
   buildingName: string;
-  floors: {
-    [floorName: string]: {
-      [roomCodeMap: string]: {
-        description: string;
-        roomCode: string;
-        squareMeter: string;
-        textGuide: string;
-        roomAnimation: string;
-        voiceGuide: string;
-        status: string;
-      };
-    };
-  };
+  floorLevel: string;
+  roomCode: string;
+  roomName: string;
+  distance: string;
+  eta: string;
+  squareMeter: string;
+  status: string;
+  roomAnimation: string;
+  voiceGuide: string;
+  textGuide: string;
+  updatedAt: firebase.default.firestore.Timestamp;
 }
 
 const RoomManagement: React.FC<ContainerProps> = ({ name }) => {
   const history = useHistory();
-
   const [rooms, setRooms] = useState<Room[]>([]);
+  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -53,37 +54,34 @@ const RoomManagement: React.FC<ContainerProps> = ({ name }) => {
 
     const fetchRooms = async () => {
       try {
-        const roomsCollection = collection(db, "roomData");
-        const q = query(roomsCollection, orderBy("buildingName", "asc"));
+        const buildingsCollection = collection(db, "roomData");
+        const q = query(buildingsCollection, orderBy("buildingName", "asc"));
 
         unsubscribeRooms = onSnapshot(q, (querySnapshot) => {
-          const roomsData: Room[] = [];
-          querySnapshot.forEach((doc) => {
+          const roomsData = querySnapshot.docs.map((doc) => {
             const data = doc.data();
-            const { buildingName, floors } = data;
-
-            // Flatten the floors data and generate individual rooms
-            for (const floorName in floors) {
-              const floorData = floors[floorName];
-              for (const roomCode in floorData) {
-                const room: Room = {
-                  id: doc.id,
-                  buildingName,
-                  floors: {
-                    [floorName]: {
-                      [roomCode]: floorData[roomCode],
-                    },
-                  },
-                };
-                roomsData.push(room);
-              }
-            }
+            const room: Room = {
+              id: doc.id,
+              buildingName: data.buildingName,
+              floorLevel: data.floorLevel,
+              roomCode: data.roomCode,
+              roomName: data.roomName,
+              distance: data.distance,
+              eta: data.eta,
+              squareMeter: data.squareMeter,
+              status: data.status,
+              roomAnimation: data.roomAnimation,
+              voiceGuide: data.voiceGuide,
+              textGuide: data.textGuide,
+              updatedAt: data.updatedAt,
+            };
+            return room;
           });
           setRooms(roomsData);
           setLoading(false);
         });
       } catch (error) {
-        console.error("Error fetching rooms: ", error);
+        console.error("Error fetching buildings: ", error);
         setLoading(false);
       }
     };
@@ -96,6 +94,64 @@ const RoomManagement: React.FC<ContainerProps> = ({ name }) => {
       }
     };
   }, []);
+
+  const createRoom = () => {
+    history.replace("/createRoom");
+  };
+
+  const updateRoom = (roomId: string) => {
+    history.replace(`/UpdateRoom/${roomId}`);
+  };
+
+  const openDeleteConfirmation = (roomId: string) => {
+    setSelectedRoomId(roomId);
+  };
+
+  const closeDeleteConfirmation = () => {
+    setSelectedRoomId(null);
+  };
+
+  const archiveRoom = async (room: Room) => {
+    try {
+      const archiveCollectionRef = collection(db, "roomData Archive");
+
+      await addDoc(archiveCollectionRef, room);
+
+      console.log("Room archived successfully!");
+    } catch (error) {
+      console.error("Error archiving room: ", error);
+      alert("Error archiving room.");
+    }
+  };
+
+  const deleteBuilding = async () => {
+    if (selectedRoomId) {
+      try {
+        const roomToDelete = rooms.find((room) => room.id === selectedRoomId);
+
+        if (roomToDelete) {
+          await archiveRoom(roomToDelete);
+        }
+
+        await deleteDoc(doc(db, "roomData", selectedRoomId));
+
+        const roomsCollection = collection(db, "roomData");
+        const roomsSnapshot = await getDocs(roomsCollection);
+        const roomsData = roomsSnapshot.docs.map((doc) => {
+          const roomData = doc.data() as Room;
+          return { ...roomData, id: doc.id } as Room;
+        });
+        setRooms(roomsData);
+
+        closeDeleteConfirmation();
+        console.log("Room deleted successfully!");
+        toast.success("Room deleted successfully!");
+      } catch (error) {
+        console.error("Error deleting room: ", error);
+        alert("Error on deleting room.");
+      }
+    }
+  };
 
   const columns = useMemo<MRT_ColumnDef<Room>[]>(
     () => [
@@ -111,7 +167,7 @@ const RoomManagement: React.FC<ContainerProps> = ({ name }) => {
               Edit
             </button>
             <button
-              // onClick={() => openDeleteConfirmation(row.original.id)}
+              onClick={() => openDeleteConfirmation(row.original.id)}
               className="btn btn-danger"
             >
               Delete
@@ -125,30 +181,19 @@ const RoomManagement: React.FC<ContainerProps> = ({ name }) => {
         size: 150,
       },
       {
-        accessorKey: "roomCode",
-        header: "Room Code",
-        Cell: ({ row }) => (
-          <>
-            {Object.values(row.original.floors).flatMap((floor) =>
-              Object.values(floor).map((room) => (
-                <div key={room.roomCode}>{room.roomCode}</div>
-              ))
-            )}
-          </>
-        ),
+        accessorKey: "floorLevel",
+        header: "Floor Level",
+        size: 150,
       },
       {
-        accessorKey: "roomAnimation",
-        header: "Room Animation",
-        Cell: ({ row }) => (
-          <>
-            {Object.values(row.original.floors).flatMap((floor) =>
-              Object.values(floor).map((room) => (
-                <div key={room.roomCode}>{room.roomAnimation}</div>
-              ))
-            )}
-          </>
-        ),
+        accessorKey: "roomCode",
+        header: "Room Code",
+        size: 150,
+      },
+      {
+        accessorKey: "roomName",
+        header: "Room Name",
+        size: 150,
       },
     ],
     []
@@ -158,14 +203,6 @@ const RoomManagement: React.FC<ContainerProps> = ({ name }) => {
     columns,
     data: rooms,
   });
-
-  const createRoom = () => {
-    history.replace("/createRoom");
-  };
-
-  const updateRoom = (roomId: string) => {
-    history.replace(`/UpdateRoom/${roomId}`);
-  };
 
   return (
     <IonPage>
@@ -223,6 +260,33 @@ const RoomManagement: React.FC<ContainerProps> = ({ name }) => {
             </div>
           </div>
         </div>
+        {/* Delete Confirmation Modal */}
+        <Modal
+          className="flex items-center justify-center w-screen h-screen bg-black/60"
+          isOpen={selectedRoomId !== null}
+          onRequestClose={closeDeleteConfirmation}
+          ariaHideApp={false}
+        >
+          <div className="h-56 p-6 shadow-xl bg-base-100 rounded-2xl w-96">
+            <p className="text-3xl text-center">
+              Are you sure you want to delete this room?
+            </p>
+            <div className="flex justify-center mt-6 space-x-3">
+              <button
+                onClick={deleteBuilding}
+                className="text-white btn btn-primary hover:bg-red-500"
+              >
+                Yes, Delete
+              </button>
+              <button
+                onClick={closeDeleteConfirmation}
+                className="btn bg-base-300"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </Modal>
         <ToastContainer />
       </IonContent>
     </IonPage>

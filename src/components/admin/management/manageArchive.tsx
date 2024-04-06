@@ -5,6 +5,8 @@ import AdminHeader from "../constant/adminHeader";
 import ManualArchive from "./archiveComponent/manualArchive";
 import AnnouncementArchive from "./archiveComponent/announcementArchive";
 import EventsArchive from "./archiveComponent/eventsArchive";
+import RoomsArchive from "./archiveComponent/roomsArchive";
+import BuildingsArchive from "./archiveComponent/buildingsArchive";
 import { Icon } from "@iconify/react";
 import { ToastContainer } from "react-toastify";
 
@@ -35,7 +37,7 @@ const Archive: React.FC<ContainerProps> = ({ name }) => {
                   name="my_tabs_2"
                   role="tab"
                   className={selectedTab === 1 ? "tab bg-base-300" : "tab"}
-                  aria-label="Rooms"
+                  aria-label="Buildings"
                   checked={selectedTab === 1}
                   onChange={() => handleTabChange(1)}
                 />
@@ -43,10 +45,7 @@ const Archive: React.FC<ContainerProps> = ({ name }) => {
                   role="tabpanel"
                   className="tab-content bg-base-100 border-base-300 rounded-box p-6"
                 >
-                  <div role="alert" className="alert">
-                    <Icon icon="uil:comment-info-alt" className="w-8 h-8" />
-                    <span>No Rooms data found.</span>
-                  </div>
+                  <BuildingsArchive name="" />
                 </div>
 
                 <input
@@ -54,7 +53,7 @@ const Archive: React.FC<ContainerProps> = ({ name }) => {
                   name="my_tabs_2"
                   role="tab"
                   className={selectedTab === 2 ? "tab bg-base-300" : "tab"}
-                  aria-label="Buildings"
+                  aria-label="Rooms"
                   checked={selectedTab === 2}
                   onChange={() => handleTabChange(2)}
                 />
@@ -62,10 +61,7 @@ const Archive: React.FC<ContainerProps> = ({ name }) => {
                   role="tabpanel"
                   className="tab-content bg-base-100 border-base-300 rounded-box p-6"
                 >
-                  <div role="alert" className="alert">
-                    <Icon icon="uil:comment-info-alt" className="w-8 h-8" />
-                    <span>No Building data found.</span>
-                  </div>
+                  <RoomsArchive name="" />
                 </div>
 
                 <input

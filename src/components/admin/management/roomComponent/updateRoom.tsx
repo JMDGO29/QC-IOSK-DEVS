@@ -28,24 +28,17 @@ interface ContainerProps {
 interface Room {
   id: string;
   buildingName: string;
-  floors: {
-    [floorName: string]: {
-      [roomCodeMap: string]: {
-        description: string;
-        roomCode: string;
-        squareMeter: number;
-        textGuide: string;
-        roomAnimation: string;
-        voiceGuide: string;
-        roomType: string;
-        distance: string;
-        eta: string;
-        occupiedBy: string;
-        status: string;
-        updatedAt: firebase.default.firestore.Timestamp;
-      };
-    };
-  };
+  floorLevel: string;
+  roomCode: string;
+  roomName: string;
+  distance: string;
+  eta: string;
+  squareMeter: string;
+  status: string;
+  roomAnimation: string;
+  voiceGuide: string;
+  textGuide: string[];
+  updatedAt: firebase.default.firestore.Timestamp;
 }
 
 const UpdateRoom: React.FC<ContainerProps> = ({ name }) => {
@@ -54,31 +47,73 @@ const UpdateRoom: React.FC<ContainerProps> = ({ name }) => {
   const { roomId } = useParams<{ roomId: string }>();
 
   const [selectedBuilding, setSelectedBuilding] = useState<string>("");
+  const [selectedFloor, setSelectedFloor] = useState<string>("");
+  const [selectedStatus, setSelectedStatus] = useState<string>("");
+
   const [buildingNames, setBuildingNames] = useState<string[]>([]);
+
+  const [buildingName, setBuildingName] = useState<string>("");
+  const [floorLevel, setFloorLevel] = useState<string>("");
+  const [roomCode, setRoomCode] = useState<string>("");
+  const [roomName, setRoomName] = useState<string>("");
+  const [distance, setDistance] = useState<string>("");
+  const [eta, setEta] = useState<string>("");
+  const [squareMeter, setSquareMeter] = useState<string>("");
+  const [status, setStatus] = useState<string>("");
+  const [roomAnimation, setRoomAnimation] = useState<string>("");
+  const [roomPathFile, setRoomPathFile] = useState<File | null>(null);
+  const [voiceGuide, setVoiceGuide] = useState<string>("");
+  const [voiceGuideFile, setVoiceGuideFile] = useState<File | null>(null);
   const [textGuides, setTextGuides] = useState<string[]>([""]);
 
+  const [floorLevels, setFloorLevels] = useState<string[]>([]);
+
   useEffect(() => {
-    fetchRoomAndBuildingNames();
+    fetchBuildingNames();
   }, []);
 
-  const fetchRoomAndBuildingNames = async () => {
+  const fetchBuildingNames = async () => {
     try {
-      const querySnapshot = await getDocs(collection(db, "roomData"));
+      const querySnapshot = await getDocs(collection(db, "buildingData"));
       const names: string[] = [];
-      let selectedBuildingName = ""; // Initialize the selected building name variable
       querySnapshot.forEach((doc) => {
-        const data = doc.data() as Room;
-        names.push(data.buildingName);
-        // If the room ID matches, set the default selected building
-        if (doc.id === roomId) {
-          selectedBuildingName = data.buildingName;
-        }
+        names.push(doc.data().buildingName);
       });
       setBuildingNames(names);
-      setSelectedBuilding(selectedBuildingName);
-      console.log(selectedBuilding);
     } catch (error) {
       console.error("Error fetching building names: ", error);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedBuilding) {
+      fetchFloorLevels(selectedBuilding);
+    }
+  }, [selectedBuilding]);
+
+  const fetchFloorLevels = async (buildingName: string) => {
+    try {
+      const buildingQuery = query(
+        collection(db, "buildingData"),
+        where("buildingName", "==", buildingName)
+      );
+      const buildingSnapshot = await getDocs(buildingQuery);
+
+      let totalFloors = 0;
+      buildingSnapshot.forEach((doc) => {
+        const buildingData = doc.data();
+        if (buildingData.totalFloor) {
+          totalFloors = buildingData.totalFloor;
+        }
+      });
+
+      const levels = Array.from(
+        { length: totalFloors },
+        (_, i) => `Floor ${i + 1}`
+      );
+      setFloorLevels(levels);
+    } catch (error) {
+      console.error("Error fetching floor levels: ", error);
     }
   };
 
@@ -87,6 +122,16 @@ const UpdateRoom: React.FC<ContainerProps> = ({ name }) => {
   ) => {
     const selected = event.target.value;
     setSelectedBuilding(selected);
+  };
+
+  const handleFloorChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const selected = event.target.value;
+    setSelectedFloor(selected);
+  };
+
+  const handleStatutsChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const selected = event.target.value;
+    setSelectedStatus(selected);
   };
 
   const addTextGuide = () => {
@@ -105,6 +150,83 @@ const UpdateRoom: React.FC<ContainerProps> = ({ name }) => {
     setTextGuides(updatedTextGuides);
   };
 
+  useEffect(() => {
+    const fetchRoom = async () => {
+      try {
+        const roomRef = doc(db, "roomData", roomId);
+        const roomDoc = await getDoc(roomRef);
+
+        if (roomDoc.exists()) {
+          const roomData = roomDoc.data() as Room;
+          setRoom(roomData);
+
+          setBuildingName(roomData.buildingName);
+          setFloorLevel(roomData.floorLevel);
+          setRoomCode(roomData.roomCode);
+          setRoomName(roomData.roomName);
+          setDistance(roomData.distance);
+          setEta(roomData.eta);
+          setSquareMeter(roomData.squareMeter);
+          setStatus(roomData.status);
+          setRoomAnimation(roomData.roomAnimation);
+          setVoiceGuide(roomData.voiceGuide);
+          setTextGuides(roomData.textGuide);
+        } else {
+          console.error("Building not found");
+          history.push("/Building");
+        }
+      } catch (error) {
+        console.error("Error fetching building: ", error);
+      }
+    };
+
+    fetchRoom();
+  }, [roomId, history]);
+
+  const handleUpdateRoom = async () => {
+    try {
+      const now = serverTimestamp();
+      let glbUrl = "";
+      let voiceUrl = "";
+
+      if (roomPathFile) {
+        const storageRef = ref(storage, `roomAnimations/${roomId}`);
+        const snapshot = await uploadBytes(storageRef, roomPathFile);
+        glbUrl = await getDownloadURL(snapshot.ref);
+      }
+
+      if (voiceGuideFile) {
+        const storageRef = ref(storage, `voiceGuide/${roomId}`);
+        const snapshot = await uploadBytes(storageRef, voiceGuideFile);
+        voiceUrl = await getDownloadURL(snapshot.ref);
+      }
+
+      const docRef = doc(db, "roomData", roomId);
+
+      await setDoc(docRef, {
+        buildingName: buildingName,
+        floorLevel: selectedFloor,
+        roomCode: roomCode,
+        roomName: roomName,
+        distance: distance,
+        eta: eta,
+        squareMeter: squareMeter,
+        status: selectedStatus,
+        roomAnimation: glbUrl || roomAnimation,
+        voiceGuide: voiceUrl || voiceGuide,
+        textGuide: textGuides,
+        updatedAt: now,
+      });
+
+      console.log("Room Information updated successfully!");
+      toast.success("Room Information updated successfully!");
+      history.push("/Rooms");
+    } catch (error) {
+      console.error("Error updating room information.", error);
+      alert("Error on adding updating room information.");
+    }
+  };
+
   const Room = () => {
     history.push("/Rooms");
   };
@@ -121,6 +243,7 @@ const UpdateRoom: React.FC<ContainerProps> = ({ name }) => {
               <div className="flex items-center space-x-2">
                 <h1 className="text-4xl font-bold">Update Room</h1>
               </div>
+
               <div className="overflow-x-auto">
                 <table className="table">
                   <thead>
@@ -132,36 +255,28 @@ const UpdateRoom: React.FC<ContainerProps> = ({ name }) => {
                     <tr>
                       <th>Building Name:</th>
                       <td>
-                        <select
+                        <input
+                          type="text"
+                          placeholder="Buiding Name"
                           className="w-full max-w-xs input input-bordered"
-                          onChange={handleBuildingChange}
-                          value={selectedBuilding} // Make sure this is set correctly
-                        >
-                          <option value="">Select Building Name</option>
-                          {buildingNames.sort().map((name, index) => (
-                            <option key={index} value={name}>
-                              {name}
-                            </option>
-                          ))}
-                        </select>
+                          value={buildingName}
+                          onChange={(e) => setBuildingName(e.target.value)}
+                          readOnly
+                        />
                       </td>
-                      {/* <th>Floor Level:</th>
+                      <th>Floor Level:</th>
                       <td>
-                        <select
+                        <input
+                          type="text"
+                          placeholder="Floor Level"
                           className="w-full max-w-xs input input-bordered"
-                          value={selectedFloor}
-                          onChange={handleFloorChange}
-                        >
-                          <option value="">Select Floor Level</option>
-                          {floorLevels.sort().map((floor, index) => (
-                            <option key={index} value={floor}>
-                              {floor}
-                            </option>
-                          ))}
-                        </select>
-                      </td> */}
+                          value={floorLevel}
+                          onChange={(e) => setFloorLevel(e.target.value)}
+                          readOnly
+                        />
+                      </td>
                     </tr>
-                    {/* <tr>
+                    <tr>
                       <th>Room Code:</th>
                       <td>
                         <input
@@ -172,28 +287,18 @@ const UpdateRoom: React.FC<ContainerProps> = ({ name }) => {
                           onChange={(e) => setRoomCode(e.target.value)}
                         />
                       </td>
-                      <th>Description:</th>
+                      <th>Room Name:</th>
                       <td>
                         <input
                           type="text"
                           placeholder="Description"
                           className="w-full max-w-xs input input-bordered"
-                          value={description}
-                          onChange={(e) => setDescription(e.target.value)}
+                          value={roomName}
+                          onChange={(e) => setRoomName(e.target.value)}
                         />
                       </td>
                     </tr>
                     <tr>
-                      <th>Room Type:</th>
-                      <td>
-                        <input
-                          type="text"
-                          placeholder="Room Type"
-                          className="w-full max-w-xs input input-bordered"
-                          value={roomType}
-                          onChange={(e) => setRoomType(e.target.value)}
-                        />
-                      </td>
                       <th>Distance:</th>
                       <td>
                         <input
@@ -204,8 +309,6 @@ const UpdateRoom: React.FC<ContainerProps> = ({ name }) => {
                           onChange={(e) => setDistance(e.target.value)}
                         />
                       </td>
-                    </tr>
-                    <tr>
                       <th>ETA:</th>
                       <td>
                         <input
@@ -214,16 +317,6 @@ const UpdateRoom: React.FC<ContainerProps> = ({ name }) => {
                           className="w-full max-w-xs input input-bordered"
                           value={eta}
                           onChange={(e) => setEta(e.target.value)}
-                        />
-                      </td>
-                      <th>Occupied By:</th>
-                      <td>
-                        <input
-                          type="text"
-                          placeholder="Occupied By"
-                          className="w-full max-w-xs input input-bordered"
-                          value={occupiedBy}
-                          onChange={(e) => setOccupiedBy(e.target.value)}
                         />
                       </td>
                     </tr>
@@ -242,8 +335,8 @@ const UpdateRoom: React.FC<ContainerProps> = ({ name }) => {
                       <td>
                         <select
                           className="w-full max-w-xs input input-bordered"
-                          value={status}
-                          onChange={(e) => setStatus(e.target.value)}
+                          value={selectedStatus || status}
+                          onChange={handleStatutsChange}
                         >
                           <option value="available">Available</option>
                           <option value="not available">Not Available</option>
@@ -258,6 +351,11 @@ const UpdateRoom: React.FC<ContainerProps> = ({ name }) => {
                           type="file"
                           accept=".glb"
                           className="w-full max-w-xs file-input input-bordered"
+                          onChange={(e) =>
+                            setRoomPathFile(
+                              e.target.files ? e.target.files[0] : null
+                            )
+                          }
                         />
                       </td>
                       <th>Current Animation File:</th>
@@ -266,6 +364,14 @@ const UpdateRoom: React.FC<ContainerProps> = ({ name }) => {
                           type="text"
                           placeholder="Animation"
                           className="w-full max-w-xs input input-bordered"
+                          value={
+                            roomAnimation
+                              ? roomAnimation
+                                  .substring(roomAnimation.lastIndexOf("/") + 1)
+                                  .split("?")[0]
+                              : ""
+                          }
+                          readOnly
                         />
                       </td>
                     </tr>
@@ -276,6 +382,11 @@ const UpdateRoom: React.FC<ContainerProps> = ({ name }) => {
                           type="file"
                           accept=".mp3"
                           className="w-full max-w-xs file-input input-bordered"
+                          onChange={(e) =>
+                            setVoiceGuideFile(
+                              e.target.files ? e.target.files[0] : null
+                            )
+                          }
                         />
                       </td>
                       <th>Current Voice Guide File:</th>
@@ -284,9 +395,17 @@ const UpdateRoom: React.FC<ContainerProps> = ({ name }) => {
                           type="text"
                           placeholder="Voice Guide"
                           className="w-full max-w-xs input input-bordered"
+                          value={
+                            voiceGuide
+                              ? voiceGuide
+                                  .substring(voiceGuide.lastIndexOf("/") + 1)
+                                  .split("?")[0]
+                              : ""
+                          }
+                          readOnly
                         />
                       </td>
-                    </tr> */}
+                    </tr>
                     <tr>
                       <th>Text Guide:</th>
                       <td colSpan={2}>
@@ -328,7 +447,10 @@ const UpdateRoom: React.FC<ContainerProps> = ({ name }) => {
                   >
                     <Icon icon="icon-park-outline:back" className="w-10 h-10" />
                   </button>
-                  <button className="float-right btn">
+                  <button
+                    onClick={handleUpdateRoom}
+                    className="float-right btn"
+                  >
                     <Icon
                       icon="icon-park-outline:add-three"
                       className="w-10 h-10"

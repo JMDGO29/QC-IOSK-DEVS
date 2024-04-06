@@ -3,22 +3,18 @@ import AdminSideBar from "../../constant/adminSidebar";
 import AdminHeader from "../../constant/adminHeader";
 import { useState, useEffect } from "react";
 import {
-  doc,
   serverTimestamp,
-  setDoc,
   collection,
   getDocs,
   query,
   where,
-  updateDoc,
-  getDoc,
+  addDoc,
 } from "firebase/firestore";
 import { db, storage } from "../../../utils/firebase";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Icon } from "@iconify/react";
 import { useHistory } from "react-router";
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
 interface ContainerProps {
   name: string;
@@ -27,19 +23,20 @@ interface ContainerProps {
 const CreateRoom: React.FC<ContainerProps> = ({ name }) => {
   const history = useHistory();
 
-  const [buildingNames, setBuildingNames] = useState<string[]>([]);
-  const [selectedBuilding, setSelectedBuilding] = useState<string>("");
   const [selectedFloor, setSelectedFloor] = useState<string>("Floor 1");
   const [roomCode, setRoomCode] = useState<string>("");
-  const [description, setDescription] = useState<string>("");
-  const [squareMeter, setSquareMeter] = useState<string>("");
-  const [status, setStatus] = useState<string>("");
-  const [textGuides, setTextGuides] = useState<string[]>([""]);
-
-  const [roomType, setRoomType] = useState<string>("");
+  const [roomName, setRoomName] = useState<string>("");
   const [distance, setDistance] = useState<string>("");
   const [eta, setEta] = useState<string>("");
-  const [occupiedBy, setOccupiedBy] = useState<string>("");
+  const [squareMeter, setSquareMeter] = useState<string>("");
+  const [selectedStatus, setSelectedStatus] = useState<string>("available");
+
+  const [roomAnimationPath, setRoomAnimationPath] = useState<File | null>(null);
+  const [voiceGuide, setVoiceGuide] = useState<File | null>(null);
+  const [textGuides, setTextGuides] = useState<string[]>([""]);
+
+  const [buildingNames, setBuildingNames] = useState<string[]>([]);
+  const [selectedBuilding, setSelectedBuilding] = useState<string>("");
 
   const [floorLevels, setFloorLevels] = useState<string[]>([]);
 
@@ -49,7 +46,7 @@ const CreateRoom: React.FC<ContainerProps> = ({ name }) => {
 
   const fetchBuildingNames = async () => {
     try {
-      const querySnapshot = await getDocs(collection(db, "roomData"));
+      const querySnapshot = await getDocs(collection(db, "buildingData"));
       const names: string[] = [];
       querySnapshot.forEach((doc) => {
         names.push(doc.data().buildingName);
@@ -68,19 +65,25 @@ const CreateRoom: React.FC<ContainerProps> = ({ name }) => {
 
   const fetchFloorLevels = async (buildingName: string) => {
     try {
-      const querySnapshot = await getDocs(
-        query(
-          collection(db, "roomData"),
-          where("buildingName", "==", buildingName)
-        )
+      const buildingQuery = query(
+        collection(db, "buildingData"),
+        where("buildingName", "==", buildingName)
       );
-      const floors: string[] = [];
-      if (!querySnapshot.empty) {
-        const floorsData = querySnapshot.docs[0].data().floors;
-        const floors = Object.keys(floorsData);
-        setFloorLevels(floors);
-        setSelectedFloor("Floor 1"); // Set default selected floor to "Floor 1"
-      }
+      const buildingSnapshot = await getDocs(buildingQuery);
+
+      let totalFloors = 0;
+      buildingSnapshot.forEach((doc) => {
+        const buildingData = doc.data();
+        if (buildingData.totalFloor) {
+          totalFloors = buildingData.totalFloor;
+        }
+      });
+
+      const levels = Array.from(
+        { length: totalFloors },
+        (_, i) => `Floor ${i + 1}`
+      );
+      setFloorLevels(levels);
     } catch (error) {
       console.error("Error fetching floor levels: ", error);
     }
@@ -96,6 +99,11 @@ const CreateRoom: React.FC<ContainerProps> = ({ name }) => {
   const handleFloorChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selected = event.target.value;
     setSelectedFloor(selected);
+  };
+
+  const handleStatutsChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const selected = event.target.value;
+    setSelectedStatus(selected);
   };
 
   const addTextGuide = () => {
@@ -122,105 +130,44 @@ const CreateRoom: React.FC<ContainerProps> = ({ name }) => {
     try {
       const now = serverTimestamp();
 
-      const animationFileInput = document.querySelector<HTMLInputElement>(
-        'input[type="file"][accept=".glb"]'
-      );
+      let glbUrl = "";
+      let voiceUrl = "";
 
-      const voiceGuideFileInput = document.querySelector<HTMLInputElement>(
-        'input[type="file"][accept=".mp3"]'
-      );
-
-      let roomAnimation = "";
-      let voiceGuide = "";
-
-      if (
-        animationFileInput &&
-        animationFileInput.files &&
-        animationFileInput.files[0]
-      ) {
-        const animationFile = animationFileInput.files[0];
-        const animationFileRef = ref(
-          storage,
-          `roomAnimations/${selectedBuilding}/${animationFile.name}`
-        );
-
-        try {
-          await uploadBytes(animationFileRef, animationFile);
-          roomAnimation = await getDownloadURL(animationFileRef);
-        } catch (error) {
-          console.error("Error uploading animation file:", error);
-          toast.error(
-            "Failed to upload animation file. Please try again later."
-          );
-          return;
-        }
+      if (roomAnimationPath) {
+        const glbRef = storage
+          .ref()
+          .child(`roomAnimations/${roomAnimationPath.name}`);
+        await glbRef.put(roomAnimationPath);
+        glbUrl = await glbRef.getDownloadURL();
       }
 
-      if (
-        voiceGuideFileInput &&
-        voiceGuideFileInput.files &&
-        voiceGuideFileInput.files[0]
-      ) {
-        const voiceGuideFile = voiceGuideFileInput.files[0];
-        const voiceGuideFileRef = ref(
-          storage,
-          `voiceGuide/${selectedBuilding}/${voiceGuideFile.name}`
-        );
-
-        try {
-          await uploadBytes(voiceGuideFileRef, voiceGuideFile);
-          voiceGuide = await getDownloadURL(voiceGuideFileRef);
-        } catch (error) {
-          console.error("Error uploading voice guide file:", error);
-          toast.error(
-            "Failed to upload voice guide file. Please try again later."
-          );
-          return;
-        }
+      if (voiceGuide) {
+        const voiceRef = storage.ref().child(`voiceGuide/${voiceGuide.name}`);
+        await voiceRef.put(voiceGuide);
+        voiceUrl = await voiceRef.getDownloadURL();
       }
-
-      if (!selectedBuilding || !selectedFloor || !roomCode) {
-        toast.error("Please fill all required fields");
-        return;
-      }
-
-      const roomRef = doc(db, "roomData", selectedBuilding);
-
-      const roomSnapshot = await getDoc(roomRef);
-      const roomData = roomSnapshot.data();
-
-      if (!roomData || !roomData.floors || !roomData.floors[selectedFloor]) {
-        toast.error("Selected floor does not exist");
-        return;
-      }
-
-      // Update the roomCode for the selected floor
-      await updateDoc(roomRef, {
-        [`floors.${selectedFloor}.${roomCode}`]: {
-          roomCode,
-          description,
-          squareMeter,
-          status,
-          textGuides,
-          roomType,
-          distance,
-          eta,
-          occupiedBy,
-          roomAnimation,
-          voiceGuide,
-          createdAt: now,
-          updatedAt: now,
-        },
+      await addDoc(collection(db, "roomData"), {
+        buildingName: selectedBuilding,
+        floorLevel: selectedFloor,
+        roomCode: roomCode,
+        roomName: roomName,
+        distance: distance,
+        eta: eta,
+        squareMeter: squareMeter,
+        status: selectedStatus,
+        roomAnimation: glbUrl,
+        voiceGuide: voiceUrl,
+        textGuide: textGuides,
+        createdAt: now,
+        updatedAt: now,
       });
 
-      // Show success message
-      toast.success("Room created successfully");
-
-      // Redirect to the Room page
-      Room();
+      console.log("Room added successfully!");
+      toast.success("Room added successfully!");
+      history.push("/Rooms");
     } catch (error) {
-      console.error("Error creating room:", error);
-      toast.error("Failed to create room. Please try again later.");
+      console.error("Error adding room: ", error);
+      alert("Error on adding room.");
     }
   };
 
@@ -286,28 +233,18 @@ const CreateRoom: React.FC<ContainerProps> = ({ name }) => {
                           onChange={(e) => setRoomCode(e.target.value)}
                         />
                       </td>
-                      <th>Description:</th>
+                      <th>Room Name:</th>
                       <td>
                         <input
                           type="text"
                           placeholder="Description"
                           className="w-full max-w-xs input input-bordered"
-                          value={description}
-                          onChange={(e) => setDescription(e.target.value)}
+                          value={roomName}
+                          onChange={(e) => setRoomName(e.target.value)}
                         />
                       </td>
                     </tr>
                     <tr>
-                      <th>Room Type:</th>
-                      <td>
-                        <input
-                          type="text"
-                          placeholder="Room Type"
-                          className="w-full max-w-xs input input-bordered"
-                          value={roomType}
-                          onChange={(e) => setRoomType(e.target.value)}
-                        />
-                      </td>
                       <th>Distance:</th>
                       <td>
                         <input
@@ -318,8 +255,6 @@ const CreateRoom: React.FC<ContainerProps> = ({ name }) => {
                           onChange={(e) => setDistance(e.target.value)}
                         />
                       </td>
-                    </tr>
-                    <tr>
                       <th>ETA:</th>
                       <td>
                         <input
@@ -328,16 +263,6 @@ const CreateRoom: React.FC<ContainerProps> = ({ name }) => {
                           className="w-full max-w-xs input input-bordered"
                           value={eta}
                           onChange={(e) => setEta(e.target.value)}
-                        />
-                      </td>
-                      <th>Occupied By:</th>
-                      <td>
-                        <input
-                          type="text"
-                          placeholder="Occupied By"
-                          className="w-full max-w-xs input input-bordered"
-                          value={occupiedBy}
-                          onChange={(e) => setOccupiedBy(e.target.value)}
                         />
                       </td>
                     </tr>
@@ -356,8 +281,8 @@ const CreateRoom: React.FC<ContainerProps> = ({ name }) => {
                       <td>
                         <select
                           className="w-full max-w-xs input input-bordered"
-                          value={status}
-                          onChange={(e) => setStatus(e.target.value)}
+                          value={selectedStatus}
+                          onChange={handleStatutsChange}
                         >
                           <option value="available">Available</option>
                           <option value="not available">Not Available</option>
@@ -372,6 +297,11 @@ const CreateRoom: React.FC<ContainerProps> = ({ name }) => {
                           type="file"
                           accept=".glb"
                           className="w-full max-w-xs file-input input-bordered"
+                          onChange={(e) =>
+                            setRoomAnimationPath(
+                              e.target.files ? e.target.files[0] : null
+                            )
+                          }
                         />
                       </td>
                       <th>Voice Guide File:</th>
@@ -380,26 +310,13 @@ const CreateRoom: React.FC<ContainerProps> = ({ name }) => {
                           type="file"
                           accept=".mp3"
                           className="w-full max-w-xs file-input input-bordered"
+                          onChange={(e) =>
+                            setVoiceGuide(
+                              e.target.files ? e.target.files[0] : null
+                            )
+                          }
                         />
                       </td>
-                    </tr>
-                    <tr>
-                      {/* <th>Current Animation File:</th>
-                      <td>
-                        <input
-                          type="text"
-                          placeholder="Animation"
-                          className="w-full max-w-xs input input-bordered"
-                        />
-                      </td> */}
-                      {/* <th>Current Voice Guide File:</th>
-                      <td>
-                        <input
-                          type="text"
-                          placeholder="Voice Guide"
-                          className="w-full max-w-xs input input-bordered"
-                        />
-                      </td> */}
                     </tr>
                     <tr>
                       <th>Text Guide:</th>

@@ -312,7 +312,7 @@ const BuildingManagement: React.FC<ContainerProps> = ({ name }) => {
 
                 <ambientLight intensity={2} />
 
-                {buildings.map((building) => (
+                {/* {buildings.map((building) => (
                   <ModelViewer
                     key={building.id}
                     name={building.buildingName}
@@ -321,7 +321,7 @@ const BuildingManagement: React.FC<ContainerProps> = ({ name }) => {
                     scale={building.buildingScale}
                     textPosition={building.buildingLabelPosition}
                   />
-                ))}
+                ))} */}
                 {/* <gridHelper args={[100, 100, 0xff0000, "teal"]} /> */}
               </Canvas>
             </div>

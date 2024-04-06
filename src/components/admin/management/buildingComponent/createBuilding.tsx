@@ -63,19 +63,19 @@ const CreateBuilding: React.FC<ContainerProps> = ({ name }) => {
       });
 
       // Create roomData under the same buildingName document
-      const roomDocRef = doc(db, "roomData", buildingName);
-      const floorsData = Array.from(
-        { length: parseInt(totalFloor) },
-        (_, i) => ({
-          [`Floor ${i + 1}`]: {},
-        })
-      );
-      await setDoc(roomDocRef, {
-        buildingName: buildingName,
-        createdAt: now,
-        updatedAt: now,
-        floors: Object.assign({}, ...floorsData),
-      });
+      // const roomDocRef = doc(db, "roomData", buildingName);
+      // const floorsData = Array.from(
+      //   { length: parseInt(totalFloor) },
+      //   (_, i) => ({
+      //     [`Floor ${i + 1}`]: {},
+      //   })
+      // );
+      // await setDoc(roomDocRef, {
+      //   buildingName: buildingName,
+      //   createdAt: now,
+      //   updatedAt: now,
+
+      // });
 
       setBuildingName("");
       setBuildingPath(null);
