@@ -322,10 +322,11 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                         <>
                           <button
                             onClick={handleFloorsClick}
-                            className={`h-10 btn  hover:bg-base-content hover:text-base-300 ${!showOverview
-                              ? "bg-transparent btn-block shadow-none text-lg text-base-content"
-                              : ""
-                              }`}
+                            className={`h-10 btn  hover:bg-base-content hover:text-base-300 ${
+                              !showOverview
+                                ? "bg-transparent btn-block shadow-none text-lg text-base-content"
+                                : ""
+                            }`}
                           >
                             Floors
                           </button>
@@ -485,6 +486,9 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                                 (room) =>
                                   room.floorLevel === selectedFloor &&
                                   room.buildingName === selectedBuilding
+                              )
+                              .sort((a, b) =>
+                                a.roomCode.localeCompare(b.roomCode)
                               )
                               .map((room) => (
                                 <div
