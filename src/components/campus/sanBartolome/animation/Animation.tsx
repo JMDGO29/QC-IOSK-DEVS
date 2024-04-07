@@ -40,7 +40,7 @@ interface otherModel {
 }
 
 const AnimatedModelViewer = ({ modelPath, mixer }: any) => {
-  const { scene, animations, cameras } = useGLTF(modelPath) as GLTF;
+  const { scene, animations, cameras } = useGLTF(modelPath) as unknown as GLTF;
 
   // useEffect(() => {
   //   if (animations) {
@@ -88,7 +88,7 @@ const Animation: React.FC<ContainerProps> = ({
   selectedFloor,
   selectedRoom,
 }) => {
-  const { scene, cameras } = useGLTF(modelPath, shortPath) as GLTF;
+  const { scene, cameras } = useGLTF(modelPath) as unknown as GLTF;
 
   const [activeCameraIndex, setActiveCameraIndex] = useState(0);
   const mixerRef = useRef<THREE.AnimationMixer | null>(null);
@@ -173,7 +173,7 @@ const Animation: React.FC<ContainerProps> = ({
 
   return (
     <>
-      <div className="fixed z-20 w-full h-auto bottom-2 ">
+      <div className="fixed z-20 w-full h-auto bg-red-500 bottom-2 ">
         <div className="flex items-start justify-center space-x-3">
           <div
             tabIndex={0}
@@ -193,22 +193,6 @@ const Animation: React.FC<ContainerProps> = ({
               className="w-10 h-10 text-base-content"
             />
           </button>
-          <div className="chat chat-end">
-            <div className="chat-image avatar">
-              <div className="w-10 rounded-full">
-                <img
-                  alt="Tailwind CSS chat bubble component"
-                  src="https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg"
-                />
-              </div>
-            </div>
-            <div className="chat-header">
-              Anakin
-              <time className="text-xs opacity-50">12:46</time>
-            </div>
-            <div className="chat-bubble">I hate you!</div>
-            <div className="opacity-50 chat-footer">Seen at 12:46</div>
-          </div>
         </div>
       </div>
       <Canvas

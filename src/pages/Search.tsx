@@ -186,7 +186,7 @@ const SearchTab: React.FC = () => {
         <>
           {selectedModelPath && isAnimationActive ? (
             <>
-              <Suspense fallback={<Loading name="" />}>
+              <Suspense fallback={<Loading />}>
                 <Animation
                   name={""}
                   roomName={selectedRoom}

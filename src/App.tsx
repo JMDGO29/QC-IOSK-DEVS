@@ -66,6 +66,8 @@ import Create3DModel from "../src/components/admin/management/3DMapComponent/cre
 import Update3DModel from "./components/admin/management/3DMapComponent/update3DMode";
 import Batasan from './components/campus/batasan/Batasan';
 import SanFrancisco from './components/campus/sanFrancisco/SanFrancisco';
+import SanBartolome from './components/campus/sanBartolome/SanBartolome';
+import Layout from './pages/layout';
 
 setupIonicReact();
 interface ContainerProps {
@@ -76,8 +78,8 @@ const App: React.FC<ContainerProps> = ({ name }) => (
   <IonApp>
     <IonReactRouter>
       <IonRouterOutlet>
-        <Route path="/" exact component={Home}/>
-       
+        <Route path="/" exact component={Home} />
+
         <Route path="/Maps">
           <Maps name={''} />
         </Route>
@@ -85,7 +87,9 @@ const App: React.FC<ContainerProps> = ({ name }) => (
         {/* <Route path="/Home">
           <Home name={"Home"} />
         </Route> */}
-
+        <Route exact path="/SanBartolome">
+          <Layout name={"SanBartolome"} buildingName={''} />
+        </Route>
         <Route exact path="/SanFrancisco">
           <SanFrancisco name={"SanFrancisco"} />
         </Route>
@@ -125,7 +129,7 @@ const App: React.FC<ContainerProps> = ({ name }) => (
         </Route>
 
         <Route path="/updateRoom/:roomId">
-          <UpdateRoom />
+          <UpdateRoom name={''} />
         </Route>
 
         <Route exact path="/Building">
@@ -193,7 +197,7 @@ const App: React.FC<ContainerProps> = ({ name }) => (
         </Route>
 
         <Route path="/updateRoom/:roomName">
-          <UpdateRoom />
+          <UpdateRoom name={''} />
         </Route>
 
         {/* sheeesh */}
