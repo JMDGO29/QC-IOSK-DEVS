@@ -80,7 +80,7 @@ const Announcements: React.FC<ContainerProps> = ({ name }) => {
           <h1 className="text-4xl font-bold text-left ">
             {t("Announcements")}
           </h1>
-          <p className="text-sm ">Updates from the Campus</p>
+          <p className="text-sm ">{t("Updates from the Campus")}</p>
         </div>
         {loading ? (
           <>
@@ -103,7 +103,7 @@ const Announcements: React.FC<ContainerProps> = ({ name }) => {
               <div className="px-3 mt-10 space-y-4">
                 <div role="alert" className="flex justify-center shadow-inner alert rounded-2xl h-28">
                 <Icon icon="uil:comment-info-alt" className="w-8 h-8" />
-                  <span className="text-xl">No announcements found.</span>
+                  <span className="text-xl">{t("No announcements found.")}</span>
                 </div>
               </div>
             ) : (

@@ -11,6 +11,7 @@ interface ContainerProps {
 }
 
 const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
+  const { t } = useTranslation();
   const history = useHistory();
 
   const handleLogout = () => {
@@ -25,7 +26,7 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
       });
   };
 
-  const { t } = useTranslation();
+
 
   const Archive = () => {
     history.replace("/Archive");

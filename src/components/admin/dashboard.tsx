@@ -41,7 +41,7 @@ const Dashboard: React.FC<ContainerProps> = ({ name }) => {
               <div className="flex items-center justify-between space-x-12">
                 <div className="flex flex-col items-start">
                   <h1>562</h1>
-                  <p>no of visitors</p>
+                  <p>{t("Number of visitors")}</p>
                 </div>
                 <div className="flex">
                   <Icon icon="akar-icons:people-group" className="w-10 h-10" />
@@ -55,7 +55,7 @@ const Dashboard: React.FC<ContainerProps> = ({ name }) => {
               <div className="flex items-center justify-between space-x-12">
                 <div className="flex flex-col items-start">
                   <h1>12</h1>
-                  <p>active buildings</p>
+                  <p>{t("Active buildings")}</p>
                 </div>
                 <div className="flex">
                   <Icon icon="bx:buildings" className="w-10 h-10" />
@@ -69,7 +69,7 @@ const Dashboard: React.FC<ContainerProps> = ({ name }) => {
               <div className="flex items-center justify-between space-x-12">
                 <div className="flex flex-col items-start">
                   <h1>5</h1>
-                  <p>Active Annoucements</p>
+                  <p>{t("Active Annoucements")}</p>
                 </div>
                 <div className="flex">
                   <Icon icon="streamline:annoncement-megaphone" className="w-10 h-10" />
@@ -83,7 +83,7 @@ const Dashboard: React.FC<ContainerProps> = ({ name }) => {
               <div className="flex items-center justify-between space-x-12">
                 <div className="flex flex-col items-start">
                   <h1>3</h1>
-                  <p>Active Events</p>
+                  <p>{t("Active Events")}</p>
                 </div>
                 <div className="flex">
                   <Icon icon="streamline:calendar-star" className="w-10 h-10" />

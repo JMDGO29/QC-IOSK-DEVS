@@ -3,7 +3,11 @@ import React, { useRef } from 'react';
 import { Icon } from '@iconify/react';
 import Mp4 from '../../../assets/Vids/sb/r_simon.mp4';
 import QRcode from '../../../assets/imgs/qr.png';
+import { useTranslation } from "react-i18next";
+
+
 const qrCode: React.FC = () => {
+  const { t } = useTranslation();
 
   return (
     <dialog id="qrcode" className="modal">
@@ -14,7 +18,7 @@ const qrCode: React.FC = () => {
           </form>
           <div className="modal-action justify-center items-center">
             <h1></h1>
-            <a href="/Sanbartolome" className="btn btn-error">Exit Navigation</a>
+            <a href="/Sanbartolome" className="btn btn-error">{t("Exit Navigation")}</a>
           </div>
         </div>
         <form method="dialog" className="modal-backdrop">

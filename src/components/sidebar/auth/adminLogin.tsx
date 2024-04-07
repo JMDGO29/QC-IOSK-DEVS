@@ -9,6 +9,7 @@ import { auth } from "../../utils/firebase";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 const AdminLogin: React.FC = () => {
+  const { t } = useTranslation();
   const history = useHistory();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -49,7 +50,7 @@ const AdminLogin: React.FC = () => {
         console.error(errorCode, errorMessage);
       });
   };
-  const { t } = useTranslation();
+
   useEffect(() => {
     themeChange(false);
   });

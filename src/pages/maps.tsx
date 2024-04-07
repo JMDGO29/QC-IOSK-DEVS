@@ -38,9 +38,9 @@ const SelectCampus: React.FC<ContainerProps> = ({ name }) => {
         <main className="shadow-none">
           <section className="pb-40 m-4 md:m-8">
             <div className="container p-4 mx-auto my-6 space-y-2 text-center">
-              <h2 className="text-5xl font-bold">Campus</h2>
+              <h2 className="text-5xl font-bold">{t("Campus")}</h2>
               <p className="dark:text-gray-400">
-                All Quezon City University Campus
+                {t("All Quezon City University Campus")}
               </p>
             </div>
             <div className="container grid justify-center gap-4 mx-auto sm:grid-cols-2 lg:grid-cols-3">
@@ -82,9 +82,9 @@ const SelectCampus: React.FC<ContainerProps> = ({ name }) => {
             </div>
 
             <div className="container p-4 mx-auto my-6 space-y-2 text-center">
-              <h2 className="text-5xl font-bold">Other Maps</h2>
+              <h2 className="text-5xl font-bold">{t("Other Maps")}</h2>
               <p className="dark:text-gray-400">
-                other maps of quezon city university
+                {t("Other maps of Quezon City University")}
               </p>
             </div>
             <div className="container grid justify-center gap-4 mx-auto sm:grid-cols-2 lg:grid-cols-3">

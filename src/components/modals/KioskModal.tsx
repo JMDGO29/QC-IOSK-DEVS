@@ -7,18 +7,21 @@ import React from 'react';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import '../../assets/css/modal.css';
+import { useTranslation } from "react-i18next";
 
 
 // import required modules
 // import { Pagination } from 'swiper/modules';
 import { Icon } from '@iconify/react';
+
 const KioskModal: React.FC = () => {
+    const { t } = useTranslation();
 
     return (
         <dialog id="KioskManual" className="modal">
             <div className="w-11/12 max-w-5xl text-center modal-box backdrop-blur-lg bg-slate-800/80 rounded-3xl">
-                <h3 className="text-4xl font-bold ">HOW TO USE QC-IOSK</h3>
-                <p className="mb-10 text-center dark:text-gray-200">Use your finger to swipe thru slides </p>
+                <h3 className="text-4xl font-bold ">{t("HOW TO USE QC-IOSK?")}</h3>
+                <p className="mb-10 text-center dark:text-gray-200">{t("Use your finger to swipe thru slides")}</p>
                 <div className="w-full bg-transparent rounded-2xl h-96 backdrop-lg ">
                     {/* <Swiper
                         pagination={{
@@ -96,12 +99,12 @@ const KioskModal: React.FC = () => {
                 <div className="modal-action">
                     <form method="dialog">
                         {/* if there is a button, it will close the modal */}
-                        <button className="btn">Close</button>
+                        <button className="btn">{t("Close")}</button>
                     </form>
                 </div>
             </div>
             <form method="dialog" className="modal-backdrop">
-                <button>close</button>
+                <button>{t("Close")}</button>
             </form>
         </dialog>
     );

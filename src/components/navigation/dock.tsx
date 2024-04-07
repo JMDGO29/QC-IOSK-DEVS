@@ -7,6 +7,7 @@ interface ContainerProps {
 }
 
 const Dock: React.FC<ContainerProps> = ({ name }) => {
+  const { t } = useTranslation();
   const history = useHistory();
 
   const ClickWelcome = () => {
@@ -22,7 +23,7 @@ const Dock: React.FC<ContainerProps> = ({ name }) => {
     history.push("/Search");
   };
 
-  const { t } = useTranslation();
+
   return (
 
     <div className="fixed bottom-0 w-screen">

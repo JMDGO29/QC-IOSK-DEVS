@@ -10,7 +10,9 @@ import {
 import ModelViewer from "./ModelViewer";
 import { Billboard, Html, Text } from "@react-three/drei";
 import UareHere from "/src/assets/models/others/location2.glb";
+import { useTranslation } from "react-i18next";
 
+const { t } = useTranslation();
 const RotatingMesh = () => {
   const meshRef =
     useRef<
@@ -45,7 +47,7 @@ const RotatingMesh = () => {
           outlineOpacity={1}
           outlineWidth="20%"
         >
-          You are here
+          {t("You are here.")}
         </Text>
       </Billboard>
     </>
