@@ -189,8 +189,8 @@ const ChangeLanguage: React.FC<ContainerProps> = ({ name }) => {
             </div>
           </button>
         </div> */}
-        <div className="flex items-center justify-center w-auto ">
-          <p className="badge badge-lg">{t("More languages will be supported soon.")}</p>
+        <div className="flex items-center justify-center w-auto h-auto ">
+          <p className="badge badge-lg h-auto p-2 text-center">{t("More languages will be supported soon.")}</p>
         </div>
 
       </div>
