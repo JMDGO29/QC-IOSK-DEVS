@@ -2,13 +2,7 @@ import { IonContent, IonPage } from "@ionic/react";
 import AdminSideBar from "../../constant/adminSidebar";
 import AdminHeader from "../../constant/adminHeader";
 import { useState } from "react";
-import {
-  addDoc,
-  collection,
-  doc,
-  serverTimestamp,
-  setDoc,
-} from "firebase/firestore";
+import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { db, storage } from "../../../utils/firebase";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -19,50 +13,84 @@ interface ContainerProps {
   name: string;
 }
 
-const Create3DModel: React.FC<ContainerProps> = ({ name }) => {
+const CreateBuilding: React.FC<ContainerProps> = ({ name }) => {
   const history = useHistory();
-  const [modelName, setModelName] = useState<string>("");
-  const [modelPath, setModelPath] = useState<File | null>(null);
-  const [position, setPosition] = useState<string[]>(["0", "0", "0"]);
-  const [textPosition, setTextPosition] = useState<string[]>(["0", "3", "0"]);
+  const [buildingName, setBuildingName] = useState<string>("");
+  const [buildingPath, setBuildingPath] = useState<File | null>(null);
+  const [buildingPosition, setBuildingPosition] = useState<string[]>([
+    "0",
+    "0",
+    "0",
+  ]);
+  const [buildingScale, setBuildingScale] = useState<string[]>(["1", "1", "1"]);
+  const [buildingLabelPosition, setBuildingLabelPosition] = useState<string[]>([
+    "0",
+    "3",
+    "0",
+  ]);
+  const [totalFloor, setTotalFloor] = useState<string>("");
+  const [status, setStatus] = useState<string>("available");
 
-  const SBMapSceneManagement = () => {
-    history.push("/SBMapScene");
+  const Building = () => {
+    history.push("/Building");
   };
 
-  const handleAddModel = async () => {
+  const handleAddBuilding = async () => {
     try {
       const now = serverTimestamp();
 
-      if (!modelPath) {
+      if (!buildingPath) {
         toast.error("Please select a GLB file.");
         return;
       }
 
-      const glbRef = storage.ref().child(`glbFiles/${modelPath.name}`);
-      await glbRef.put(modelPath);
+      const glbRef = storage.ref().child(`buildingGLB/${buildingPath.name}`);
+      await glbRef.put(buildingPath);
       const glbUrl = await glbRef.getDownloadURL();
 
-      // Use modelName as the document ID
-      const docRef = doc(db, "3D Objects", modelName);
+      const docRef = doc(db, "buildingData", buildingName);
 
       await setDoc(docRef, {
-        modelName: modelName,
-        modelPath: glbUrl,
-        position: position,
-        textPosition: textPosition,
+        buildingName: buildingName,
+        buildingPath: glbUrl,
+        buildingPosition: buildingPosition,
+        buildingScale: buildingScale,
+        buildingLabelPosition: buildingPosition,
+        totalFloor: totalFloor,
+        status: status,
         createdAt: now,
+        updatedAt: now,
       });
 
-      setModelName("");
-      setModelPath(null);
+      // Create roomData under the same buildingName document
+      // const roomDocRef = doc(db, "roomData", buildingName);
+      // const floorsData = Array.from(
+      //   { length: parseInt(totalFloor) },
+      //   (_, i) => ({
+      //     [`Floor ${i + 1}`]: {},
+      //   })
+      // );
+      // await setDoc(roomDocRef, {
+      //   buildingName: buildingName,
+      //   createdAt: now,
+      //   updatedAt: now,
 
-      console.log("3D Model added successfully!");
-      toast.success("3D Model added successfully!");
-      history.push("/SBMapScene");
+      // });
+
+      setBuildingName("");
+      setBuildingPath(null);
+      setBuildingPosition(["0", "0", "0"]);
+      setBuildingScale(["0", "0", "0"]);
+      setBuildingLabelPosition(["0", "0", "0"]);
+      setTotalFloor("");
+      setStatus("");
+
+      console.log("Building added successfully!");
+      toast.success("Building added successfully!");
+      history.replace("/Building");
     } catch (error) {
-      console.error("Error adding 3D Model: ", error);
-      alert("Error on adding 3D Model.");
+      console.error("Error adding Building: ", error);
+      alert("Error on adding Building.");
     }
   };
 
@@ -76,7 +104,7 @@ const Create3DModel: React.FC<ContainerProps> = ({ name }) => {
           <div className="items-center justify-center text-base-content bg-base-300 lg:ps-64 ">
             <div className="w-full h-screen p-10 bg-base-100 rounded-tl-3xl">
               <div className="flex items-center space-x-2">
-                <h1 className="text-4xl font-bold">Create 3D Model</h1>
+                <h1 className="text-4xl font-bold">Create Building</h1>
               </div>
               <div className="overflow-x-auto">
                 <table className="table">
@@ -87,25 +115,25 @@ const Create3DModel: React.FC<ContainerProps> = ({ name }) => {
                   </thead>
                   <tbody>
                     <tr>
-                      <th>3D Model Name:</th>
+                      <th>Building Name:</th>
                       <td>
                         <input
                           type="text"
-                          placeholder="Announcement Name"
-                          value={modelName}
-                          onChange={(e) => setModelName(e.target.value)}
+                          placeholder="Building Name"
+                          value={buildingName}
+                          onChange={(e) => setBuildingName(e.target.value)}
                           className="w-full max-w-xs input input-bordered"
                         />
                       </td>
                     </tr>
                     <tr>
-                      <th>GLB File:</th>
+                      <th>Building GLB File:</th>
                       <td>
                         <input
                           type="file"
                           accept=".glb"
                           onChange={(e) =>
-                            setModelPath(
+                            setBuildingPath(
                               e.target.files ? e.target.files[0] : null
                             )
                           }
@@ -114,7 +142,7 @@ const Create3DModel: React.FC<ContainerProps> = ({ name }) => {
                       </td>
                     </tr>
                     <tr>
-                      <th>Position:</th>
+                      <th>Building Position:</th>
                       <td>
                         <div className="flex">
                           {["X", "Y", "Z"].map((axis, index) => (
@@ -122,11 +150,11 @@ const Create3DModel: React.FC<ContainerProps> = ({ name }) => {
                               <label>{axis}:</label>
                               <input
                                 type="text"
-                                value={position[index]}
+                                value={buildingPosition[index]}
                                 onChange={(e) => {
-                                  const updatedPosition = [...position];
+                                  const updatedPosition = [...buildingPosition];
                                   updatedPosition[index] = e.target.value;
-                                  setPosition(updatedPosition);
+                                  setBuildingPosition(updatedPosition);
                                 }}
                                 className="w-full max-w-xs input input-bordered"
                               />
@@ -136,37 +164,30 @@ const Create3DModel: React.FC<ContainerProps> = ({ name }) => {
                       </td>
                     </tr>
                     <tr>
-                      <th>Text Position:</th>
+                      <th>Total Floor:</th>
                       <td>
-                        <div className="flex">
-                          {["X", "Y", "Z"].map((axis, index) => (
-                            <div key={axis} className="flex flex-col mr-4">
-                              <label>{axis}:</label>
-                              <input
-                                type="text"
-                                value={textPosition[index]}
-                                onChange={(e) => {
-                                  const updatedTextPosition = [...textPosition];
-                                  updatedTextPosition[index] = e.target.value;
-                                  setTextPosition(updatedTextPosition);
-                                }}
-                                className="w-full max-w-xs input input-bordered"
-                              />
-                            </div>
-                          ))}
-                        </div>
+                        <input
+                          type="text"
+                          placeholder="Total Number of floor"
+                          value={totalFloor}
+                          onChange={(e) => setTotalFloor(e.target.value)}
+                          className="w-full max-w-xs input input-bordered"
+                        />
                       </td>
                     </tr>
                   </tbody>
                 </table>
                 <div className="flex items-center justify-between mx-5 mt-5">
                   <button
-                    onClick={SBMapSceneManagement}
+                    onClick={Building}
                     className="btn btn-square hover:bg-base-300"
                   >
                     <Icon icon="icon-park-outline:back" className="w-10 h-10" />
                   </button>
-                  <button onClick={handleAddModel} className="float-right btn">
+                  <button
+                    onClick={handleAddBuilding}
+                    className="float-right btn"
+                  >
                     <Icon
                       icon="icon-park-outline:add-three"
                       className="w-10 h-10"
@@ -183,4 +204,4 @@ const Create3DModel: React.FC<ContainerProps> = ({ name }) => {
   );
 };
 
-export default Create3DModel;
+export default CreateBuilding;

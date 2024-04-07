@@ -32,6 +32,11 @@ const SelectCampus: React.FC<ContainerProps> = ({ name }) => {
     history.push(`${location}`);
   };
 
+  const ClickBT = () => {
+    // Redirect to the "/Map" route
+    history.push("/Batasan");
+  };
+
   return (
     <IonPage>
       <IonContent fullscreen className="bg-sc">

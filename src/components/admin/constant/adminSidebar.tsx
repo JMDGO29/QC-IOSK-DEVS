@@ -6,6 +6,8 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "../../utils/firebase";
 import logo from "../../../assets/imgs/logo/qculogo.png";
 import { NavLink } from "react-router-dom";
+import React from "react";
+
 interface ContainerProps {
   name: string;
 }
@@ -13,8 +15,12 @@ interface ContainerProps {
 const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
   const { t } = useTranslation();
   const history = useHistory();
-
+  
   const handleLogout = () => {
+    // Clear user information from local storage
+    localStorage.removeItem("currentUser");
+
+    // Sign out the user
     signOut(auth)
       .then(() => {
         // Sign-out successful.
@@ -23,6 +29,7 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
       })
       .catch((error) => {
         // An error happened.
+        console.error("Sign-out error:", error);
       });
   };
 
@@ -89,6 +96,29 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
           <li>
             <NavLink
               className="w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm  rounded-lg hover:bg-base-100 text-base-content dark:focus:outline-none"
+              to="/SBMap"
+            >
+              <Icon
+                icon="material-symbols:file-map-outline-rounded"
+                className="w-7 h-7"
+              />
+              SB Map
+            </NavLink>
+          </li>
+
+          <li>
+            <NavLink
+              className="w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm  rounded-lg hover:bg-base-100 text-base-content dark:focus:outline-none"
+              to="/Building"
+            >
+              <Icon icon="bi:building-gear" className="w-7 h-7" />
+              Building
+            </NavLink>
+          </li>
+
+          <li>
+            <NavLink
+              className="w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm  rounded-lg hover:bg-base-100 text-base-content dark:focus:outline-none"
               to="/Rooms"
             >
               <Icon
@@ -96,16 +126,6 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
                 className="w-7 h-7"
               />
               Rooms
-            </NavLink>
-          </li>
-
-          <li>
-            <NavLink
-              className="w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm  rounded-lg hover:bg-base-100 text-base-content dark:focus:outline-none"
-              to="/Buildings"
-            >
-              <Icon icon="bi:building-gear" className="w-7 h-7" />
-              Building
             </NavLink>
           </li>
 
@@ -153,7 +173,6 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
               Archive
             </NavLink>
           </li>
-          
 
           <li>
             <NavLink
@@ -164,7 +183,6 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
               Settings
             </NavLink>
           </li>
-
         </ul>
         <div className="flex flex-col">
           <li className="flex flex-col pb-5">

@@ -24,17 +24,24 @@ interface ContainerProps {
   name: string;
 }
 
-interface Announcement {
+interface Room {
   id: string;
-  name: string;
-  announcementSource: string;
-  announcementDesc: string;
-  startDate: string;
-  startTime: string;
+  buildingName: string;
+  floorLevel: string;
+  roomCode: string;
+  roomName: string;
+  distance: string;
+  eta: string;
+  squareMeter: string;
+  status: string;
+  roomAnimation: string;
+  voiceGuide: string;
+  textGuide: string;
+  updatedAt: firebase.default.firestore.Timestamp;
 }
 
-const AnnouncementArchive: React.FC<ContainerProps> = ({ name }) => {
-  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+const RoomArchive: React.FC<ContainerProps> = ({ name }) => {
+  const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [deleteAllConfirmation, setDeleteAllConfirmation] =
     useState<boolean>(false);
@@ -45,7 +52,7 @@ const AnnouncementArchive: React.FC<ContainerProps> = ({ name }) => {
     string | null
   >(null);
 
-  const columns = useMemo<MRT_ColumnDef<Announcement>[]>(
+  const columns = useMemo<MRT_ColumnDef<Room>[]>(
     () => [
       {
         accessorKey: "actions",
@@ -67,30 +74,37 @@ const AnnouncementArchive: React.FC<ContainerProps> = ({ name }) => {
           </div>
         ),
       },
-      { accessorKey: "name", header: "Announcement Name", size: 150 },
       {
-        accessorKey: "announcementSource",
-        header: "Source",
+        accessorKey: "buildingName",
+        header: "Building Name",
         size: 150,
       },
       {
-        accessorKey: "announcementDesc",
-        header: "Description",
+        accessorKey: "floorLevel",
+        header: "Floor Level",
         size: 150,
       },
-      { accessorKey: "startDate", header: "Start Date", size: 150 },
-      { accessorKey: "startTime", header: "Start Time", size: 150 },
+      {
+        accessorKey: "roomCode",
+        header: "Room Code",
+        size: 150,
+      },
+      {
+        accessorKey: "roomName",
+        header: "Room Name",
+        size: 150,
+      },
     ],
     []
   );
 
   const table = useMaterialReactTable({
     columns,
-    data: announcements,
+    data: rooms,
   });
 
-  const openDeleteConfirmation = (announcementId: string) => {
-    setDeleteConfirmationId(announcementId);
+  const openDeleteConfirmation = (roomId: string) => {
+    setDeleteConfirmationId(roomId);
   };
   const closeDeleteConfirmation = () => {
     setDeleteConfirmationId(null);
@@ -101,128 +115,128 @@ const AnnouncementArchive: React.FC<ContainerProps> = ({ name }) => {
   const closeDeleteAllConfirmation = () => {
     setDeleteAllConfirmation(false);
   };
-  const openRestoreConfirmation = (announcementId: string) => {
-    setRestoreConfirmationId(announcementId);
+  const openRestoreConfirmation = (roomId: string) => {
+    setRestoreConfirmationId(roomId);
   };
   const closeRestoreConfirmation = () => {
     setRestoreConfirmationId(null);
   };
 
-  const deleteArchiveAnnouncement = async () => {
+  const deleteArchiveRoom = async () => {
     if (deleteConfirmationId) {
       try {
-        await deleteDoc(doc(db, "announcementsArchive", deleteConfirmationId));
+        await deleteDoc(doc(db, "roomData Archive", deleteConfirmationId));
 
-        const announcementsCollection = collection(db, "announcementsArchive");
-        const announcementsSnapshot = await getDocs(announcementsCollection);
-        const announcementsData = announcementsSnapshot.docs.map((doc) => {
-          const announcementData = doc.data() as Announcement;
-          return { ...announcementData, id: doc.id } as Announcement;
+        const roomsCollection = collection(db, "roomData Archive");
+        const roomsSnapshot = await getDocs(roomsCollection);
+        const roomsData = roomsSnapshot.docs.map((doc) => {
+          const roomData = doc.data() as Room;
+          return { ...roomData, id: doc.id } as Room;
         });
-        setAnnouncements(announcementsData);
+        setRooms(roomsData);
 
         closeDeleteConfirmation();
-        console.log("Announcement deleted successfully!");
-        toast.success("Announcement deleted successfully!");
+        console.log("Room deleted successfully!");
+        toast.success("Room deleted successfully!");
       } catch (error) {
-        console.error("Error deleting announcement: ", error);
-        alert("Error on deleting announcement.");
+        console.error("Error deleting room: ", error);
+        alert("Error on deleting room.");
       }
     }
   };
 
-  const deleteAllAnnouncements = async () => {
+  const deleteAllRooms = async () => {
     try {
-      const announcementsCollection = collection(db, "announcementsArchive");
-      const announcementssSnapshot = await getDocs(announcementsCollection);
+      const roomsCollection = collection(db, "roomData Archive");
+      const roomsSnapshot = await getDocs(roomsCollection);
 
-      announcementssSnapshot.forEach(async (doc) => {
+      roomsSnapshot.forEach(async (doc) => {
         await deleteDoc(doc.ref);
       });
 
-      setAnnouncements([]);
+      setRooms([]);
 
       closeDeleteAllConfirmation();
-      console.log("All announcements deleted successfully!");
-      toast.success("All announcements deleted successfully!");
+      console.log("All rooms deleted successfully!");
+      toast.success("All rooms deleted successfully!");
     } catch (error) {
-      console.error("Error deleting all announcements: ", error);
-      alert("Error on deleting all announcements.");
+      console.error("Error deleting all rooms: ", error);
+      alert("Error on deleting all rooms.");
     }
   };
 
-  const addAnnouncement = async (announcement: Announcement) => {
+  const addRoom = async (room: Room) => {
     try {
-      const restoreCollectionRef = collection(db, "announcements");
+      const restoreCollectionRef = collection(db, "roomData");
 
-      await addDoc(restoreCollectionRef, announcement);
+      await addDoc(restoreCollectionRef, room);
 
-      console.log("Announcement restored successfully!");
+      console.log("Room restored successfully!");
     } catch (error) {
-      console.error("Error restoring Announcement: ", error);
-      alert("Error restoring Announcement.");
+      console.error("Error restoring room: ", error);
+      alert("Error restoring room.");
     }
   };
 
-  const restoreArchiveAnnouncement = async () => {
+  const restoreArchiveRoom = async () => {
     if (restoreConfirmationId) {
       try {
-        const announcementToDelete = announcements.find(
-          (announcement) => announcement.id === restoreConfirmationId
+        const roomToDelete = rooms.find(
+          (room) => room.id === restoreConfirmationId
         );
 
-        if (announcementToDelete) {
-          await addAnnouncement(announcementToDelete);
+        if (roomToDelete) {
+          await addRoom(roomToDelete);
         }
 
-        await deleteDoc(doc(db, "announcementsArchive", restoreConfirmationId));
+        await deleteDoc(doc(db, "roomData Archive", restoreConfirmationId));
 
-        const announcementsCollection = collection(db, "announcementsArchive");
-        const announcementsSnapshot = await getDocs(announcementsCollection);
-        const announcementsData = announcementsSnapshot.docs.map((doc) => {
-          const announcementData = doc.data() as Announcement;
-          return { ...announcementData, id: doc.id } as Announcement;
+        const roomsCollection = collection(db, "roomData Archive");
+        const roomsSnapshot = await getDocs(roomsCollection);
+        const roomsData = roomsSnapshot.docs.map((doc) => {
+          const roomData = doc.data() as Room;
+          return { ...roomData, id: doc.id } as Room;
         });
-        setAnnouncements(announcementsData);
+        setRooms(roomsData);
 
         closeRestoreConfirmation();
-        console.log("Announcement restored successfully!");
-        toast.success("Announcement restored successfully!");
+        console.log("Room restored successfully!");
+        toast.success("Room restored successfully!");
       } catch (error) {
-        console.error("Error on restoring announcement: ", error);
-        alert("Error on restoring announcement.");
+        console.error("Error on restoring room: ", error);
+        alert("Error on restoring room.");
       }
     }
   };
 
   useEffect(() => {
-    const fetchAnnouncements = async () => {
+    const fetchRooms = async () => {
       try {
-        const announcementsCollection = collection(db, "announcementsArchive");
-        const queryAnnouncement = query(
-          announcementsCollection,
-          orderBy("createdAt", "desc")
+        const roomsCollection = collection(db, "roomData Archive");
+        const queryRoom = query(
+          roomsCollection,
+          orderBy("buildingName", "desc")
         );
-        const announcementsSnapshot = await getDocs(queryAnnouncement);
-        const announcementsData = announcementsSnapshot.docs.map((doc) => {
-          const announcementData = doc.data() as Announcement;
-          return { ...announcementData, id: doc.id } as Announcement;
+        const roomsSnapshot = await getDocs(queryRoom);
+        const roomsData = roomsSnapshot.docs.map((doc) => {
+          const roomData = doc.data() as Room;
+          return { ...roomData, id: doc.id } as Room;
         });
-        setAnnouncements(announcementsData);
+        setRooms(roomsData);
         setLoading(false);
       } catch (error) {
-        console.error("Error fetching announcements: ", error);
+        console.error("Error fetching rooms: ", error);
         setLoading(false);
       }
     };
 
-    fetchAnnouncements();
+    fetchRooms();
   }, []);
 
   return (
     <>
       <div className="flex items-center justify-between space-x-2">
-        <h1 className="text-4xl font-bold">Archived Announcements</h1>
+        <h1 className="text-4xl font-bold">Archived Rooms</h1>
         <button
           className="btn btn-square hover:bg-red-500 hover:text-white"
           onClick={openDeleteAllConfirmation}
@@ -268,13 +282,10 @@ const AnnouncementArchive: React.FC<ContainerProps> = ({ name }) => {
       >
         <div className="h-56 p-6 shadow-xl bg-base-100 rounded-2xl w-96">
           <p className="text-3xl text-center">
-            Are you sure you want to delete this announcement?
+            Are you sure you want to delete this room?
           </p>
           <div className="flex justify-center mt-6 space-x-3">
-            <button
-              onClick={deleteArchiveAnnouncement}
-              className="btn btn-danger"
-            >
+            <button onClick={deleteArchiveRoom} className="btn btn-danger">
               Yes, Delete Forever
             </button>
             <button
@@ -295,10 +306,10 @@ const AnnouncementArchive: React.FC<ContainerProps> = ({ name }) => {
       >
         <div className="h-56 p-6 shadow-xl bg-base-100 rounded-2xl w-96">
           <p className="text-3xl text-center">
-            Are you sure you want to delete all announcements?
+            Are you sure you want to delete all rooms?
           </p>
           <div className="flex justify-center mt-6 space-x-3">
-            <button onClick={deleteAllAnnouncements} className="btn btn-danger">
+            <button onClick={deleteAllRooms} className="btn btn-danger">
               Yes, Delete All Forever
             </button>
             <button
@@ -319,11 +330,11 @@ const AnnouncementArchive: React.FC<ContainerProps> = ({ name }) => {
       >
         <div className="h-56 p-6 shadow-xl bg-base-100 rounded-2xl w-96">
           <p className="text-3xl text-center">
-            Are you sure you want to restore this announcement?
+            Are you sure you want to restore this room?
           </p>
           <div className="flex justify-center mt-6 space-x-3">
             <button
-              onClick={restoreArchiveAnnouncement}
+              onClick={restoreArchiveRoom}
               className="text-white btn bg-warning hover:bg-orange-500"
             >
               Yes, Restore
@@ -341,4 +352,4 @@ const AnnouncementArchive: React.FC<ContainerProps> = ({ name }) => {
   );
 };
 
-export default AnnouncementArchive;
+export default RoomArchive;

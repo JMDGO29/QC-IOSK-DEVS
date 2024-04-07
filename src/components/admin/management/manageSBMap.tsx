@@ -36,7 +36,7 @@ interface Model {
   textPosition?: [number, number, number];
 }
 
-const SBMapSceneManagement: React.FC<ContainerProps> = ({ name }) => {
+const SBMapManagement: React.FC<ContainerProps> = ({ name }) => {
   const history = useHistory();
   const [models, setModels] = useState<Model[]>([]);
   const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
@@ -314,4 +314,4 @@ const SBMapSceneManagement: React.FC<ContainerProps> = ({ name }) => {
   );
 };
 
-export default SBMapSceneManagement;
+export default SBMapManagement;

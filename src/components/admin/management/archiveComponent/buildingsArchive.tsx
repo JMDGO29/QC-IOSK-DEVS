@@ -24,17 +24,19 @@ interface ContainerProps {
   name: string;
 }
 
-interface Announcement {
+interface Building {
   id: string;
-  name: string;
-  announcementSource: string;
-  announcementDesc: string;
-  startDate: string;
-  startTime: string;
+  buildingName: string;
+  buildingPath: string;
+  buildingPosition: [number, number, number];
+  buildingScale: [number, number, number];
+  buildingLabelPosition: [number, number, number];
+  status: string;
+  updatedAt: firebase.default.firestore.Timestamp;
 }
 
-const AnnouncementArchive: React.FC<ContainerProps> = ({ name }) => {
-  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+const RoomArchive: React.FC<ContainerProps> = ({ name }) => {
+  const [buildings, setBuildings] = useState<Building[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [deleteAllConfirmation, setDeleteAllConfirmation] =
     useState<boolean>(false);
@@ -45,7 +47,7 @@ const AnnouncementArchive: React.FC<ContainerProps> = ({ name }) => {
     string | null
   >(null);
 
-  const columns = useMemo<MRT_ColumnDef<Announcement>[]>(
+  const columns = useMemo<MRT_ColumnDef<Building>[]>(
     () => [
       {
         accessorKey: "actions",
@@ -67,30 +69,19 @@ const AnnouncementArchive: React.FC<ContainerProps> = ({ name }) => {
           </div>
         ),
       },
-      { accessorKey: "name", header: "Announcement Name", size: 150 },
-      {
-        accessorKey: "announcementSource",
-        header: "Source",
-        size: 150,
-      },
-      {
-        accessorKey: "announcementDesc",
-        header: "Description",
-        size: 150,
-      },
-      { accessorKey: "startDate", header: "Start Date", size: 150 },
-      { accessorKey: "startTime", header: "Start Time", size: 150 },
+      { accessorKey: "buildingName", header: "Building Name", size: 150 },
+      { accessorKey: "buildingPath", header: "Building Path", size: 150 },
     ],
     []
   );
 
   const table = useMaterialReactTable({
     columns,
-    data: announcements,
+    data: buildings,
   });
 
-  const openDeleteConfirmation = (announcementId: string) => {
-    setDeleteConfirmationId(announcementId);
+  const openDeleteConfirmation = (buildingId: string) => {
+    setDeleteConfirmationId(buildingId);
   };
   const closeDeleteConfirmation = () => {
     setDeleteConfirmationId(null);
@@ -101,128 +92,128 @@ const AnnouncementArchive: React.FC<ContainerProps> = ({ name }) => {
   const closeDeleteAllConfirmation = () => {
     setDeleteAllConfirmation(false);
   };
-  const openRestoreConfirmation = (announcementId: string) => {
-    setRestoreConfirmationId(announcementId);
+  const openRestoreConfirmation = (buildingId: string) => {
+    setRestoreConfirmationId(buildingId);
   };
   const closeRestoreConfirmation = () => {
     setRestoreConfirmationId(null);
   };
 
-  const deleteArchiveAnnouncement = async () => {
+  const deleteArchiveBuilding = async () => {
     if (deleteConfirmationId) {
       try {
-        await deleteDoc(doc(db, "announcementsArchive", deleteConfirmationId));
+        await deleteDoc(doc(db, "buildingData Archive", deleteConfirmationId));
 
-        const announcementsCollection = collection(db, "announcementsArchive");
-        const announcementsSnapshot = await getDocs(announcementsCollection);
-        const announcementsData = announcementsSnapshot.docs.map((doc) => {
-          const announcementData = doc.data() as Announcement;
-          return { ...announcementData, id: doc.id } as Announcement;
+        const buildingsCollection = collection(db, "buildingData Archive");
+        const buildingsSnapshot = await getDocs(buildingsCollection);
+        const buildingsData = buildingsSnapshot.docs.map((doc) => {
+          const buildingData = doc.data() as Building;
+          return { ...buildingData, id: doc.id } as Building;
         });
-        setAnnouncements(announcementsData);
+        setBuildings(buildingsData);
 
         closeDeleteConfirmation();
-        console.log("Announcement deleted successfully!");
-        toast.success("Announcement deleted successfully!");
+        console.log("Building deleted successfully!");
+        toast.success("Building deleted successfully!");
       } catch (error) {
-        console.error("Error deleting announcement: ", error);
-        alert("Error on deleting announcement.");
+        console.error("Error deleting building: ", error);
+        alert("Error on deleting building.");
       }
     }
   };
 
-  const deleteAllAnnouncements = async () => {
+  const deleteAllBuildings = async () => {
     try {
-      const announcementsCollection = collection(db, "announcementsArchive");
-      const announcementssSnapshot = await getDocs(announcementsCollection);
+      const buildingsCollection = collection(db, "buildingData Archive");
+      const buildingsSnapshot = await getDocs(buildingsCollection);
 
-      announcementssSnapshot.forEach(async (doc) => {
+      buildingsSnapshot.forEach(async (doc) => {
         await deleteDoc(doc.ref);
       });
 
-      setAnnouncements([]);
+      setBuildings([]);
 
       closeDeleteAllConfirmation();
-      console.log("All announcements deleted successfully!");
-      toast.success("All announcements deleted successfully!");
+      console.log("All buildings deleted successfully!");
+      toast.success("All buildings deleted successfully!");
     } catch (error) {
-      console.error("Error deleting all announcements: ", error);
-      alert("Error on deleting all announcements.");
+      console.error("Error deleting all buildings: ", error);
+      alert("Error on deleting all buildings.");
     }
   };
 
-  const addAnnouncement = async (announcement: Announcement) => {
+  const addBuilding = async (building: Building) => {
     try {
-      const restoreCollectionRef = collection(db, "announcements");
+      const restoreCollectionRef = collection(db, "buildingData");
 
-      await addDoc(restoreCollectionRef, announcement);
+      await addDoc(restoreCollectionRef, building);
 
-      console.log("Announcement restored successfully!");
+      console.log("Building restored successfully!");
     } catch (error) {
-      console.error("Error restoring Announcement: ", error);
-      alert("Error restoring Announcement.");
+      console.error("Error restoring building: ", error);
+      alert("Error restoring building.");
     }
   };
 
-  const restoreArchiveAnnouncement = async () => {
+  const restoreArchiveBuilding = async () => {
     if (restoreConfirmationId) {
       try {
-        const announcementToDelete = announcements.find(
-          (announcement) => announcement.id === restoreConfirmationId
+        const buildingToDelete = buildings.find(
+          (building) => building.id === restoreConfirmationId
         );
 
-        if (announcementToDelete) {
-          await addAnnouncement(announcementToDelete);
+        if (buildingToDelete) {
+          await addBuilding(buildingToDelete);
         }
 
-        await deleteDoc(doc(db, "announcementsArchive", restoreConfirmationId));
+        await deleteDoc(doc(db, "buildingData Archive", restoreConfirmationId));
 
-        const announcementsCollection = collection(db, "announcementsArchive");
-        const announcementsSnapshot = await getDocs(announcementsCollection);
-        const announcementsData = announcementsSnapshot.docs.map((doc) => {
-          const announcementData = doc.data() as Announcement;
-          return { ...announcementData, id: doc.id } as Announcement;
+        const buildingsCollection = collection(db, "buildingData Archive");
+        const buildingsSnapshot = await getDocs(buildingsCollection);
+        const buildingsData = buildingsSnapshot.docs.map((doc) => {
+          const buildingData = doc.data() as Building;
+          return { ...buildingData, id: doc.id } as Building;
         });
-        setAnnouncements(announcementsData);
+        setBuildings(buildingsData);
 
         closeRestoreConfirmation();
-        console.log("Announcement restored successfully!");
-        toast.success("Announcement restored successfully!");
+        console.log("Building restored successfully!");
+        toast.success("Building restored successfully!");
       } catch (error) {
-        console.error("Error on restoring announcement: ", error);
-        alert("Error on restoring announcement.");
+        console.error("Error on restoring building: ", error);
+        alert("Error on restoring building.");
       }
     }
   };
 
   useEffect(() => {
-    const fetchAnnouncements = async () => {
+    const fetchBuildings = async () => {
       try {
-        const announcementsCollection = collection(db, "announcementsArchive");
-        const queryAnnouncement = query(
-          announcementsCollection,
-          orderBy("createdAt", "desc")
+        const buildingsCollection = collection(db, "buildingData Archive");
+        const queryBuilding = query(
+          buildingsCollection,
+          orderBy("buildingName", "desc")
         );
-        const announcementsSnapshot = await getDocs(queryAnnouncement);
-        const announcementsData = announcementsSnapshot.docs.map((doc) => {
-          const announcementData = doc.data() as Announcement;
-          return { ...announcementData, id: doc.id } as Announcement;
+        const buildingsSnapshot = await getDocs(queryBuilding);
+        const buildingsData = buildingsSnapshot.docs.map((doc) => {
+          const buildingData = doc.data() as Building;
+          return { ...buildingData, id: doc.id } as Building;
         });
-        setAnnouncements(announcementsData);
+        setBuildings(buildingsData);
         setLoading(false);
       } catch (error) {
-        console.error("Error fetching announcements: ", error);
+        console.error("Error fetching buildings: ", error);
         setLoading(false);
       }
     };
 
-    fetchAnnouncements();
+    fetchBuildings();
   }, []);
 
   return (
     <>
       <div className="flex items-center justify-between space-x-2">
-        <h1 className="text-4xl font-bold">Archived Announcements</h1>
+        <h1 className="text-4xl font-bold">Archived Buildings</h1>
         <button
           className="btn btn-square hover:bg-red-500 hover:text-white"
           onClick={openDeleteAllConfirmation}
@@ -268,13 +259,10 @@ const AnnouncementArchive: React.FC<ContainerProps> = ({ name }) => {
       >
         <div className="h-56 p-6 shadow-xl bg-base-100 rounded-2xl w-96">
           <p className="text-3xl text-center">
-            Are you sure you want to delete this announcement?
+            Are you sure you want to delete this building?
           </p>
           <div className="flex justify-center mt-6 space-x-3">
-            <button
-              onClick={deleteArchiveAnnouncement}
-              className="btn btn-danger"
-            >
+            <button onClick={deleteArchiveBuilding} className="btn btn-danger">
               Yes, Delete Forever
             </button>
             <button
@@ -295,10 +283,10 @@ const AnnouncementArchive: React.FC<ContainerProps> = ({ name }) => {
       >
         <div className="h-56 p-6 shadow-xl bg-base-100 rounded-2xl w-96">
           <p className="text-3xl text-center">
-            Are you sure you want to delete all announcements?
+            Are you sure you want to delete all buildings?
           </p>
           <div className="flex justify-center mt-6 space-x-3">
-            <button onClick={deleteAllAnnouncements} className="btn btn-danger">
+            <button onClick={deleteAllBuildings} className="btn btn-danger">
               Yes, Delete All Forever
             </button>
             <button
@@ -319,11 +307,11 @@ const AnnouncementArchive: React.FC<ContainerProps> = ({ name }) => {
       >
         <div className="h-56 p-6 shadow-xl bg-base-100 rounded-2xl w-96">
           <p className="text-3xl text-center">
-            Are you sure you want to restore this announcement?
+            Are you sure you want to restore this building?
           </p>
           <div className="flex justify-center mt-6 space-x-3">
             <button
-              onClick={restoreArchiveAnnouncement}
+              onClick={restoreArchiveBuilding}
               className="text-white btn bg-warning hover:bg-orange-500"
             >
               Yes, Restore
@@ -341,4 +329,4 @@ const AnnouncementArchive: React.FC<ContainerProps> = ({ name }) => {
   );
 };
 
-export default AnnouncementArchive;
+export default RoomArchive;

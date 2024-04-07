@@ -44,7 +44,11 @@ import "./assets/css/variables.css";
 import { IonApp, IonRouterOutlet, setupIonicReact } from "@ionic/react";
 import ManageAnnouncements from "./components/admin/management/manageAnnoucements";
 import RoomManagement from "./components/admin/management/manageRooms";
+import CreateRoom from "../src/components/admin/management/roomComponent/createRoom";
+import UpdateRoom from "./components/admin/management/roomComponent/updateRoom";
 import BuildingManagement from "./components/admin/management/manageBuilding";
+import CreateBuilding from "../src/components/admin/management/buildingComponent/createBuilding";
+import UpdateBuilding from "../src/components/admin/management/buildingComponent/updateBuilding";
 import AdminSettings from "./components/admin/management/adminSettings";
 import EventManagement from "./components/admin/management/manageEvents";
 import CreateEvent from "./components/admin/management/eventsComponent/createEvent";
@@ -56,13 +60,13 @@ import ManageManual from "./components/admin/management/manualInlineKioskEditor"
 import CreateManual from "./components/admin/management/mikeComponent/createManual";
 import UpdateManual from "./components/admin/management/mikeComponent/updateManual";
 import { Suspense } from "react";
-import Loading from "./pages/loading";
-import UpdateRoom from "./components/admin/management/roomComponent/updateRoom";
-import SBMapScene from "../src/components/admin/management/manage3DMap";
+import Loading from "../src/pages/loading";
+import SBMapScene from "./components/admin/management/manageSBMap";
 import Create3DModel from "../src/components/admin/management/3DMapComponent/create3DModel";
-import SanFrancisco from './components/campus/sanFrancisco/SanFrancisco';
+import Update3DModel from "./components/admin/management/3DMapComponent/update3DMode";
 import Batasan from './components/campus/batasan/Batasan';
-import SanBartolome from './components/campus/sanBartolome/SanBartolome';
+import SanFrancisco from './components/campus/sanFrancisco/SanFrancisco';
+
 setupIonicReact();
 interface ContainerProps {
   name: string;
@@ -78,9 +82,9 @@ const App: React.FC<ContainerProps> = ({ name }) => (
           <Maps name={''} />
         </Route>
 
-        <Route path="/SanBartolome">
-          <Home name={"home"} buildingName={""} />
-        </Route>
+        {/* <Route path="/Home">
+          <Home name={"Home"} />
+        </Route> */}
 
         <Route exact path="/SanFrancisco">
           <SanFrancisco name={"SanFrancisco"} />
@@ -116,19 +120,39 @@ const App: React.FC<ContainerProps> = ({ name }) => (
           <RoomManagement name={"Room Management"} />
         </Route>
 
-        <Route path="/Buildings">
+        <Route exact path="/createRoom">
+          <CreateRoom name={"Create Room"} />
+        </Route>
+
+        <Route path="/updateRoom/:roomId">
+          <UpdateRoom />
+        </Route>
+
+        <Route exact path="/Building">
           <BuildingManagement name={"Building Management"} />
         </Route>
 
-        <Route exact path="/SBMapScene">
-          <SBMapScene name={"3D Map Management"} />
+        <Route exact path="/createBuilding">
+          <CreateBuilding name={"Create Building"} />
+        </Route>
+
+        <Route exact path="/updateBuilding/:buildingId">
+          <UpdateBuilding name={"Update Building"} />
+        </Route>
+
+        <Route exact path="/SBMap">
+          <SBMapScene name={"SB Map Management"} />
         </Route>
 
         <Route exact path="/create3DModel">
           <Create3DModel name={"Create 3d Model"} />
         </Route>
 
-        <Route path="/Settings">
+        <Route exact path="/update3DModel/:modelId">
+          <Update3DModel name={"Update 3d Model"} />
+        </Route>
+
+        <Route exact path="/Settings">
           <AdminSettings name={"Settings"} />
         </Route>
 

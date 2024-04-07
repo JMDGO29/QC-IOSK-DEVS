@@ -3,68 +3,40 @@ import AdminSideBar from "../../constant/adminSidebar";
 import AdminHeader from "../../constant/adminHeader";
 import { useState, useEffect } from "react";
 import {
-  doc,
   serverTimestamp,
-  setDoc,
   collection,
   getDocs,
   query,
   where,
-  updateDoc,
-  getDoc,
+  addDoc,
 } from "firebase/firestore";
 import { db, storage } from "../../../utils/firebase";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Icon } from "@iconify/react";
-import { useHistory, useParams } from "react-router";
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { useHistory } from "react-router";
 
 interface ContainerProps {
   name: string;
-  roomId?: string;
 }
 
-interface Room {
-  id: string;
-  buildingName: string;
-  floorLevel: string;
-  roomCode: string;
-  roomName: string;
-  distance: string;
-  eta: string;
-  squareMeter: string;
-  status: string;
-  roomAnimation: string;
-  voiceGuide: string;
-  textGuide: string[];
-  updatedAt: firebase.default.firestore.Timestamp;
-}
-
-const UpdateRoom: React.FC<ContainerProps> = ({ name }) => {
+const CreateRoom: React.FC<ContainerProps> = ({ name }) => {
   const history = useHistory();
-  const [room, setRoom] = useState<Room | null>(null);
-  const { roomId } = useParams<{ roomId: string }>();
 
-  const [selectedBuilding, setSelectedBuilding] = useState<string>("");
-  const [selectedFloor, setSelectedFloor] = useState<string>("");
-  const [selectedStatus, setSelectedStatus] = useState<string>("");
-
-  const [buildingNames, setBuildingNames] = useState<string[]>([]);
-
-  const [buildingName, setBuildingName] = useState<string>("");
-  const [floorLevel, setFloorLevel] = useState<string>("");
+  const [selectedFloor, setSelectedFloor] = useState<string>("Floor 1");
   const [roomCode, setRoomCode] = useState<string>("");
   const [roomName, setRoomName] = useState<string>("");
   const [distance, setDistance] = useState<string>("");
   const [eta, setEta] = useState<string>("");
   const [squareMeter, setSquareMeter] = useState<string>("");
-  const [status, setStatus] = useState<string>("");
-  const [roomAnimation, setRoomAnimation] = useState<string>("");
-  const [roomPathFile, setRoomPathFile] = useState<File | null>(null);
-  const [voiceGuide, setVoiceGuide] = useState<string>("");
-  const [voiceGuideFile, setVoiceGuideFile] = useState<File | null>(null);
+  const [selectedStatus, setSelectedStatus] = useState<string>("available");
+
+  const [roomAnimationPath, setRoomAnimationPath] = useState<File | null>(null);
+  const [voiceGuide, setVoiceGuide] = useState<File | null>(null);
   const [textGuides, setTextGuides] = useState<string[]>([""]);
+
+  const [buildingNames, setBuildingNames] = useState<string[]>([]);
+  const [selectedBuilding, setSelectedBuilding] = useState<string>("");
 
   const [floorLevels, setFloorLevels] = useState<string[]>([]);
 
@@ -150,61 +122,32 @@ const UpdateRoom: React.FC<ContainerProps> = ({ name }) => {
     setTextGuides(updatedTextGuides);
   };
 
-  useEffect(() => {
-    const fetchRoom = async () => {
-      try {
-        const roomRef = doc(db, "roomData", roomId);
-        const roomDoc = await getDoc(roomRef);
+  const Room = () => {
+    history.push("/Rooms");
+  };
 
-        if (roomDoc.exists()) {
-          const roomData = roomDoc.data() as Room;
-          setRoom(roomData);
-
-          setBuildingName(roomData.buildingName);
-          setFloorLevel(roomData.floorLevel);
-          setRoomCode(roomData.roomCode);
-          setRoomName(roomData.roomName);
-          setDistance(roomData.distance);
-          setEta(roomData.eta);
-          setSquareMeter(roomData.squareMeter);
-          setStatus(roomData.status);
-          setRoomAnimation(roomData.roomAnimation);
-          setVoiceGuide(roomData.voiceGuide);
-          setTextGuides(roomData.textGuide);
-        } else {
-          console.error("Building not found");
-          history.push("/Building");
-        }
-      } catch (error) {
-        console.error("Error fetching building: ", error);
-      }
-    };
-
-    fetchRoom();
-  }, [roomId, history]);
-
-  const handleUpdateRoom = async () => {
+  const createRoom = async () => {
     try {
       const now = serverTimestamp();
+
       let glbUrl = "";
       let voiceUrl = "";
 
-      if (roomPathFile) {
-        const storageRef = ref(storage, `roomAnimations/${roomId}`);
-        const snapshot = await uploadBytes(storageRef, roomPathFile);
-        glbUrl = await getDownloadURL(snapshot.ref);
+      if (roomAnimationPath) {
+        const glbRef = storage
+          .ref()
+          .child(`roomAnimations/${roomAnimationPath.name}`);
+        await glbRef.put(roomAnimationPath);
+        glbUrl = await glbRef.getDownloadURL();
       }
 
-      if (voiceGuideFile) {
-        const storageRef = ref(storage, `voiceGuide/${roomId}`);
-        const snapshot = await uploadBytes(storageRef, voiceGuideFile);
-        voiceUrl = await getDownloadURL(snapshot.ref);
+      if (voiceGuide) {
+        const voiceRef = storage.ref().child(`voiceGuide/${voiceGuide.name}`);
+        await voiceRef.put(voiceGuide);
+        voiceUrl = await voiceRef.getDownloadURL();
       }
-
-      const docRef = doc(db, "roomData", roomId);
-
-      await setDoc(docRef, {
-        buildingName: buildingName,
+      await addDoc(collection(db, "roomData"), {
+        buildingName: selectedBuilding,
         floorLevel: selectedFloor,
         roomCode: roomCode,
         roomName: roomName,
@@ -212,23 +155,20 @@ const UpdateRoom: React.FC<ContainerProps> = ({ name }) => {
         eta: eta,
         squareMeter: squareMeter,
         status: selectedStatus,
-        roomAnimation: glbUrl || roomAnimation,
-        voiceGuide: voiceUrl || voiceGuide,
+        roomAnimation: glbUrl,
+        voiceGuide: voiceUrl,
         textGuide: textGuides,
+        createdAt: now,
         updatedAt: now,
       });
 
-      console.log("Room Information updated successfully!");
-      toast.success("Room Information updated successfully!");
+      console.log("Room added successfully!");
+      toast.success("Room added successfully!");
       history.push("/Rooms");
     } catch (error) {
-      console.error("Error updating room information.", error);
-      alert("Error on adding updating room information.");
+      console.error("Error adding room: ", error);
+      alert("Error on adding room.");
     }
-  };
-
-  const Room = () => {
-    history.push("/Rooms");
   };
 
   return (
@@ -241,9 +181,8 @@ const UpdateRoom: React.FC<ContainerProps> = ({ name }) => {
           <div className="items-center justify-center text-base-content bg-base-300 lg:ps-64 ">
             <div className="w-full h-screen p-10 bg-base-100 rounded-tl-3xl">
               <div className="flex items-center space-x-2">
-                <h1 className="text-4xl font-bold">Update Room</h1>
+                <h1 className="text-4xl font-bold">Create Room</h1>
               </div>
-
               <div className="overflow-x-auto">
                 <table className="table">
                   <thead>
@@ -255,25 +194,32 @@ const UpdateRoom: React.FC<ContainerProps> = ({ name }) => {
                     <tr>
                       <th>Building Name:</th>
                       <td>
-                        <input
-                          type="text"
-                          placeholder="Buiding Name"
+                        <select
                           className="w-full max-w-xs input input-bordered"
-                          value={buildingName}
-                          onChange={(e) => setBuildingName(e.target.value)}
-                          readOnly
-                        />
+                          onChange={handleBuildingChange}
+                        >
+                          <option value="">Select Building Name</option>
+                          {buildingNames.sort().map((name, index) => (
+                            <option key={index} value={name}>
+                              {name}
+                            </option>
+                          ))}
+                        </select>
                       </td>
                       <th>Floor Level:</th>
                       <td>
-                        <input
-                          type="text"
-                          placeholder="Floor Level"
+                        <select
                           className="w-full max-w-xs input input-bordered"
-                          value={floorLevel}
-                          onChange={(e) => setFloorLevel(e.target.value)}
-                          readOnly
-                        />
+                          value={selectedFloor}
+                          onChange={handleFloorChange}
+                        >
+                          <option value="">Select Floor Level</option>
+                          {floorLevels.sort().map((floor, index) => (
+                            <option key={index} value={floor}>
+                              {floor}
+                            </option>
+                          ))}
+                        </select>
                       </td>
                     </tr>
                     <tr>
@@ -335,7 +281,7 @@ const UpdateRoom: React.FC<ContainerProps> = ({ name }) => {
                       <td>
                         <select
                           className="w-full max-w-xs input input-bordered"
-                          value={selectedStatus || status}
+                          value={selectedStatus}
                           onChange={handleStatutsChange}
                         >
                           <option value="available">Available</option>
@@ -352,30 +298,12 @@ const UpdateRoom: React.FC<ContainerProps> = ({ name }) => {
                           accept=".glb"
                           className="w-full max-w-xs file-input input-bordered"
                           onChange={(e) =>
-                            setRoomPathFile(
+                            setRoomAnimationPath(
                               e.target.files ? e.target.files[0] : null
                             )
                           }
                         />
                       </td>
-                      <th>Current Animation File:</th>
-                      <td>
-                        <input
-                          type="text"
-                          placeholder="Animation"
-                          className="w-full max-w-xs input input-bordered"
-                          value={
-                            roomAnimation
-                              ? roomAnimation
-                                  .substring(roomAnimation.lastIndexOf("/") + 1)
-                                  .split("?")[0]
-                              : ""
-                          }
-                          readOnly
-                        />
-                      </td>
-                    </tr>
-                    <tr>
                       <th>Voice Guide File:</th>
                       <td>
                         <input
@@ -383,26 +311,10 @@ const UpdateRoom: React.FC<ContainerProps> = ({ name }) => {
                           accept=".mp3"
                           className="w-full max-w-xs file-input input-bordered"
                           onChange={(e) =>
-                            setVoiceGuideFile(
+                            setVoiceGuide(
                               e.target.files ? e.target.files[0] : null
                             )
                           }
-                        />
-                      </td>
-                      <th>Current Voice Guide File:</th>
-                      <td>
-                        <input
-                          type="text"
-                          placeholder="Voice Guide"
-                          className="w-full max-w-xs input input-bordered"
-                          value={
-                            voiceGuide
-                              ? voiceGuide
-                                  .substring(voiceGuide.lastIndexOf("/") + 1)
-                                  .split("?")[0]
-                              : ""
-                          }
-                          readOnly
                         />
                       </td>
                     </tr>
@@ -447,15 +359,12 @@ const UpdateRoom: React.FC<ContainerProps> = ({ name }) => {
                   >
                     <Icon icon="icon-park-outline:back" className="w-10 h-10" />
                   </button>
-                  <button
-                    onClick={handleUpdateRoom}
-                    className="float-right btn"
-                  >
+                  <button onClick={createRoom} className="float-right btn">
                     <Icon
                       icon="icon-park-outline:add-three"
                       className="w-10 h-10"
                     />
-                    <span>Save</span>
+                    <span>Create</span>
                   </button>
                 </div>
               </div>
@@ -467,4 +376,4 @@ const UpdateRoom: React.FC<ContainerProps> = ({ name }) => {
   );
 };
 
-export default UpdateRoom;
+export default CreateRoom;
