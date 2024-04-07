@@ -21,6 +21,7 @@ export const roomData: Record<
       modelPath: string;
       voice: string;
       details: {
+        [x: string]: any;
         roomName: string;
         roomType: string;
         distance: string;
