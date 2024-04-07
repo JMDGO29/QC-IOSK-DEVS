@@ -41,19 +41,16 @@ interface otherModel {
 interface Room {
   id: string;
   buildingName: string;
-  floors: {
-    [floorName: string]: {
-      [roomCodeMap: string]: {
-        description: string;
-        roomCode: string;
-        squareMeter: number;
-        textGuide: string;
-        roomAnimation: string;
-        voiceGuide: string;
-        status: string;
-      };
-    };
-  };
+  floorLevel: string;
+  roomCode: string;
+  roomName: string;
+  distance: string;
+  eta: string;
+  squareMeter: string;
+  status: string;
+  roomAnimation: string;
+  voiceGuide: string;
+  textGuide: string;
 }
 
 const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
@@ -66,19 +63,35 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
   const [showModal, setShowModal] = useState(false);
   const [selectedBuilding, setSelectedBuilding] = useState("");
   const [selectedFloor, setSelectedFloor] = useState("");
-  const [selectedRoom, setSelectedRoom] = useState("");
+  const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   const [showOverview, setShowOverview] = useState(false);
 
   const [animation, setAnimation] = useState("");
   const [selectedRoomModel, setSelectedRoomModel] = useState("");
   const [selectedVoice, setSelectedVoice] = useState("");
 
-  const [modalContent, setModalContent] = useState("");
-  const [showError, setErrorModal] = useState(false);
+  const [modalContent, setModalContent] = useState(
+    "Selected room data not found."
+  );
+  const [errorModal, setErrorModal] = useState(false);
   const [showBuildingInfo, setBuildingInfoModal] = useState(false);
+
+  const uniqueFloorLevels = [
+    ...new Set(
+      rooms
+        .filter((room) => room.buildingName === selectedBuilding)
+        .map((room) => room.floorLevel)
+    ),
+  ];
 
   const closeModal = () => {
     setShowModal(false);
+    setErrorModal(false);
+    setBuildingInfoModal(false);
+  };
+
+  const closeErrorModal = () => {
+    setShowModal(true);
     setErrorModal(false);
     setBuildingInfoModal(false);
   };
@@ -95,13 +108,13 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
     setShowOverview(false);
   };
 
-  const clickFloor = useCallback((floor: string) => {
-    console.log("Selected floor:", floor);
-    setSelectedFloor(floor);
+  const clickFloor = useCallback((floor: string, floorLevel: string) => {
+    console.log("Selected floor:", floorLevel);
+    setSelectedFloor(floorLevel);
     setShowOverview(false);
   }, []);
 
-  const selectRoom = useCallback((room: string) => {
+  const selectRoom = useCallback((room: Room) => {
     console.log("Selected Room:", room);
     setSelectedRoom(room);
   }, []);
@@ -164,11 +177,6 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
           return { ...roomData, id: doc.id } as Room;
         });
 
-        // Extract unique floor values
-        const uniqueFloors = Array.from(
-          new Set(roomsData.map((room) => room.floors))
-        );
-
         setRooms(roomsData);
       } catch (error) {
         console.error("Error fetching rooms: ", error);
@@ -201,40 +209,23 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
     console.log(`Clicked on ${buildingName}`);
   }, []);
 
-  const clickAnimation = async (room: string) => {
+  const clickAnimation = async (roomCode: string) => {
     try {
-      const roomDataRef = collection(db, "roomData");
-      const roomQuery = query(
-        roomDataRef,
-        where("buildingName", "==", selectedBuilding)
+      const roomData = rooms.find(
+        (room) =>
+          room.roomCode === roomCode &&
+          room.buildingName === selectedBuilding &&
+          room.floorLevel === selectedFloor
       );
-      const roomSnapshot = await getDocs(roomQuery);
 
-      roomSnapshot.forEach((doc) => {
-        const floors = doc.data().floors;
-        Object.keys(floors).forEach((floorKey) => {
-          const rooms = floors[floorKey];
-          const selectedRoomData = rooms[room];
-
-          if (selectedRoomData) {
-            // If the room is found, extract animation-related fields and set the state
-            setAnimation(selectedRoomData.roomCode);
-            if (selectedRoomData.roomAnimation) {
-              setSelectedRoomModel(selectedRoomData.roomAnimation);
-              setSelectedVoice(selectedRoomData.voiceGuide);
-              // Set other relevant state variables here if needed
-              // setIsAnimationActive(true);
-              return; // Exit the loop once the room is found}else{}
-            } else {
-              setModalContent("Selected room data not found.");
-              setErrorModal(true);
-            }
-          } else {
-            setModalContent("Selected room data not found.");
-            setErrorModal(true);
-          }
-        });
-      });
+      if (roomData) {
+        setAnimation(roomData.roomCode);
+        setSelectedRoomModel(roomData.roomAnimation);
+        setSelectedVoice(roomData.voiceGuide);
+        setErrorModal(true);
+      } else {
+        setModalContent("Selected room data not found.");
+      }
     } catch (error) {
       console.error("Error fetching animation data:", error);
     }
@@ -246,12 +237,12 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
         <>
           <Animation
             name={""}
-            roomName={selectedRoom}
+            roomName={selectedRoom?.roomName || ""}
             modelPath={selectedRoomModel}
             voice={selectedVoice}
             selectedBuilding={selectedBuilding}
             selectedFloor={selectedFloor}
-            selectedRoom={selectedRoom}
+            selectedRoom={selectedRoom?.roomCode || ""}
           />
           <button
             onClick={clickSB}
@@ -326,27 +317,22 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
               <div className="relative flex justify-center space-x-3">
                 <div className="w-20 h-full px-3 mr-2 shadow-lg rounded-3xl">
                   <div className="flex flex-col justify-center py-3 space-y-3 border-b-2 border-base-100">
-                    {rooms
-                      .filter((room) => room.id === selectedBuilding)
-                      .map((room) => {
-                        const floorNames = Object.keys(room.floors);
-                        // Sort the floor names alphabetically
-                        floorNames.sort();
-                        return (
-                          <div key={room.id}>
-                            {floorNames.map((floorName) => (
-                              <div key={floorName}>
-                                <button
-                                  className={`w-full h-10 bg-base-100 btn `}
-                                  onClick={() => clickFloor(floorName)}
-                                >
-                                  {floorName}
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        );
-                      })}
+                    {selectedBuilding && (
+                      <>
+                        <>
+                          <button
+                            onClick={handleFloorsClick}
+                            className={`h-10 btn  hover:bg-base-content hover:text-base-300 ${
+                              !showOverview
+                                ? "bg-transparent btn-block shadow-none text-lg text-base-content"
+                                : ""
+                            }`}
+                          >
+                            Floors
+                          </button>
+                        </>
+                      </>
+                    )}
                   </div>
                   {showOverview ? (
                     <>
@@ -354,33 +340,27 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                     </>
                   ) : (
                     <div>
-                      {rooms
-                        .filter((room) => room.id === selectedBuilding)
-                        .map((room) => {
-                          const floorNames = Object.keys(room.floors);
-                          // Sort the floor names alphabetically
-                          floorNames.sort();
-                          return (
-                            <div key={room.id}>
-                              {floorNames.map((floorName) => {
-                                // Extract the number from floorName
-                                const match = floorName.match(/\d+/);
-                                const floorNumber = match ? match[0] : ""; // If match is null, assign an empty string
-                                return (
-                                  <div key={floorName}>
-                                    <button
-                                      className={`w-full h-10 bg-base-100 btn `}
-                                      onClick={() => clickFloor(floorName)}
-                                    >
-                                      {floorNumber}{" "}
-                                      {/* Display only the number */}
-                                    </button>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          );
-                        })}
+                      {selectedBuilding && !showOverview && (
+                        <div className="h-full overflow-y-auto">
+                          <div className="grid grid-cols-1 gap-2 my-3">
+                            {uniqueFloorLevels.sort().map((floorLevel) => (
+                              <button
+                                key={floorLevel}
+                                className={`w-full h-10 bg-bsase-100 btn ${
+                                  selectedFloor === `${floorLevel}`
+                                    ? "bg-base-content text-base-100"
+                                    : "hover:bg-base-200"
+                                }`}
+                                onClick={() =>
+                                  clickFloor(selectedBuilding, floorLevel)
+                                }
+                              >
+                                {floorLevel}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -418,41 +398,39 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                     )}
                   </div>
                   {showOverview ? (
-                    <div className="overflow-y-auto "></div>
+                    <>
+                      <div className="h-full overflow-y-auto"></div>
+                    </>
                   ) : (
-                    <div className="h-[530px]">
-                      {rooms
-                        .filter((room) => room.id === selectedBuilding)
-                        .map((room) => {
-                          const floorNames = Object.keys(room.floors);
-                          // Sort the floor names alphabetically
-                          floorNames.sort();
-                          return (
-                            <div key={room.id}>
-                              {floorNames.map((floorName) => {
-                                // Extract the number from floorName
-                                const match = floorName.match(/\d+/);
-                                const floorNumber = match ? match[0] : ""; // If match is null, assign an empty string
-                                return (
-                                  <div key={floorName}>
-                                    <button
-                                      className={`w-full h-10 bg-base-100 btn `}
-                                      onClick={() => clickFloor(floorName)}
-                                    >
-                                      {floorNumber}{" "}
-                                      {/* Display only the number */}
-                                    </button>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          );
-                        })}
+                    <div>
+                      {selectedBuilding && !showOverview && (
+                        <div className="h-full overflow-y-auto">
+                          <div className="grid grid-cols-1 gap-2 my-3">
+                            {uniqueFloorLevels.sort().map((floorLevel) => (
+                              <button
+                                key={floorLevel}
+                                className={`w-full h-10 bg-bsase-100 btn ${
+                                  selectedFloor === `${floorLevel}`
+                                    ? "bg-base-content text-base-100"
+                                    : "hover:bg-base-200"
+                                }`}
+                                onClick={() =>
+                                  clickFloor(selectedBuilding, floorLevel)
+                                }
+                              >
+                                {floorLevel}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
+
                 <div className="flex flex-col w-full space-y-3 transition-all duration-150 ease-in-out">
                   <div className="flex items-center justify-between w-full ">
+                    {" "}
                     <button
                       onClick={handleOverviewClick}
                       className={` rounded-xl text-3xl p-2 font-bold mx-2 mt-4 h-14 hover:bg-base-300 ${
@@ -504,29 +482,31 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                               </h1>
                             </div>
                           )}
-                          {rooms
-                            .filter((room) => room.id === selectedBuilding)
-                            .map((room) => {
-                              const roomCodes = Object.keys(
-                                room.floors[selectedFloor] || {}
-                              );
-                              // Sort the room codes alphabetically
-                              roomCodes.sort();
-                              return (
-                                <div key={room.id}>
-                                  {roomCodes.map((roomCodeMap) => (
-                                    <div key={roomCodeMap}>
-                                      <button
-                                        className="btn"
-                                        onClick={() => selectRoom(roomCodeMap)}
-                                      >
-                                        {roomCodeMap}
-                                      </button>
-                                    </div>
-                                  ))}
+                          {selectedBuilding &&
+                            selectedFloor &&
+                            rooms
+
+                              .filter(
+                                (room) =>
+                                  room.floorLevel === selectedFloor &&
+                                  room.buildingName === selectedBuilding
+                              )
+                              .sort((a, b) =>
+                                a.roomCode.localeCompare(b.roomCode)
+                              )
+                              .map((room) => (
+                                <div
+                                  key={room.id}
+                                  className="flex flex-col mb-4"
+                                >
+                                  <button
+                                    className={`h-10 bg-base-100 btn flex`}
+                                    onClick={() => selectRoom(room)}
+                                  >
+                                    {room.roomCode}
+                                  </button>
                                 </div>
-                              );
-                            })}
+                              ))}
                         </div>
                       </div>
                     )}
@@ -536,7 +516,6 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                           <div className="w-full p-6 shadow-inner bg-base-200 h-96 rounded-2xl">
                             <div className="flex w-full h-full space-x-3 ">
                               <div className="flex flex-col pr-3 space-y-3 overflow-x-auto">
-                                {" "}
                                 {/* Render building information here */}
                                 {rooms.map((building, index) => (
                                   <button
@@ -558,6 +537,7 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                                 <h1 className="text-3xl font-semibold text-base-content">
                                   Details
                                 </h1>
+                                {/* Render building data here */}
                                 {selectedBuilding && (
                                   <div className="p-2 bg-gray-200 rounded">
                                     <h3 className="font-semibold">
@@ -594,58 +574,56 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                     ) : (
                       <div className="w-full h-auto m-6 mt-0 shadow-inner bg-base-300 rounded-2xl">
                         <div className="flex flex-col items-center p-0">
-                          <div className="w-full p-6 shadow-inner bg-base-200 h-[375px] rounded-2xl">
+                          <div className="w-full p-6 shadow-inner bg-base-200 h-[420px] rounded-2xl">
                             <div className="relative flex flex-col w-full h-full space-y-3">
                               <div className="text-base-content">
-                                {rooms
-                                  .filter(
-                                    (room) => room.id === selectedBuilding
-                                  )
-                                  .map((room) => {
-                                    const roomCodes = Object.keys(
-                                      room.floors[selectedFloor] || {}
-                                    );
-                                    // Sort the room codes alphabetically
-                                    roomCodes.sort();
-                                    return (
-                                      <div key={room.id}>
-                                        {roomCodes.map((roomCodeMap) => {
-                                          const roomDetails =
-                                            room.floors[selectedFloor][
-                                              roomCodeMap
-                                            ];
-                                          return (
-                                            selectedRoom === roomCodeMap && (
-                                              <div key={roomCodeMap}>
-                                                <p>
-                                                  Room Code:{" "}
-                                                  {roomDetails.roomCode}
-                                                </p>
-                                                <p>
-                                                  Description:{" "}
-                                                  {roomDetails.description}
-                                                </p>
-
-                                                {/* Render other room details as needed */}
-                                                <div className="w-full p-3">
-                                                  <button
-                                                    className=" btn btn-secondary btn-block"
-                                                    onClick={() =>
-                                                      clickAnimation(
-                                                        selectedRoom
-                                                      )
-                                                    }
-                                                  >
-                                                    Get Direction {roomCodeMap}
-                                                  </button>
-                                                </div>
-                                              </div>
+                                {selectedBuilding &&
+                                  selectedFloor &&
+                                  selectedRoom && (
+                                    <div>
+                                      <ul className="space-y-2 text-2xl">
+                                        <h1 className="mb-5 -mt-0 text-3xl font-bold text-center">
+                                          Details
+                                        </h1>
+                                        <li>
+                                          <b>Name: {selectedRoom.roomName}</b>
+                                        </li>
+                                        <li>
+                                          <b>
+                                            Floor: {selectedRoom.floorLevel}
+                                          </b>
+                                        </li>
+                                        <li>
+                                          <b>
+                                            Distance: {selectedRoom.distance}
+                                          </b>
+                                        </li>
+                                        <li>
+                                          <b>ETA: {selectedRoom.eta}</b>
+                                        </li>
+                                        <li>
+                                          <b>
+                                            Size: {selectedRoom.squareMeter}
+                                          </b>
+                                        </li>
+                                        <li>
+                                          <b>Status: {selectedRoom.status}</b>
+                                        </li>
+                                      </ul>
+                                      <div className="w-full p-3">
+                                        <button
+                                          className=" btn btn-secondary btn-block"
+                                          onClick={() =>
+                                            clickAnimation(
+                                              selectedRoom.roomCode
                                             )
-                                          );
-                                        })}
+                                          }
+                                        >
+                                          Get Direction {selectedRoom.roomCode}
+                                        </button>
                                       </div>
-                                    );
-                                  })}
+                                    </div>
+                                  )}
                               </div>
                             </div>
                           </div>
@@ -659,15 +637,15 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
           </Modal>
           <Modal
             className="flex items-center justify-center w-screen h-screen transition-all duration-150 ease-in-out bg-black/60"
-            isOpen={showError}
+            isOpen={errorModal}
             onRequestClose={() => setShowModal(false)}
             contentLabel="Alert"
           >
             <div className="h-56 p-6 shadow-xl bg-base-100 rounded-2xl w-96">
               <p className="text-3xl text-center">{modalContent}</p>
               <div className="flex justify-center space-x-3 mt-14">
-                <button onClick={closeModal} className="btn bg-base-300">
-                  <Icon icon="line-md:close-small" className="w-10 h-10" />{" "}
+                <button onClick={closeErrorModal} className="btn bg-base-300">
+                  <Icon icon="line-md:close-small" className="w-10 h-10" />
                   Close
                 </button>
               </div>

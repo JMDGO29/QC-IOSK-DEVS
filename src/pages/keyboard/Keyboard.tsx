@@ -2,35 +2,31 @@ import React, { FunctionComponent, useState, useRef, useEffect } from "react";
 import Keyboard from "react-simple-keyboard";
 import "react-simple-keyboard/build/css/index.css";
 import { KeyboardRef } from "../Search";
-import { collection, getDocs, query } from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../../components/utils/firebase";
 
 interface IProps {
   onChange: (input: string) => void;
   keyboardRef: React.MutableRefObject<KeyboardRef | undefined>;
-  onSuggestionsUpdate: (suggestions: Suggestion[]) => void;
+  onFilteredRoomsChange: (filteredRooms: Room[]) => void;
 }
 
 interface Room {
   id: string;
   buildingName: string;
-  floors: {
-    [floorName: string]: {
-      [roomCodeMap: string]: {
-        description: string;
-        roomCode: string;
-        squareMeter: number;
-        textGuide: string;
-        roomAnimation: string;
-        voiceGuide: string;
-        status: string;
-      };
-    };
-  };
+  floorLevel: string;
+  roomCode: string;
+  roomName: string;
+  distance: string;
+  eta: string;
+  squareMeter: string;
+  status: string;
+  roomAnimation: string;
+  voiceGuide: string;
+  textGuide: string;
 }
 
 interface Suggestion {
-  description: string;
   roomCode: string;
   // Add other properties as needed
 }
@@ -38,12 +34,12 @@ interface Suggestion {
 const KeyboardWrapper: FunctionComponent<IProps> = ({
   onChange,
   keyboardRef,
-  onSuggestionsUpdate,
+  onFilteredRoomsChange,
 }) => {
   const [layoutName, setLayoutName] = useState("default");
   const internalKeyboardRef = useRef<any>(null);
   const [rooms, setRooms] = useState<Room[]>([]);
-  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [filteredRooms, setFilteredRooms] = useState<Room[]>([]);
 
   useEffect(() => {
     fetchRooms();
@@ -52,8 +48,7 @@ const KeyboardWrapper: FunctionComponent<IProps> = ({
   const fetchRooms = async () => {
     try {
       const roomsCollection = collection(db, "roomData");
-      const queryRoom = query(roomsCollection);
-      const roomsSnapshot = await getDocs(queryRoom);
+      const roomsSnapshot = await getDocs(roomsCollection);
       const roomsData = roomsSnapshot.docs.map((doc) => {
         const roomData = doc.data() as Room;
         return { ...roomData, id: doc.id } as Room;
@@ -68,49 +63,45 @@ const KeyboardWrapper: FunctionComponent<IProps> = ({
   const onKeyPress = (button: string) => {
     if (button === "{shift}" || button === "{lock}") {
       setLayoutName(layoutName === "default" ? "shift" : "default");
+    } else if (button === "{enter}") {
+      const inputValue = internalKeyboardRef.current.getInput();
+      console.log("Input value:", inputValue);
+
+      if (rooms.length > 0) {
+        const filteredRooms = rooms.filter(
+          (room) =>
+            (room.roomCode &&
+              room.roomCode.toLowerCase().includes(inputValue)) ||
+            (room.roomName && room.roomName.toLowerCase().includes(inputValue))
+        );
+
+        setFilteredRooms(filteredRooms); // Update filtered rooms
+        onFilteredRoomsChange(filteredRooms); // Call callback function
+        console.log(filteredRooms);
+      }
     }
   };
 
   const onChangeInput = (input: string) => {
-    onChange(input.toLowerCase());
-
-    // Filter room names based on input
-    const filteredSuggestions: Suggestion[] = [];
-    for (const buildingName in rooms) {
-      const floors = rooms[buildingName].floors;
-      for (const floorName in floors) {
-        const roomCodeMap = floors[floorName];
-        for (const roomCode in roomCodeMap) {
-          const room = roomCodeMap[roomCode];
-          if (
-            room.roomCode.toLowerCase().includes(input) ||
-            room.description.toLowerCase().includes(input)
-          ) {
-            // Map room to suggestion
-            const suggestion: Suggestion = {
-              description: room.description,
-              roomCode: room.roomCode,
-              // Add other properties as needed
-            };
-            filteredSuggestions.push(suggestion);
-          }
-        }
-      }
-    }
-    // Set suggestions state
-    setSuggestions(filteredSuggestions);
-    onSuggestionsUpdate(filteredSuggestions);
+    onChange(input); // Update input state
+    const inputValue = input.toLowerCase();
+    const filteredRooms = rooms.filter(
+      (room) =>
+        (room.roomCode && room.roomCode.toLowerCase().includes(inputValue)) ||
+        (room.roomName && room.roomName.toLowerCase().includes(inputValue))
+    );
+    onFilteredRoomsChange(filteredRooms); // Update filtered rooms
   };
 
   keyboardRef.current = internalKeyboardRef.current;
 
   return (
-    <div className="w-full h-full flex justify-center">
+    <div className="flex justify-center w-full h-full">
       <Keyboard
         keyboardRef={(r) => (internalKeyboardRef.current = r)}
         layoutName={layoutName}
-        onChange={onChangeInput}
         onKeyPress={onKeyPress}
+        onChange={onChangeInput}
       />
     </div>
   );
