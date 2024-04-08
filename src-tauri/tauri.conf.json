@@ -55,19 +55,15 @@
     },
     "windows": [
       {
-        "fullscreen": false,
+        "fullscreen": true,
         "height": 600,
-        "resizable": true,
+        "resizable": false,
         "title": "QC-IOSK",
-        "width": 800
-      },
-      {
-        "width": 400,
-        "height": 200,
+        "width": 800,
         "decorations": false,
-        "url": "splashscreen.html",
-        "label": "splashscreen"
+        "alwaysOnTop": true
       }
+      
     ]
   }
 }

@@ -28,7 +28,7 @@ const AdminLogin: React.FC = () => {
           if (user.emailVerified) {
             storeUserInformation(user);
             toast.success("Sign in successfully!", {
-              position: toast.POSITION.BOTTOM_RIGHT,
+              position: "bottom-right",
               className: " bg-base-100 font-bold rounded-2xl text-base-content ",
               theme: "dark",
               icon: (
@@ -47,18 +47,18 @@ const AdminLogin: React.FC = () => {
             // Send verification email if not verified
             sendVerificationEmail(email);
             toast.warning("Please verify your account first", {
-              position: toast.POSITION.BOTTOM_RIGHT,
+              position: "bottom-right",
             });
           }
         } else {
           toast.warning("Please verify your account first", {
-            position: toast.POSITION.BOTTOM_RIGHT,
+            position: "bottom-right",
           });
         }
       })
       .catch((error) => {
         toast.error("Incorrect email or password", {
-          position: toast.POSITION.BOTTOM_RIGHT,
+          position: "bottom-right",
         });
         console.error(error.code, error.message);
       });
@@ -77,12 +77,12 @@ const AdminLogin: React.FC = () => {
       sendEmailVerification(user)
         .then(() => {
           toast.success("Verification email has been sent!", {
-            position: toast.POSITION.BOTTOM_RIGHT,
+            position: "bottom-right",
           });
         })
         .catch((error) => {
           toast.error("Failed to send verification email, please try again later", {
-            position: toast.POSITION.BOTTOM_RIGHT,
+            position: "bottom-right",
           });
           console.error("Error sending verification email:", error);
         });

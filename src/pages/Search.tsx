@@ -153,12 +153,15 @@ const SearchTab: React.FC = () => {
             </>
           ) : (
             <>
+           <div className="z-50 absolute bg-red-500 top-0 left-0 ">
+           <Backbtn name={""} />
+           </div>
               <div className="h-screen overflow-hidden">
                 <div className="relative overflow-hidden ">
                   <div className="max-h-screen px-4 mx-auto max-w-screen sm:px-6 lg:px-8">
                     <div className="flex flex-col items-center justify-center w-screen h-screen text-center mt-72">
                       <h1 className="w-screen text-4xl font-bold text-center text-white sm:text-6xl">
-                        "Search"
+                        Search
                       </h1>
 
                       <div className="z-50 flex-col items-center justify-center w-screen h-screen ">
@@ -168,17 +171,17 @@ const SearchTab: React.FC = () => {
                               <input
                                 value={input}
                                 placeholder={
-                                  "Tap on the virtual keyboard to start"
+                                  "Are you looking for something?"  
                                 }
                                 onChange={(e) => onChangeInput(e)}
                                 onClick={handleSearchBarClick}
                                 onBlur={handleSearchBarBlur}
-                                className="z-50 w-full h-16 p-5 text-black bg-white outline-none rounded-3xl"
+                                className="z-50 w-full h-16 p-5 text-black bg-white outline-none rounded-xl"
                               />
                             </div>
 
                             <div className="w-full">
-                              <div className="w-auto h-auto ">
+                              <div className="w-auto h-auto bg-white rounded-3xl">
                                 <KeyboardWrapper
                                   keyboardRef={keyboard}
                                   onChange={setInput}
@@ -189,7 +192,7 @@ const SearchTab: React.FC = () => {
                           </div>
                           {input && (
                             <div className="w-96">
-                              <div className="h-auto p-3 bg-white w-96 rounded-3xl">
+                              <div className="h-auto p-3 bg-white w-96 rounded-xl">
                                 {filteredRooms.length > 0 ? (
                                   <div className="w-full py-6 overflow-auto h-96">
                                     <h1 className="text-black">Result:</h1>
@@ -199,9 +202,9 @@ const SearchTab: React.FC = () => {
                                           a.roomCode.localeCompare(b.roomCode)
                                         )
                                         .map((room, index) => (
-                                          <li key={index} className="space-">
+                                          <li key={index} className="space-y-2">
                                             <button
-                                              className=" btn btn-block btn-secondary"
+                                              className=" btn btn-block btn-primary"
                                               onClick={() =>
                                                 handleSuggestionClick(
                                                   room.roomCode,

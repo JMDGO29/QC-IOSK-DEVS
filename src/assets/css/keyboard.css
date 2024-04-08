@@ -19,30 +19,30 @@ button {
 }
 
 
-/* .simple-keyboard {
-  background-color: #111111;
+.simple-keyboard {
+  
   max-width: 850px;
   max-height: 550px;
   color: black;
   z-index: 9999;
-  border-radius: 20px;
+  border-radius: 15px;
   padding: 20px;
-} */
+}
 
-/* .simple-keyboard.hg-theme-default.myTheme {
+.simple-keyboard.hg-theme-default.myTheme {
   margin: 10px;
   width: calc(100% - 20px);
-} */
+}
 
-/* .simple-keyboard.hg-layout-default .hg-button.hg-red {
+.simple-keyboard.hg-layout-default .hg-button.hg-red {
   background: rgb(255, 0, 0, 0.7);
   color: white;
-} */
+}
 
-/* .simple-keyboard.hg-layout-default .hg-button.hg-highlight {
+.simple-keyboard.hg-layout-default .hg-button.hg-highlight {
   box-shadow: 0px 0px 40px 5px rgba(255, 255, 0, 0.5);
   z-index: 1;
-} */
+}
 
 /* input {
   width: 100%;
@@ -53,6 +53,6 @@ button {
   box-sizing: border-box;
 } */
 
-/* .simple-keyboard {
+.simple-keyboard {
   max-width: 850px;
-} */
+}
