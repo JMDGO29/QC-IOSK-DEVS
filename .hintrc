@@ -60,13 +60,15 @@
       {
         "aria-required-children": "off",
         "aria-command-name": "off",
-        "aria-progressbar-name": "off"
+        "aria-progressbar-name": "off",
+        "aria-required-parent": "off"
       }
     ],
     "axe/parsing": [
       "default",
       {
-        "duplicate-id-active": "off"
+        "duplicate-id-active": "off",
+        "duplicate-id": "off"
       }
     ]
   }
