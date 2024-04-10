@@ -10,11 +10,14 @@ import {
   getDocs,
   query,
   where,
+  addDoc,
+  serverTimestamp,
 } from "firebase/firestore";
 import firebaseConfig, { db } from "../../utils/firebase";
 import { initializeApp } from "firebase/app";
 import Animation from "./animation/Animation";
 import Clouds from "./Clouds";
+import textGuide from '../../../data/textGuide';
 
 interface ContainerProps {
   name: string;
@@ -50,7 +53,7 @@ interface Room {
   status: string;
   roomAnimation: string;
   voiceGuide: string;
-  textGuide: string;
+  textGuide: string[];
 }
 
 const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
@@ -69,6 +72,7 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
   const [animation, setAnimation] = useState("");
   const [selectedRoomModel, setSelectedRoomModel] = useState("");
   const [selectedVoice, setSelectedVoice] = useState("");
+  const [selectedTextGuide, setSelectedTextGuide] = useState<string[]>([""]);
 
   const [modalContent, setModalContent] = useState(
     "Selected room data not found."
@@ -211,6 +215,8 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
 
   const clickAnimation = async (roomCode: string) => {
     try {
+      const now = serverTimestamp();
+
       const roomData = rooms.find(
         (room) =>
           room.roomCode === roomCode &&
@@ -222,7 +228,21 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
         setAnimation(roomData.roomCode);
         setSelectedRoomModel(roomData.roomAnimation);
         setSelectedVoice(roomData.voiceGuide);
+        setSelectedTextGuide(roomData.textGuide);
+        setSelectedTextGuide(roomData.textGuide);
         setErrorModal(true);
+
+        if (roomData.roomAnimation) {
+          const firestore = getFirestore(initializeApp(firebaseConfig));
+          const roomRef = collection(firestore, "visitorData2");
+          await addDoc(roomRef, {
+            roomCode: roomData.roomCode,
+            selectedFloor: selectedFloor,
+            selectedBuilding: selectedBuilding,
+
+            createdAt: now,
+          });
+        }
       } else {
         setModalContent("Selected room data not found.");
       }
@@ -240,6 +260,7 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
             roomName={selectedRoom?.roomName || ""}
             modelPath={selectedRoomModel}
             voice={selectedVoice}
+            textGuide={selectedRoom?.textGuide || []}
             selectedBuilding={selectedBuilding}
             selectedFloor={selectedFloor}
             selectedRoom={selectedRoom?.roomCode || ""}
@@ -292,17 +313,19 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                 />
               ))}
 
-              {buildings.map((building) => (
-                <ModelViewer
-                  key={building.id}
-                  name={building.buildingName}
-                  modelPath={building.buildingPath}
-                  position={building.buildingPosition}
-                  scale={building.buildingScale}
-                  textPosition={building.buildingLabelPosition}
-                  onClick={() => handleModelClick(building.id)}
-                />
-              ))}
+              {buildings
+                .filter((building) => building.status !== "not available")
+                .map((building) => (
+                  <ModelViewer
+                    key={building.id}
+                    name={building.buildingName}
+                    modelPath={building.buildingPath}
+                    position={building.buildingPosition}
+                    scale={building.buildingScale}
+                    textPosition={building.buildingLabelPosition}
+                    onClick={() => handleModelClick(building.id)}
+                  />
+                ))}
 
               {/* <RotatingMesh /> */}
             </Stage>
@@ -313,7 +336,7 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
             onRequestClose={closeModal}
             contentLabel="Building Information"
           >
-            <div className="w-6/12 py-0 pl-0  shadow-xl m-80 bg-base-100 rounded-3xl h-fit">
+            <div className="w-6/12 py-0 pl-0 shadow-xl m-80 bg-base-100 rounded-3xl h-fit">
               <div className="relative flex justify-center space-x-3">
                 <div className="w-20 h-full px-3 mr-2 shadow-lg rounded-3xl">
                   <div className="flex flex-col justify-center py-3 space-y-3 border-b-2 border-base-100">
@@ -322,11 +345,10 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                         <>
                           <button
                             onClick={handleFloorsClick}
-                            className={`h-10 btn  hover:bg-base-content hover:text-base-300 ${
-                              !showOverview
+                            className={`h-10 btn  hover:bg-base-content hover:text-base-300 ${!showOverview
                                 ? "bg-transparent btn-block shadow-none text-lg text-base-content"
                                 : ""
-                            }`}
+                              }`}
                           >
                             Floors
                           </button>
@@ -343,27 +365,54 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                       {selectedBuilding && !showOverview && (
                         <div className="h-full overflow-y-auto">
                           <div className="grid grid-cols-1 gap-2 my-3">
-                            {uniqueFloorLevels.sort().map((floorLevel) => (
-                              <button
-                                key={floorLevel}
-                                className={`w-full h-10 bg-bsase-100 btn ${selectedFloor === `${floorLevel}`
-                                  ? "bg-base-content text-base-100"
-                                  : "hover:bg-base-200"
-                                  }`}
-                                onClick={() =>
-                                  clickFloor(selectedBuilding, floorLevel)
-                                }
-                              >
-                                {floorLevel}
-                              </button>
-                            ))}
+                            {uniqueFloorLevels
+                              .sort()
+                              .map((floorLevel, index) => (
+                                <button
+                                  key={floorLevel}
+                                  className={`w-full h-10 bg-bsase-100 btn ${selectedFloor === `${floorLevel}`
+                                      ? "bg-base-content text-base-100"
+                                      : "hover:bg-base-200"
+                                    }`}
+                                  onClick={() =>
+                                    clickFloor(
+                                      selectedBuilding,
+                                      selectedBuilding ===
+                                        "Bautista Building" && index === 0
+                                        ? "LG"
+                                        : selectedBuilding ===
+                                          "Bautista Building" && index === 1
+                                          ? "G"
+                                          : selectedBuilding ===
+                                            "Bautista Building" &&
+                                            index >= 2 &&
+                                            index <= 8
+                                            ? `F${index}`
+                                            : `F${index + 1}`
+                                    )
+                                  }
+                                >
+                                  {selectedBuilding === "Bautista Building" &&
+                                    index === 0
+                                    ? "LG"
+                                    : selectedBuilding ===
+                                      "Bautista Building" && index === 1
+                                      ? "G"
+                                      : selectedBuilding ===
+                                        "Bautista Building" &&
+                                        index >= 2 &&
+                                        index <= 8
+                                        ? `F${index}`
+                                        : `F${index + 1}`}
+                                </button>
+                              ))}
                           </div>
                         </div>
                       )}
                     </div>
                   )}
                 </div>
-                <div className="absolute w-20 h-full px-3 shadow-inner -left-3 bg-base-300 rounded-3xl">
+                <div className="absolute w-20 h-full px-3 shadow-inner -left-3 bg-base-300 rounded-l-3xl">
                   <div className="flex flex-col justify-center pt-3">
                     {selectedBuilding && (
                       <>
@@ -374,8 +423,8 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                               : handleOverviewClick
                           }
                           className={` btn   w-full bg-transparent btn-square shadow-none ${!showOverview
-                            ? "bg-transparent btn-square shadow-none font-semibold text-base-content"
-                            : ""
+                              ? "bg-transparent btn-square shadow-none font-semibold text-base-content"
+                              : ""
                             }`}
                         >
                           {showOverview ? (
@@ -404,20 +453,47 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                       {selectedBuilding && !showOverview && (
                         <div className="h-full overflow-y-auto">
                           <div className="grid grid-cols-1 gap-2 my-3">
-                            {uniqueFloorLevels.sort().map((floorLevel) => (
-                              <button
-                                key={floorLevel}
-                                className={`w-full h-10 bg-bsase-100 btn ${selectedFloor === `${floorLevel}`
-                                  ? "bg-base-content text-base-100"
-                                  : "hover:bg-base-200"
-                                  }`}
-                                onClick={() =>
-                                  clickFloor(selectedBuilding, floorLevel)
-                                }
-                              >
-                                {floorLevel}
-                              </button>
-                            ))}
+                            {uniqueFloorLevels
+                              .sort()
+                              .map((floorLevel, index) => (
+                                <button
+                                  key={floorLevel}
+                                  className={`w-full h-10 bg-bsase-100 btn ${selectedFloor === `${floorLevel}`
+                                      ? "bg-base-content text-base-100"
+                                      : "hover:bg-base-200"
+                                    }`}
+                                  onClick={() =>
+                                    clickFloor(
+                                      selectedBuilding,
+                                      selectedBuilding ===
+                                        "Bautista Building" && index === 0
+                                        ? "LG"
+                                        : selectedBuilding ===
+                                          "Bautista Building" && index === 1
+                                          ? "G"
+                                          : selectedBuilding ===
+                                            "Bautista Building" &&
+                                            index >= 2 &&
+                                            index <= 8
+                                            ? `F${index}`
+                                            : `F${index + 1}`
+                                    )
+                                  }
+                                >
+                                  {selectedBuilding === "Bautista Building" &&
+                                    index === 0
+                                    ? "LG"
+                                    : selectedBuilding ===
+                                      "Bautista Building" && index === 1
+                                      ? "G"
+                                      : selectedBuilding ===
+                                        "Bautista Building" &&
+                                        index >= 2 &&
+                                        index <= 8
+                                        ? `F${index}`
+                                        : `F${index + 1}`}
+                                </button>
+                              ))}
                           </div>
                         </div>
                       )}
@@ -425,14 +501,14 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                   )}
                 </div>
 
-                <div className="flex flex-col w-full space-y-3">
-                  <div className="flex items-center justify-between w-full  ">
+                <div className="flex flex-col w-full space-y-3 transition-all duration-150 ease-in-out">
+                  <div className="flex items-center justify-between w-full ">
                     {" "}
                     <button
                       onClick={handleOverviewClick}
                       className={` rounded-xl text-3xl p-2 font-bold mx-2 mt-4 h-14 hover:bg-base-300 ${showOverview
-                        ? "hover:bg-transparent  text-base-content w-auto mt-4 h-14 mx-4"
-                        : ""
+                          ? "hover:bg-transparent  text-base-content w-auto mt-4 h-14 mx-4"
+                          : ""
                         }`}
                     >
                       {selectedBuilding}
@@ -440,7 +516,7 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                     <div className="flex">
                       <button
                         onClick={handleBuildingInfoClick}
-                        className="mt-5 mr-5 bg-transparent btn btn-square hover:bg-base-content hover:text-white"
+                        className="mt-5 mr-5 bg-transparent border-none shadow-none btn btn-square hover:bg-base-content hover:text-white"
                       >
                         <Icon
                           icon="akar-icons:chat-question"
@@ -449,7 +525,7 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                       </button>
                       <button
                         onClick={closeModal}
-                        className="mt-5 mr-5 bg-transparent btn btn-square hover:bg-red-400 hover:text-white"
+                        className="mt-5 mr-5 bg-transparent border-none shadow-none btn btn-square hover:bg-red-400 hover:text-white"
                       >
                         <Icon
                           icon="line-md:close-small"
@@ -461,7 +537,7 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
 
                   <div className="flex items-start justify-center w-full h-full ">
                     {!showOverview && (
-                      <div className="flex flex-col justify-between h-auto bg-base-200 rounded-3xl">
+                      <div className="flex flex-col justify-between h-auto mb-10 bg-base-200 rounded-3xl">
                         <h1 className="text-2xl font-semibold text-center">
                           Rooms
                         </h1>
@@ -481,7 +557,6 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                           {selectedBuilding &&
                             selectedFloor &&
                             rooms
-                              .sort()
                               .filter(
                                 (room) =>
                                   room.floorLevel === selectedFloor &&
@@ -517,8 +592,8 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                                   <button
                                     key={index}
                                     className={`h-10 z-50 bg-base-100 btn text-sm ${selectedBuilding === building.buildingName
-                                      ? "bg-base-content text-base-100"
-                                      : "hover:bg-base-200"
+                                        ? "bg-base-content text-base-100"
+                                        : "hover:bg-base-200"
                                       }`}
                                     onClick={() =>
                                       handleModelClick(building.buildingName)
@@ -546,14 +621,23 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                                               Building Name:{" "}
                                               {building.buildingName}
                                             </p> */}
-                                            <p className="font-semibold text-2xl">
-                                              Building Name: <span className="font-normal text-2xl">{building.buildingName}</span>
+                                            <p className="text-2xl font-semibold">
+                                              Building Name:{" "}
+                                              <span className="text-2xl font-normal">
+                                                {building.buildingName}
+                                              </span>
                                             </p>
-                                            <p className="font-semibold text-2xl">
-                                              Status: <span className="font-normal text-2xl">{building.status}</span>
+                                            <p className="text-2xl font-semibold">
+                                              Status:{" "}
+                                              <span className="text-2xl font-normal">
+                                                {building.status}
+                                              </span>
                                             </p>
-                                            <p className="font-semibold text-2xl">
-                                              Total Floor/s: <span className="font-normal text-2xl">{building.totalFloor}</span>
+                                            <p className="text-2xl font-semibold">
+                                              Total Floor/s:{" "}
+                                              <span className="text-2xl font-normal">
+                                                {building.totalFloor}
+                                              </span>
                                             </p>
                                             {/* Add more building properties here if needed */}
                                           </div>
@@ -600,7 +684,7 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                                         </li>
                                         <li>
                                           <b>
-                                            Size: {selectedRoom.squareMeter}
+                                            Area: {selectedRoom.squareMeter}
                                           </b>
                                         </li>
                                         <li>
@@ -633,7 +717,7 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
             </div>
           </Modal>
           <Modal
-            className="flex items-center justify-center w-screen h-screen  bg-black/60"
+            className="flex items-center justify-center w-screen h-screen transition-all duration-150 ease-in-out bg-black/60"
             isOpen={errorModal}
             onRequestClose={() => setShowModal(false)}
             contentLabel="Alert"
@@ -651,19 +735,19 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
 
           {/* Modal for General Building Information */}
           <Modal
-            className="flex items-center justify-center w-screen h-screen  bg-black/60"
+            className="flex items-center justify-center w-screen h-screen bg-black/60"
             isOpen={showBuildingInfo}
             onRequestClose={() => setBuildingInfoModal(false)}
             contentLabel="Alert"
           >
-            <div className="p-6 shadow-xl h-auto w-6/12 bg-base-100 rounded-2xl text-base-content">
+            <div className="w-6/12 h-auto p-6 shadow-xl bg-base-100 rounded-2xl text-base-content">
               <div className="flex justify-evenly">
                 <div className="">
-                  <div className="flex justify-center items-center pb-2">
+                  <div className="flex items-center justify-center pb-2">
                     <h1 className="font-bold">Classification of Buildings</h1>
                   </div>
                   <div className="">
-                    <div className="flex justify-between px-6 pb-3 bg-base-300 shadow-inner rounded-2xl h-auto">
+                    <div className="flex justify-between h-auto px-6 pb-3 shadow-inner bg-base-300 rounded-2xl">
                       <div className="flex flex-col">
                         <h1 className="text-base font-semibold">
                           Building Name
@@ -704,11 +788,11 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                   </div>
                 </div>
                 <div className="">
-                  <div className="flex justify-center items-center pb-2">
+                  <div className="flex items-center justify-center pb-2">
                     <h1 className="font-bold">Classification of Rooms</h1>
                   </div>
                   <div className="">
-                    <div className="flex justify-between px-6 pb-3 bg-base-300 shadow-inner rounded-2xl h-auto">
+                    <div className="flex justify-between h-auto px-6 pb-3 shadow-inner bg-base-300 rounded-2xl">
                       <div className="flex flex-col">
                         <h1 className="text-base font-semibold">Room Type</h1>
                         <div className="">
@@ -730,16 +814,16 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                         </div>
                       </div>
                     </div>
-                    <p className="text-center pt-4 pb-2">
+                    <p className="pt-4 pb-2 text-center">
                       Room Allocation as of January 2023
                     </p>
-                    <p className="text-center py-3">
+                    <p className="py-3 text-center">
                       Building Codes as of January 2023
                     </p>
-                    <div className="flex justify-center items-center mt-5">
+                    <div className="flex items-center justify-center mt-5">
                       <button
                         onClick={closeBuildingInfoModal}
-                        className="btn bg-base-300 text-xl hover:bg-accent btn-block"
+                        className="text-xl btn bg-base-300 hover:bg-accent btn-block"
                       >
                         <Icon
                           icon="mingcute:check-2-line"

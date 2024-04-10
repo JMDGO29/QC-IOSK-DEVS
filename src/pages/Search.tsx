@@ -10,12 +10,16 @@ import Animation from "../components/campus/sanBartolome/animation/Animation";
 import {
   DocumentData,
   Query,
+  addDoc,
   collection,
   getDocs,
+  getFirestore,
   query,
+  serverTimestamp,
   where,
 } from "firebase/firestore";
-import { db } from "../components/utils/firebase";
+import firebaseConfig, { db } from "../components/utils/firebase";
+import { initializeApp } from "firebase/app";
 
 export interface KeyboardRef {
   setInput: (input: string) => void;
@@ -84,7 +88,8 @@ const SearchTab: React.FC = () => {
       const filteredRooms = rooms.filter(
         (room) =>
           (room.roomCode && room.roomCode.toLowerCase().includes(input)) ||
-          (room.roomName && room.roomName.toLowerCase().includes(input))
+          (room.roomName && room.roomName.toLowerCase().includes(input)) ||
+          (room.buildingName && room.buildingName.toLowerCase().includes(input))
       );
 
       setFilteredRooms(filteredRooms);
@@ -108,14 +113,28 @@ const SearchTab: React.FC = () => {
     roomCode: string,
     floorLevel: string,
     roomAnimation: string,
-    voiceGuide: string
+    voiceGuide: string,
+    buildingName: string
   ) => {
+    const now = serverTimestamp();
     if (roomCode) {
       setSelectedRoom(roomCode);
       setSelectedFloor(floorLevel);
+      setSelectedBuilding(buildingName);
       setSelectedModelPath(roomAnimation);
       setSelectedVoice(voiceGuide);
       setIsAnimationActive(true);
+
+      if (roomAnimation) {
+        const firestore = getFirestore(initializeApp(firebaseConfig));
+        const roomRef = collection(firestore, "visitorData2");
+        await addDoc(roomRef, {
+          roomCode: roomCode,
+          selectedFloor: floorLevel,
+          selectedBuilding: buildingName,
+          createdAt: now,
+        });
+      }
     } else {
       console.error("No room selected.");
     }
@@ -130,8 +149,8 @@ const SearchTab: React.FC = () => {
               <div className="max-h-screen px-4 mx-auto max-w-screen sm:px-6 lg:px-8">
                 <div className="flex flex-col items-center justify-center w-screen h-screen text-center mt-72">
                   <h1 className="w-screen text-4xl font-bold text-center text-white sm:text-6xl">
-                    <div className="flex flex-col gap-4 justify-center items-center w-full">
-                      <div className="skeleton h-14 w-56"></div>
+                    <div className="flex flex-col items-center justify-center w-full gap-4">
+                      <div className="w-56 skeleton h-14"></div>
                     </div>
                   </h1>
 
@@ -139,12 +158,12 @@ const SearchTab: React.FC = () => {
                     <div className="flex items-start justify-center w-screen space-x-3 ">
                       <div className="flex flex-col w-5/12 space-y-3 ">
                         <div className="w-full">
-                        <div className="skeleton h-16 w-full"></div>
+                        <div className="w-full h-16 skeleton"></div>
                         </div>
 
                         <div className="w-full">
                           <div className="w-auto h-auto bg-white rounded-3xl">
-                          <div className="skeleton h-64 w-full"></div>
+                          <div className="w-full h-64 skeleton"></div>
                           </div>
                         </div>
                       </div>
@@ -168,7 +187,8 @@ const SearchTab: React.FC = () => {
                                               room.roomCode,
                                               room.floorLevel,
                                               room.roomAnimation,
-                                              room.voiceGuide
+                                              room.voiceGuide,
+                                              room.buildingName
                                             )
                                           }
                                         >
@@ -223,7 +243,7 @@ const SearchTab: React.FC = () => {
             ) : (
               <>
                 {/* Your content here */}
-                <div className="z-50 absolute top-0 left-0 ">
+                <div className="absolute top-0 left-0 z-50 ">
                   <Backbtn name={""} />
                 </div>
                 <div className="h-screen overflow-hidden">
@@ -278,7 +298,8 @@ const SearchTab: React.FC = () => {
                                                     room.roomCode,
                                                     room.floorLevel,
                                                     room.roomAnimation,
-                                                    room.voiceGuide
+                                                    room.voiceGuide,
+                                                    room.buildingName
                                                   )
                                                 }
                                               >

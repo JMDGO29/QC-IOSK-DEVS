@@ -22,6 +22,7 @@ import {
 } from "material-react-table";
 import { ToastContainer, toast } from "react-toastify";
 import Modal from "react-modal";
+import { format } from "date-fns";
 
 interface ContainerProps {
   name: string;
@@ -193,6 +194,39 @@ const RoomManagement: React.FC<ContainerProps> = ({ name }) => {
       {
         accessorKey: "roomName",
         header: "Room Name",
+        size: 150,
+      },
+      {
+        accessorKey: "status",
+        header: "Status",
+        size: 150,
+      },
+      {
+        accessorKey: "updatedAt",
+        header: "Updated At",
+        Cell: ({ row }) => {
+          const createdAtTimestamp = row.original.updatedAt;
+          const formattedCreatedAt = format(
+            createdAtTimestamp.toDate(),
+            "MM-dd-yyyy"
+          );
+          return <div>{formattedCreatedAt}</div>;
+        },
+        size: 150,
+      },
+      {
+        accessorKey: "squareMeter",
+        header: "SQ M",
+        size: 150,
+      },
+      {
+        accessorKey: "distance",
+        header: "Distance",
+        size: 150,
+      },
+      {
+        accessorKey: "eta",
+        header: "ETA",
         size: 150,
       },
     ],

@@ -80,7 +80,7 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
               Dashboard
             </NavLink>
           </li>
-          <li>
+          {/* <li>
             <NavLink
               className="w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm  rounded-lg hover:bg-base-100 text-base-content dark:focus:outline-none"
               to="/SBMapScene"
@@ -91,9 +91,9 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
               />
               3D Map
             </NavLink>
-          </li>
+          </li> */}
 
-          <li>
+          {/* <li>
             <NavLink
               className="w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm  rounded-lg hover:bg-base-100 text-base-content dark:focus:outline-none"
               to="/SBMap"
@@ -104,7 +104,7 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
               />
               SB Map
             </NavLink>
-          </li>
+          </li> */}
 
           <li>
             <NavLink
@@ -174,7 +174,7 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
             </NavLink>
           </li>
 
-          <li>
+          {/* <li>
             <NavLink
               className="w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm  rounded-lg hover:bg-base-100 text-base-content dark:focus:outline-none"
               to="/Settings"
@@ -182,7 +182,7 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
               <Icon icon="ci:settings" className="w-7 h-7" />
               Settings
             </NavLink>
-          </li>
+          </li> */}
         </ul>
         <div className="flex flex-col">
           <li className="flex flex-col pb-5">

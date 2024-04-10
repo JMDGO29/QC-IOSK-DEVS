@@ -196,10 +196,6 @@ const App: React.FC<ContainerProps> = ({ name }) => (
           <UpdateManual name={"Update Manual"} />
         </Route>
 
-        <Route path="/updateRoom/:roomName">
-          <UpdateRoom name={''} />
-        </Route>
-
         {/* sheeesh */}
       </IonRouterOutlet>
     </IonReactRouter>

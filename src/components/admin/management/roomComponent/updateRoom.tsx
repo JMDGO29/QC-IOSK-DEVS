@@ -46,11 +46,7 @@ const UpdateRoom: React.FC<ContainerProps> = ({ name }) => {
   const [room, setRoom] = useState<Room | null>(null);
   const { roomId } = useParams<{ roomId: string }>();
 
-  const [selectedBuilding, setSelectedBuilding] = useState<string>("");
-  const [selectedFloor, setSelectedFloor] = useState<string>("");
   const [selectedStatus, setSelectedStatus] = useState<string>("");
-
-  const [buildingNames, setBuildingNames] = useState<string[]>([]);
 
   const [buildingName, setBuildingName] = useState<string>("");
   const [floorLevel, setFloorLevel] = useState<string>("");
@@ -65,69 +61,6 @@ const UpdateRoom: React.FC<ContainerProps> = ({ name }) => {
   const [voiceGuide, setVoiceGuide] = useState<string>("");
   const [voiceGuideFile, setVoiceGuideFile] = useState<File | null>(null);
   const [textGuides, setTextGuides] = useState<string[]>([""]);
-
-  const [floorLevels, setFloorLevels] = useState<string[]>([]);
-
-  useEffect(() => {
-    fetchBuildingNames();
-  }, []);
-
-  const fetchBuildingNames = async () => {
-    try {
-      const querySnapshot = await getDocs(collection(db, "buildingData"));
-      const names: string[] = [];
-      querySnapshot.forEach((doc) => {
-        names.push(doc.data().buildingName);
-      });
-      setBuildingNames(names);
-    } catch (error) {
-      console.error("Error fetching building names: ", error);
-    }
-  };
-
-  useEffect(() => {
-    if (selectedBuilding) {
-      fetchFloorLevels(selectedBuilding);
-    }
-  }, [selectedBuilding]);
-
-  const fetchFloorLevels = async (buildingName: string) => {
-    try {
-      const buildingQuery = query(
-        collection(db, "buildingData"),
-        where("buildingName", "==", buildingName)
-      );
-      const buildingSnapshot = await getDocs(buildingQuery);
-
-      let totalFloors = 0;
-      buildingSnapshot.forEach((doc) => {
-        const buildingData = doc.data();
-        if (buildingData.totalFloor) {
-          totalFloors = buildingData.totalFloor;
-        }
-      });
-
-      const levels = Array.from(
-        { length: totalFloors },
-        (_, i) => `Floor ${i + 1}`
-      );
-      setFloorLevels(levels);
-    } catch (error) {
-      console.error("Error fetching floor levels: ", error);
-    }
-  };
-
-  const handleBuildingChange = (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    const selected = event.target.value;
-    setSelectedBuilding(selected);
-  };
-
-  const handleFloorChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const selected = event.target.value;
-    setSelectedFloor(selected);
-  };
 
   const handleStatutsChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selected = event.target.value;
@@ -205,7 +138,7 @@ const UpdateRoom: React.FC<ContainerProps> = ({ name }) => {
 
       await setDoc(docRef, {
         buildingName: buildingName,
-        floorLevel: selectedFloor,
+        floorLevel: floorLevel,
         roomCode: roomCode,
         roomName: roomName,
         distance: distance,

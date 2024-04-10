@@ -23,6 +23,7 @@ interface Building {
   buildingScale: string[];
   buildingLabelPosition: string[];
   status: string;
+  totalFloor: string;
   updatedAt: firebase.default.firestore.Timestamp;
 }
 
@@ -45,6 +46,8 @@ const UpdateBuilding: React.FC<ContainerProps> = ({ name }) => {
     "",
   ]);
   const [status, setStatus] = useState<string>("");
+  const [totalFloor, setTotalFloor] = useState<string>("");
+  const [selectedStatus, setSelectedStatus] = useState<string>("");
 
   const Building = () => {
     history.push("/Building");
@@ -66,6 +69,7 @@ const UpdateBuilding: React.FC<ContainerProps> = ({ name }) => {
           setBuildingScale(buildingData.buildingScale);
           setBuildingLabelPosition(buildingData.buildingLabelPosition);
           setStatus(buildingData.status);
+          setTotalFloor(buildingData.totalFloor);
         } else {
           console.error("Building not found");
           history.push("/Building");
@@ -97,7 +101,8 @@ const UpdateBuilding: React.FC<ContainerProps> = ({ name }) => {
         buildingPosition: buildingPosition,
         buildingScale: buildingScale,
         buildingLabelPosition: buildingLabelPosition,
-        status: status,
+        totalFloor: totalFloor,
+        status: selectedStatus,
         updatedAt: now,
       });
 
@@ -109,7 +114,12 @@ const UpdateBuilding: React.FC<ContainerProps> = ({ name }) => {
       alert("Error on adding updating Model.");
     }
   };
-
+  
+  const handleStatutsChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const selected = event.target.value;
+    setSelectedStatus(selected);
+  };
+  
   return (
     <IonPage>
       <IonContent fullscreen>
@@ -249,14 +259,28 @@ const UpdateBuilding: React.FC<ContainerProps> = ({ name }) => {
                       </td>
                     </tr>
                     <tr>
-                      <th>Building Status:</th>
+                      <th>Status:</th>
+                      <td>
+                        <select
+                          className="w-full max-w-xs input input-bordered"
+                          value={selectedStatus || status}
+                          onChange={handleStatutsChange}
+                        >
+                          <option value="available">Available</option>
+                          <option value="not available">Not Available</option>
+                        </select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>Total Floor:</th>
                       <td>
                         <input
                           type="text"
                           placeholder="Building Name"
-                          value={status}
-                          onChange={(e) => setStatus(e.target.value)}
+                          value={totalFloor}
+                          onChange={(e) => setTotalFloor(e.target.value)}
                           className="w-full max-w-xs input input-bordered"
+                          readOnly
                         />
                       </td>
                     </tr>

@@ -72,7 +72,9 @@ const KeyboardWrapper: FunctionComponent<IProps> = ({
           (room) =>
             (room.roomCode &&
               room.roomCode.toLowerCase().includes(inputValue)) ||
-            (room.roomName && room.roomName.toLowerCase().includes(inputValue))
+            (room.roomName && room.roomName.toLowerCase().includes(inputValue)) ||
+            (room.buildingName &&
+              room.buildingName.toLowerCase().includes(inputValue))
         );
 
         setFilteredRooms(filteredRooms); // Update filtered rooms
@@ -88,7 +90,8 @@ const KeyboardWrapper: FunctionComponent<IProps> = ({
     const filteredRooms = rooms.filter(
       (room) =>
         (room.roomCode && room.roomCode.toLowerCase().includes(inputValue)) ||
-        (room.roomName && room.roomName.toLowerCase().includes(inputValue))
+        (room.roomName && room.roomName.toLowerCase().includes(inputValue)) ||
+        (room.buildingName && room.buildingName.toLowerCase().includes(inputValue))
     );
     onFilteredRoomsChange(filteredRooms); // Update filtered rooms
   };

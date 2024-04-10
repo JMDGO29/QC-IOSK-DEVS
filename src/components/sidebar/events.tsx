@@ -71,14 +71,14 @@ const Events: React.FC<ContainerProps> = ({ name }) => {
 
   return (
     <>
-      <div className="h-screen py-10 space-y-2 bg-base-100">
+      <div className="h-screen py-10 space-y-2 overflow-auto bg-base-100">
         <div className="sticky top-0 z-50 px-3 py-1 transition-all duration-150 ease-in-out bg-base-100">
           <h1 className="text-4xl font-bold text-left ">{t("Events")}</h1>
           <p className="text-sm 0">{t("Showing events for the current month")}</p>
         </div>
         {loading ? (
           <>
-            <div className="px-3 pt-10 pr-6  w-96 h-96 rounded-2xl">
+            <div className="px-3 pt-10 w-96 h-96 rounded-2xl">
 
               <div className="flex flex-col gap-4">
                 <div className="w-full skeleton h-96 rounded-2xl"></div>
@@ -151,14 +151,14 @@ const Events: React.FC<ContainerProps> = ({ name }) => {
       {/* Modal for Event Details */}
       <div className="">
         <Modal
-          className="flex items-center justify-center w-screen h-screen duration-150 ease-in-out  bg-black/60"
+          className="flex items-center justify-center w-screen h-screen duration-150 ease-in-out bg-black/60"
           isOpen={isModalOpen}
           onRequestClose={closeModal}
           contentLabel="Event Details"
           ariaHideApp={false}
         >
           {selectedEvent && (
-            <div className="items-center justify-center w-auto h-auto p-6 duration-150 ease-in-out shadow-md  bg-base-100 rounded-3xl">
+            <div className="items-center justify-center w-auto h-auto p-6 duration-150 ease-in-out shadow-md bg-base-100 rounded-3xl">
               <div className="flex space-x-4">
                 <div>
                   <img

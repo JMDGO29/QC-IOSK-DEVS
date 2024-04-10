@@ -39,6 +39,7 @@ interface Building {
   buildingScale: [number, number, number];
   buildingLabelPosition: [number, number, number];
   status: string;
+  totalFloor: string;
   updatedAt: firebase.default.firestore.Timestamp;
 }
 
@@ -69,6 +70,7 @@ const BuildingManagement: React.FC<ContainerProps> = ({ name }) => {
               buildingScale: data.buildingScale,
               buildingLabelPosition: data.buildingLabelPosition,
               status: data.status,
+              totalFloor: data.totalFloor,
               updatedAt: data.updatedAt,
             };
             return building;
@@ -174,7 +176,7 @@ const BuildingManagement: React.FC<ContainerProps> = ({ name }) => {
         ),
       },
       { accessorKey: "buildingName", header: "Building Name", size: 150 },
-      { accessorKey: "buildingPath", header: "Building Path", size: 150 },
+      { accessorKey: "TotalFloor", header: "TotalFloor", size: 150 },
       {
         accessorKey: "buildingPosition",
         header: "Building Position",
@@ -252,7 +254,7 @@ const BuildingManagement: React.FC<ContainerProps> = ({ name }) => {
           <div className="items-center justify-center text-base-content bg-base-300 lg:ps-64 ">
             <div className="w-full h-full p-10 bg-base-100 rounded-tl-3xl">
               <div className="flex items-center justify-between">
-                <h1 className="text-4xl font-bold">Building Management</h1>
+                <h1 className="text-4xl font-bold">Building Model Management</h1>
                 <div className="flex items-center mr-5 space-x-3">
                   <button
                     onClick={createBuilding}
@@ -296,7 +298,7 @@ const BuildingManagement: React.FC<ContainerProps> = ({ name }) => {
               ) : (
                 <MaterialReactTable table={table} />
               )}
-              <Canvas
+              {/* <Canvas
                 camera={{
                   fov: 50,
                   position: [30, 30, 30],
@@ -312,7 +314,7 @@ const BuildingManagement: React.FC<ContainerProps> = ({ name }) => {
 
                 <ambientLight intensity={2} />
 
-                {/* {buildings.map((building) => (
+                {buildings.map((building) => (
                   <ModelViewer
                     key={building.id}
                     name={building.buildingName}
@@ -321,9 +323,9 @@ const BuildingManagement: React.FC<ContainerProps> = ({ name }) => {
                     scale={building.buildingScale}
                     textPosition={building.buildingLabelPosition}
                   />
-                ))} */}
-                {/* <gridHelper args={[100, 100, 0xff0000, "teal"]} /> */}
-              </Canvas>
+                ))}
+                <gridHelper args={[100, 100, 0xff0000, "teal"]} />
+              </Canvas> */}
             </div>
           </div>
         </div>
