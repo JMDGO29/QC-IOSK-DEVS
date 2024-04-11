@@ -10,6 +10,9 @@ import b from "../assets/imgs/selectCampus/Batasan.webp";
 import sf from "../assets/imgs/selectCampus/SanFransisco.webp";
 import dp from "../assets/imgs/selectCampus/developmentalplan.jpg";
 import ep from "../assets/imgs/selectCampus/evacuationplan.jpg";
+import sbloc from "../assets/imgs/sbLoc.png";
+import baloc from "../assets/imgs/baLoc.png";
+import sfloc from "../assets/imgs/sfLoc.png";
 import Loading from './loading';
 
 const SelectCampus: React.FC = () => {
@@ -269,28 +272,147 @@ const SelectCampus: React.FC = () => {
                                 </span>
                               </span>
                             </button>
+                            <button type="button" className={`btn hs-tab-active:bg-white hs-tab-active:shadow-md hs-tab-active: hover:border-transparent text-start hover:bg-gray-200 rounded-xl  dark:hover:bg-gray-700 ${activeTab === 1 ? 'hs-tab-active:bg-white bg-transparent' : ''}`} onClick={() => handleTabClick(6)} role="tab">
+                              <span className="flex">
+                                <span className="grow">
+                                  <span className="block text-xl font-semibold text-gray-800 hs-tab-active:text-blue-600 dark:hs-tab-active:text-blue-500 dark:text-gray-200">
+                                    {t("Location")}
+                                  </span>
+
+                                </span>
+                              </span>
+                            </button>
                           </div>
                         </div>
 
-                        <div id="tabs-with-card-4" className={`tab-content ${activeTab === 4 ? 'block' : 'hidden'}`} role="tabpanel" aria-labelledby="tabs-with-card-item-4">
-                          <img className="shadow-xl  rounded-xl aspect-video hover:scale-110 hover:shadow-2xl hover:shadow-blue-500 duration-150  dark:shadow-gray-900/[.2]" src={dp} alt="SB Developmental Plan Image" />
-
-                        </div>
-
-                        <div id="tabs-with-card-5" className={`tab-content ${activeTab === 5 ? 'block ' : 'hidden'}`} role="tabpanel" aria-labelledby="tabs-with-card-item-5">
-                          <img className="shadow-xl shadow-gray-200 rounded-xl aspect-video dark:shadow-gray-900/[.2]" src={ep} alt="SB Evacuation Plan Image" />
-
-                        </div>
+                        
 
                         <div id="tabs-with-card-2" className={`tab-content ${activeTab === 2 ? 'block' : 'hidden'}`} role="tabpanel" aria-labelledby="tabs-with-card-item-2">
                           <a href="/Batasan" className="w-full h-full hover:scale-150">
                             <img className="shadow-xl  rounded-xl aspect-video hover:scale-110 hover:shadow-2xl hover:shadow-blue-500 duration-150  dark:shadow-gray-900/[.2]" src={b} alt="Batasan Image" />
                           </a>
+                          <div className="flex w-auto mt-5 space-x-3 justify-evenly ">
+                            <button type="button" className={`btn hs-tab-active:bg-white hs-tab-active:shadow-md hs-tab-active: hover:border-transparent text-start hover:bg-gray-200 rounded-xl  dark:hover:bg-gray-700 ${activeTab === 2 ? 'hs-tab-active:bg-white bg-transparent' : ''}`} onClick={() => handleTabClick(7)} role="tab">
+                              <span className="flex">
+                                <span className="grow">
+                                  <span className="block text-xl font-semibold text-gray-800 hs-tab-active:text-blue-600 dark:hs-tab-active:text-blue-500 dark:text-gray-200">
+                                    {t("Location")}
+                                  </span>
+
+                                </span>
+                              </span>
+                            </button>
+                      
+                          </div>
                         </div>
                         <div id="tabs-with-card-3" className={`tab-content ${activeTab === 3 ? 'block' : 'hidden'}`} role="tabpanel" aria-labelledby="tabs-with-card-item-3">
                           <a href="/SanFrancisco" className="w-full h-full hover:scale-150">
                             <img className="shadow-xl  rounded-xl aspect-video hover:scale-110 hover:shadow-2xl hover:shadow-blue-500 duration-150  dark:shadow-gray-900/[.2]" src={sf} alt="San Francisco Image" />
                           </a>
+                          <div className="flex w-auto mt-5 space-x-3 justify-evenly ">
+                            <button type="button" className={`btn hs-tab-active:bg-white hs-tab-active:shadow-md hs-tab-active: hover:border-transparent text-start hover:bg-gray-200 rounded-xl  dark:hover:bg-gray-700 ${activeTab === 3 ? 'hs-tab-active:bg-white bg-transparent' : ''}`} onClick={() => handleTabClick(8)} role="tab">
+                              <span className="flex">
+                                <span className="grow">
+                                  <span className="block text-xl font-semibold text-gray-800 hs-tab-active:text-blue-600 dark:hs-tab-active:text-blue-500 dark:text-gray-200">
+                                    {t("Location")}
+                                  </span>
+
+                                </span>
+                              </span>
+                            </button>
+                           
+                          </div>
+                        </div>
+                        
+                        <div id="tabs-with-card-4" className={`tab-content ${activeTab === 4 ? 'block' : 'hidden'}`} role="tabpanel" aria-labelledby="tabs-with-card-item-4">
+                          <img className="shadow-xl  rounded-xl aspect-video hover:scale-110 hover:shadow-2xl hover:shadow-blue-500 duration-150  dark:shadow-gray-900/[.2]" src={dp} alt="SB Developmental Plan Image" />
+                          <div className="flex w-auto mt-5 space-x-3 justify-evenly ">
+                            <button type="button" className={`btn hs-tab-active:bg-white hs-tab-active:shadow-md hs-tab-active: hover:border-transparent text-start hover:bg-gray-200 rounded-xl  dark:hover:bg-gray-700 ${activeTab === 4 ? 'hs-tab-active:bg-white bg-transparent' : ''}`} onClick={() => handleTabClick(1)} role="tab">
+                              <span className="flex">
+                                <span className="grow">
+                                  <span className="block text-xl font-semibold text-gray-800 hs-tab-active:text-blue-600 dark:hs-tab-active:text-blue-500 dark:text-gray-200">
+                                    {t("QCU San Bartolome Campus")}
+                                  </span>
+
+                                </span>
+                              </span>
+                            </button>
+                           
+                          </div>
+                        </div>
+
+                        <div id="tabs-with-card-5" className={`tab-content ${activeTab === 5 ? 'block ' : 'hidden'}`} role="tabpanel" aria-labelledby="tabs-with-card-item-5">
+                          <img className="shadow-xl shadow-gray-200 rounded-xl aspect-video dark:shadow-gray-900/[.2]" src={ep} alt="SB Evacuation Plan Image" />
+                          <div className="flex w-auto mt-5 space-x-3 justify-evenly ">
+                            <button type="button" className={`btn hs-tab-active:bg-white hs-tab-active:shadow-md hs-tab-active: hover:border-transparent text-start hover:bg-gray-200 rounded-xl  dark:hover:bg-gray-700 ${activeTab === 5 ? 'hs-tab-active:bg-white bg-transparent' : ''}`} onClick={() => handleTabClick(1)} role="tab">
+                              <span className="flex">
+                                <span className="grow">
+                                  <span className="block text-xl font-semibold text-gray-800 hs-tab-active:text-blue-600 dark:hs-tab-active:text-blue-500 dark:text-gray-200">
+                                    {t("QCU San Bartolome Campus")}
+                                  </span>
+
+                                </span>
+                              </span>
+                            </button>
+                           
+                          </div>
+                        </div>
+
+                        <div id="tabs-with-card-6" className={`tab-content ${activeTab === 6 ? 'block' : 'hidden'}`} role="tabpanel" aria-labelledby="tabs-with-card-item-3">
+                          <a href="/SanFrancisco" className="w-full h-full hover:scale-150">
+                            <img className="shadow-xl  rounded-xl aspect-video hover:scale-110 hover:shadow-2xl hover:shadow-blue-500 duration-150  dark:shadow-gray-900/[.2]" src={sbloc} alt="San Bartolome Location Image" />
+                          </a>
+                          <div className="flex w-auto mt-5 space-x-3 justify-evenly ">
+                            <button type="button" className={`btn hs-tab-active:bg-white hs-tab-active:shadow-md hs-tab-active: hover:border-transparent text-start hover:bg-gray-200 rounded-xl  dark:hover:bg-gray-700 ${activeTab === 6 ? 'hs-tab-active:bg-white bg-transparent' : ''}`} onClick={() => handleTabClick(1)} role="tab">
+                              <span className="flex">
+                                <span className="grow">
+                                  <span className="block text-xl font-semibold text-gray-800 hs-tab-active:text-blue-600 dark:hs-tab-active:text-blue-500 dark:text-gray-200">
+                                    {t("Quezon City Hall - Quezon City University San Bartolome Campus")}
+                                  </span>
+
+                                </span>
+                              </span>
+                            </button>
+                           
+                          </div>
+                        </div>
+
+                        <div id="tabs-with-card-6" className={`tab-content ${activeTab === 7 ? 'block' : 'hidden'}`} role="tabpanel" aria-labelledby="tabs-with-card-item-3">
+                          <a href="/SanFrancisco" className="w-full h-full hover:scale-150">
+                            <img className="shadow-xl  rounded-xl aspect-video hover:scale-110 hover:shadow-2xl hover:shadow-blue-500 duration-150  dark:shadow-gray-900/[.2]" src={baloc} alt="San Bartolome Location Image" />
+                          </a>
+                          <div className="flex w-auto mt-5 space-x-3 justify-evenly ">
+                            <button type="button" className={`btn hs-tab-active:bg-white hs-tab-active:shadow-md hs-tab-active: hover:border-transparent text-start hover:bg-gray-200 rounded-xl  dark:hover:bg-gray-700 ${activeTab === 7 ? 'hs-tab-active:bg-white bg-transparent' : ''}`} onClick={() => handleTabClick(2)} role="tab">
+                              <span className="flex">
+                                <span className="grow">
+                                  <span className="block text-xl font-semibold text-gray-800 hs-tab-active:text-blue-600 dark:hs-tab-active:text-blue-500 dark:text-gray-200">
+                                    {t("QCU San Bartolome Campus - QCU Batasan Campus")}
+                                  </span>
+
+                                </span>
+                              </span>
+                            </button>
+                           
+                          </div>
+                        </div>
+
+                        <div id="tabs-with-card-6" className={`tab-content ${activeTab === 8 ? 'block' : 'hidden'}`} role="tabpanel" aria-labelledby="tabs-with-card-item-3">
+                          <a href="/SanFrancisco" className="w-full h-full hover:scale-150">
+                            <img className="shadow-xl  rounded-xl aspect-video hover:scale-110 hover:shadow-2xl hover:shadow-blue-500 duration-150  dark:shadow-gray-900/[.2]" src={sfloc} alt="San Bartolome Location Image" />
+                          </a>
+                          <div className="flex w-auto mt-5 space-x-3 justify-evenly ">
+                            <button type="button" className={`btn hs-tab-active:bg-white hs-tab-active:shadow-md hs-tab-active: hover:border-transparent text-start hover:bg-gray-200 rounded-xl  dark:hover:bg-gray-700 ${activeTab === 8 ? 'hs-tab-active:bg-white bg-transparent' : ''}`} onClick={() => handleTabClick(3)} role="tab">
+                              <span className="flex">
+                                <span className="grow">
+                                  <span className="block text-xl font-semibold text-gray-800 hs-tab-active:text-blue-600 dark:hs-tab-active:text-blue-500 dark:text-gray-200">
+                                    {t("QCU San Bartolome Campus - QCU San Francisco Campus")}
+                                  </span>
+
+                                </span>
+                              </span>
+                            </button>
+                           
+                          </div>
                         </div>
 
 
