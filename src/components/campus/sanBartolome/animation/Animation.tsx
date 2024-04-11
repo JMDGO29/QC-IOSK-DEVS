@@ -11,6 +11,7 @@ import { collection, getDocs, query } from "firebase/firestore";
 import { db } from "../../../utils/firebase";
 import textGuide from '../../../../data/textGuide';
 import Modal from "react-modal";
+import feedback from "../../../../assets/imgs/feedback.png";
 interface ContainerProps {
   name: string;
   roomName: string;
@@ -211,7 +212,7 @@ const Animation: React.FC<ContainerProps> = ({
                   <p className="text-xs font-bold text-base-content align-super">Room {selectedRoom}</p>
                   <p className="text-3xl font-bold text-base-content">{roomName}</p>
                 </div>
-                <div className="w-full h-[700px] p-3 bg-base-300 rounded-3xl">
+                <div className="w-full h-auto max-h-[810px] p-3 bg-base-300 rounded-3xl">
                   <div className="h-auto max-h-full p-6 overflow-y-auto bg-base-300 rounded-3xl ">
                     <p className="text-xl font-bold text-base-content">
                       {Array.isArray(textGuide) && (
@@ -338,7 +339,7 @@ const Animation: React.FC<ContainerProps> = ({
           contentLabel="Alert"
         >
           <div className="p-6 shadow-xl h-96 bg-base-100 rounded-2xl w-96">
-            <p className="text-3xl text-center"></p>
+            <img src={feedback}/>
             <div className="flex justify-center space-x-3 mt-14">
               <button onClick={closeModal} className="btn bg-base-300">
                 <Icon icon="line-md:close-small" className="w-10 h-10" />

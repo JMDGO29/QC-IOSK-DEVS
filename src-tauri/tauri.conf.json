@@ -7,8 +7,8 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "qcu-iosk",
-    "version": "0.1.0"
+    "productName": "QC-IOSK",
+    "version": "0.3.0"
   },
   "tauri": {
     "allowlist": {
