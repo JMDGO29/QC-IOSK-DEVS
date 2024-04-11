@@ -79,7 +79,7 @@ const Batasan: React.FC<ContainerProps> = ({ name }) => {
             autoRotate={true}
             autoRotateSpeed={0.3}
             enableZoom={true}
-            minDistance={5}
+            minDistance={50}
             maxDistance={100}
           />
 
