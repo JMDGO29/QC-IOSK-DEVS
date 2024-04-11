@@ -23,7 +23,7 @@ interface Room {
   status: string;
   roomAnimation: string;
   voiceGuide: string;
-  textGuide: string;
+  textGuide: string[];
 }
 
 interface Suggestion {

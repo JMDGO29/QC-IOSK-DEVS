@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent, useRef, useEffect } from "react";
+import React, { useState, ChangeEvent, useRef, useEffect, startTransition, Suspense } from "react";
 import { IonContent, IonPage } from "@ionic/react";
 import "react-simple-keyboard/build/css/index.css";
 import Backbtn from "../components/navigation/Backbtn";
@@ -20,6 +20,7 @@ import {
 } from "firebase/firestore";
 import firebaseConfig, { db } from "../components/utils/firebase";
 import { initializeApp } from "firebase/app";
+import Loading from "./loading";
 
 export interface KeyboardRef {
   setInput: (input: string) => void;
@@ -38,7 +39,7 @@ interface Room {
   status: string;
   roomAnimation: string;
   voiceGuide: string;
-  textGuide: string;
+  textGuide: string[];
 }
 
 const SearchTab: React.FC = () => {
@@ -54,10 +55,13 @@ const SearchTab: React.FC = () => {
   const [isClicked, setIsClicked] = useState(false);
   const [filteredRooms, setFilteredRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true); // State to track loading status
-
+  const [selectedTextGuide, setSelectedTextGuide] = useState<string[]>([""]);
   useEffect(() => {
-    // Fetch data when component mounts
-    fetchRooms();
+
+    startTransition(() => {
+      // Fetch data when component mounts
+      fetchRooms();
+    })
   }, []);
 
   const fetchRooms = async () => {
@@ -114,7 +118,8 @@ const SearchTab: React.FC = () => {
     floorLevel: string,
     roomAnimation: string,
     voiceGuide: string,
-    buildingName: string
+    buildingName: string,
+    textGuide: string[]
   ) => {
     const now = serverTimestamp();
     if (roomCode) {
@@ -124,6 +129,7 @@ const SearchTab: React.FC = () => {
       setSelectedModelPath(roomAnimation);
       setSelectedVoice(voiceGuide);
       setIsAnimationActive(true);
+      setSelectedTextGuide(textGuide);
 
       if (roomAnimation) {
         const firestore = getFirestore(initializeApp(firebaseConfig));
@@ -158,12 +164,12 @@ const SearchTab: React.FC = () => {
                     <div className="flex items-start justify-center w-screen space-x-3 ">
                       <div className="flex flex-col w-5/12 space-y-3 ">
                         <div className="w-full">
-                        <div className="w-full h-16 skeleton"></div>
+                          <div className="w-full h-16 skeleton"></div>
                         </div>
 
                         <div className="w-full">
                           <div className="w-auto h-auto bg-white rounded-3xl">
-                          <div className="w-full h-64 skeleton"></div>
+                            <div className="w-full h-64 skeleton"></div>
                           </div>
                         </div>
                       </div>
@@ -188,7 +194,8 @@ const SearchTab: React.FC = () => {
                                               room.floorLevel,
                                               room.roomAnimation,
                                               room.voiceGuide,
-                                              room.buildingName
+                                              room.buildingName,
+                                              room.textGuide
                                             )
                                           }
                                         >
@@ -223,7 +230,7 @@ const SearchTab: React.FC = () => {
           <>
             {/* Your content here */}
             {selectedModelPath && isAnimationActive ? (
-              <>
+              <Suspense fallback={<Loading/>}>
                 <Animation
                   name={""}
                   roomName={selectedRoom}
@@ -232,14 +239,9 @@ const SearchTab: React.FC = () => {
                   selectedBuilding={selectedBuilding}
                   selectedFloor={selectedFloor}
                   selectedRoom={selectedRoom}
+                  textGuide={selectedTextGuide || []}
                 />
-                <button
-                  onClick={clickSearch}
-                  className="absolute z-10 mt-10 btn btn-secondary ml-60"
-                >
-                  Back
-                </button>
-              </>
+              </Suspense>
             ) : (
               <>
                 {/* Your content here */}
@@ -299,7 +301,8 @@ const SearchTab: React.FC = () => {
                                                     room.floorLevel,
                                                     room.roomAnimation,
                                                     room.voiceGuide,
-                                                    room.buildingName
+                                                    room.buildingName,
+                                                    room.textGuide
                                                   )
                                                 }
                                               >
