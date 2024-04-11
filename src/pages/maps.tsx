@@ -45,22 +45,22 @@ const SelectCampus: React.FC = () => {
                 <div className="relative z-10 lg:grid lg:grid-cols-12 lg:gap-0 lg:items-center">
                   <div className="mb-10 lg:mb-0 lg:col-span-6 lg:col-start-8 lg:order-2">
                     <h2 className="text-3xl font-bold text-gray-800 sm:text-6xl dark:text-gray-200">
-                      <div className="flex flex-col gap-4 w-full">
+                      <div className="flex flex-col w-full gap-4">
                         <div className="skeleton h-12 w-[620px]"></div>
                         <div className="skeleton h-12 w-[560px]"></div>
                       </div>
                     </h2>
                     <nav className="grid gap-4 mt-5 md:mt-10" aria-label="Tabs" role="tablist">
-                      <button type="button" className={`hs-tab-active:bg-white hs-tab-active:shadow-md hs-tab-active:hover:border-transparent text-start hover:bg-transparent hover:shadow-2xl hover:shadow-blue-500 duration-150  p-4 md:p-5 rounded-xl dark:hs-tab-active:bg-slate-900  ${activeTab === 1 ? 'hs-tab-active:bg-white' : ''}`} onClick={() => handleTabClick(1)} role="tab"                      >
+                      <button type="button" className={`hs-tab-active:bg-white hs-tab-active:shadow-md hs-tab-active:hover:border-transparent text-start hover:bg-transparent hover:shadow-2xl hover:shadow-blue-500 duration-150  p-4 md:p-5 rounded-xl   ${activeTab === 1 ? 'hs-tab-active:bg-white' : ''}`} onClick={() => handleTabClick(1)} role="tab"                      >
                         <span className="flex">
                           <span className="grow ms-6">
                             <span className="block text-5xl font-semibold text-gray-800 hs-tab-active:text-blue-600 dark:hs-tab-active:text-blue-500 dark:text-gray-200">
-                              <div className="flex flex-col gap-4 w-full">
+                              <div className="flex flex-col w-full gap-4">
                                 <div className="skeleton h-12 w-[510px]"></div>
                               </div>
                             </span>
                             <span className="block mt-3 text-gray-800 dark:hs-tab-active:text-gray-200 dark:text-gray-200">
-                              <div className="flex flex-col gap-4 w-full">
+                              <div className="flex flex-col w-full gap-4">
                                 <div className="skeleton h-5 w-[430px]"></div>
                               </div>
                             </span>
@@ -69,34 +69,35 @@ const SelectCampus: React.FC = () => {
                           </span>
                         </span>
                       </button>
-                      <button type="button" className={`hs-tab-active:bg-white hs-tab-active:shadow-md hs-tab-active:hover:border-transparent text-start hover:bg-transparent hover:shadow-2xl hover:shadow-blue-500 duration-150  p-4 md:p-5 rounded-xl dark:hs-tab-active:bg-slate-900  ${activeTab === 1 ? 'hs-tab-active:bg-white' : ''}`} onClick={() => handleTabClick(1)} role="tab"                      >
-                        <span className="flex">
+                      <button type="button" className={`hs-tab-active:bg-white hs-tab-active:shadow-md hs-tab-active:hover:border-transparent text-start hover:bg-transparent hover:shadow-2xl hover:shadow-blue-500 duration-150  p-4 md:p-5 rounded-xl   ${activeTab === 2 ? 'hs-tab-active:bg-white' : ''}`} onClick={() => handleTabClick(2)} role="tab"                      >
+                        <span className="flex w-full h-auto">
                           <span className="grow ms-6">
                             <span className="block text-5xl font-semibold text-gray-800 hs-tab-active:text-blue-600 dark:hs-tab-active:text-blue-500 dark:text-gray-200">
-                              <div className="flex flex-col gap-4 w-full">
+                              <div className="flex flex-col w-full gap-4">
                                 <div className="skeleton h-12 w-[380px]"></div>
                               </div>
                             </span>
                             <span className="block mt-3 text-gray-800 dark:hs-tab-active:text-gray-200 dark:text-gray-200">
-                              <div className="flex flex-col gap-4 w-full">
+                              <div className="flex flex-col w-full gap-4">
                                 <div className="skeleton h-5 w-[280px]"></div>
                               </div>
                             </span>
                             <span>
                             </span>
                           </span>
+
                         </span>
                       </button>
-                      <button type="button" className={`hs-tab-active:bg-white hs-tab-active:shadow-md hs-tab-active:hover:border-transparent text-start hover:bg-transparent hover:shadow-2xl hover:shadow-blue-500 duration-150  p-4 md:p-5 rounded-xl dark:hs-tab-active:bg-slate-900  ${activeTab === 1 ? 'hs-tab-active:bg-white' : ''}`} onClick={() => handleTabClick(1)} role="tab"                      >
+                      <button type="button" className={`hs-tab-active:bg-white hs-tab-active:shadow-md hs-tab-active:hover:border-transparent text-start hover:bg-transparent hover:shadow-2xl hover:shadow-blue-500 duration-150  p-4 md:p-5 rounded-xl   ${activeTab === 3 ? 'hs-tab-active:bg-white ' : ''}`} onClick={() => handleTabClick(3)} role="tab"                      >
                         <span className="flex">
                           <span className="grow ms-6">
                             <span className="block text-5xl font-semibold text-gray-800 hs-tab-active:text-blue-600 dark:hs-tab-active:text-blue-500 dark:text-gray-200">
-                              <div className="flex flex-col gap-4 w-full">
+                              <div className="flex flex-col w-full gap-4">
                                 <div className="skeleton h-12 w-[490px]"></div>
                               </div>
                             </span>
                             <span className="block mt-3 text-gray-800 dark:hs-tab-active:text-gray-200 dark:text-gray-200">
-                              <div className="flex flex-col gap-4 w-full">
+                              <div className="flex flex-col w-full gap-4">
                                 <div className="skeleton h-5 w-[290px]"></div>
                               </div>
                             </span>
@@ -113,30 +114,30 @@ const SelectCampus: React.FC = () => {
                       <div>
                         <div id="tabs-with-card-1" className={`tab-content ${activeTab === 1 ? 'block' : 'hidden'}`} role="tabpanel" aria-labelledby="tabs-with-card-item-1">
                           <a href="/SanBartolome" className="w-full h-full hover:scale-150">
-                            <div className="flex flex-col gap-4 w-full">
+                            <div className="flex flex-col w-full gap-4">
                               <div className="skeleton aspect-video"></div>
                             </div>
                           </a>
                           <div className="flex w-auto mt-5 space-x-3 justify-evenly ">
-                            <button type="button" className={`btn hs-tab-active:bg-white hs-tab-active:shadow-md hs-tab-active:hover:border-transparent text-start hover:bg-gray-200 rounded-xl dark:hs-tab-active:bg-slate-900 dark:hover:bg-gray-700 ${activeTab === 1 ? 'hs-tab-active:bg-white bg-transparent' : ''}`} onClick={() => handleTabClick(4)} role="tab">
+                            <button type="button" className={`btn hs-tab-active:bg-white hs-tab-active:shadow-md hs-tab-active:hover:border-transparent text-start hover:bg-gray-200 rounded-xl  dark:hover:bg-gray-700 ${activeTab === 1 ? 'hs-tab-active:bg-white bg-transparent' : ''}`} onClick={() => handleTabClick(4)} role="tab">
                               <span className="flex">
                                 <span className="grow">
                                   <span className="block text-xl font-semibold text-gray-800 hs-tab-active:text-blue-600 dark:hs-tab-active:text-blue-500 dark:text-gray-200">
-                                  <div className="flex flex-col gap-4 w-full">
-                                <div className="skeleton h-5 w-40"></div>
-                              </div>
+                                    <div className="flex flex-col w-full gap-4">
+                                      <div className="w-40 h-5 skeleton"></div>
+                                    </div>
                                   </span>
 
                                 </span>
                               </span>
                             </button>
-                            <button type="button" className={`btn hs-tab-active:bg-white hs-tab-active:shadow-md hs-tab-active:hover:border-transparent text-start hover:bg-gray-200 rounded-xl dark:hs-tab-active:bg-slate-900 dark:hover:bg-gray-700 ${activeTab === 1 ? 'hs-tab-active:bg-white hs-tab-active:text-accent bg-transparent' : ''}`} onClick={() => handleTabClick(5)} role="tab">
+                            <button type="button" className={`btn hs-tab-active:bg-white hs-tab-active:shadow-md hs-tab-active:hover:border-transparent text-start hover:bg-gray-200 rounded-xl  dark:hover:bg-gray-700 ${activeTab === 1 ? 'hs-tab-active:bg-white hs-tab-active:text-accent bg-transparent' : ''}`} onClick={() => handleTabClick(5)} role="tab">
                               <span className="flex">
                                 <span className="grow">
                                   <span className="block text-xl font-semibold text-gray-800 hs-tab-active:text-blue-600 dark:hs-tab-active:text-blue-500 dark:text-gray-200">
-                                  <div className="flex flex-col gap-4 w-full">
-                                <div className="skeleton h-5 w-40"></div>
-                              </div>
+                                    <div className="flex flex-col w-full gap-4">
+                                      <div className="w-40 h-5 skeleton"></div>
+                                    </div>
                                   </span>
 
                                 </span>
@@ -165,6 +166,21 @@ const SelectCampus: React.FC = () => {
                             <img className="shadow-xl  rounded-xl aspect-video hover:scale-110 hover:shadow-2xl hover:shadow-blue-500 duration-150  dark:shadow-gray-900/[.2]" src={sf} alt="San Francisco Image" />
                           </a>
                         </div>
+                        <div id="tabs-with-card-6" className={`tab-content ${activeTab === 6 ? 'block' : 'hidden'}`} role="tabpanel" aria-labelledby="tabs-with-card-item-6">
+                          <a href="/SanFrancisco" className="w-full h-full hover:scale-150">
+                            <img className="shadow-xl  rounded-xl aspect-video hover:scale-110 hover:shadow-2xl hover:shadow-blue-500 duration-150  dark:shadow-gray-900/[.2]" src={sf} alt="San Francisco Image" />
+                          </a>
+                        </div>
+                        <div id="tabs-with-card-7" className={`tab-content ${activeTab === 7 ? 'block' : 'hidden'}`} role="tabpanel" aria-labelledby="tabs-with-card-item-7">
+                          <a href="/SanFrancisco" className="w-full h-full hover:scale-150">
+                            <img className="shadow-xl  rounded-xl aspect-video hover:scale-110 hover:shadow-2xl hover:shadow-blue-500 duration-150  dark:shadow-gray-900/[.2]" src={sf} alt="San Francisco Image" />
+                          </a>
+                        </div>
+                        <div id="tabs-with-card-8" className={`tab-content ${activeTab === 8 ? 'block' : 'hidden'}`} role="tabpanel" aria-labelledby="tabs-with-card-item-8">
+                          <a href="/SanFrancisco" className="w-full h-full hover:scale-150">
+                            <img className="shadow-xl  rounded-xl aspect-video hover:scale-110 hover:shadow-2xl hover:shadow-blue-500 duration-150  dark:shadow-gray-900/[.2]" src={sf} alt="San Francisco Image" />
+                          </a>
+                        </div>
 
 
                       </div>
@@ -180,11 +196,11 @@ const SelectCampus: React.FC = () => {
                 <div className="relative z-10 lg:grid lg:grid-cols-12 lg:gap-0 lg:items-center">
                   <div className="mb-10 lg:mb-0 lg:col-span-6 lg:col-start-8 lg:order-2">
                     <h2 className="text-3xl font-bold text-gray-800 sm:text-6xl dark:text-gray-200">
-                      {t("Quezon City University Campuses and Maps")}
+                      {t("Quezon City University Campuses")}
                     </h2>
                     <nav className="grid gap-4 mt-5 md:mt-10" aria-label="Tabs" role="tablist">
-                      <button type="button" className={`hs-tab-active:bg-white hs-tab-active:shadow-md hs-tab-active:hover:border-transparent text-start hover:bg-transparent hover:shadow-2xl hover:shadow-blue-500 duration-150  p-4 md:p-5 rounded-xl dark:hs-tab-active:bg-slate-900  ${activeTab === 1 ? 'hs-tab-active:bg-white' : ''}`} onClick={() => handleTabClick(1)} role="tab"                      >
-                        <span className="flex">
+                      <button type="button" className={`hs-tab-active:bg-white hs-tab-active:shadow-md hs-tab-active:hover:border-transparent text-start hover:bg-transparent hover:shadow-2xl hover:shadow-blue-500 duration-150  p-4 md:p-5 rounded-xl   ${activeTab === 1 ? 'hs-tab-active:bg-white shadow-2xl shadow-blue-500 border-blue-500 border-2' : ''}`} onClick={() => handleTabClick(1)} role="tab"                      >
+                        <span className="flex items-center">
                           <span className="grow ms-6">
                             <span className="block text-5xl font-semibold text-gray-800 hs-tab-active:text-blue-600 dark:hs-tab-active:text-blue-500 dark:text-gray-200">
                               {t("San Bartolome Campus")}
@@ -195,9 +211,11 @@ const SelectCampus: React.FC = () => {
                             <span>
                             </span>
                           </span>
+
                         </span>
+
                       </button>
-                      <button type="button" className={`hs-tab-active:bg-white hs-tab-active:shadow-md hs-tab-active:hover:border-transparent text-start hover:bg-transparent hover:shadow-2xl hover:shadow-blue-500 duration-150  p-4 md:p-5 rounded-xl dark:hs-tab-active:bg-slate-900  ${activeTab === 2 ? 'hs-tab-active:bg-white' : ''}`} onClick={() => handleTabClick(2)} role="tab">
+                      <button type="button" className={`hs-tab-active:bg-white hs-tab-active:shadow-md hs-tab-active:hover:border-transparent border-2 text-start hover:bg-transparent hover:shadow-2xl hover:shadow-blue-500 duration-150  p-4 md:p-5 rounded-xl   ${activeTab === 2 ? 'hs-tab-active:bg-white shadow-2xl shadow-blue-500 border-blue-500 border-2' : ''}`} onClick={() => handleTabClick(2)} role="tab">
                         <span className="flex">
                           <span className="grow ms-6">
                             <span className="block text-5xl font-semibold text-gray-800 hs-tab-active:text-blue-600 dark:hs-tab-active:text-blue-500 dark:text-gray-200">
@@ -209,7 +227,7 @@ const SelectCampus: React.FC = () => {
                           </span>
                         </span>
                       </button>
-                      <button type="button" className={`hs-tab-active:bg-white hs-tab-active:shadow-md hs-tab-active:hover:border-transparent text-start hover:bg-transparent hover:shadow-2xl hover:shadow-blue-500 duration-150  p-4 md:p-5 rounded-xl dark:hs-tab-active:bg-slate-900  ${activeTab === 3 ? 'hs-tab-active:bg-white' : ''}`} onClick={() => handleTabClick(3)} role="tab">
+                      <button type="button" className={`hs-tab-active:bg-white hs-tab-active:shadow-md hs-tab-active:hover:border-transparent text-start hover:bg-transparent hover:shadow-2xl hover:shadow-blue-500 duration-150  p-4 md:p-5 rounded-xl   ${activeTab === 3 ? 'hs-tab-active:bg-white shadow-2xl shadow-blue-500 border-blue-500 border-2' : ''}`} onClick={() => handleTabClick(3)} role="tab">
                         <span className="flex">
                           <span className="grow ms-6">
                             <span className="block text-5xl font-semibold text-gray-800 hs-tab-active:text-blue-600 dark:hs-tab-active:text-blue-500 dark:text-gray-200">
@@ -231,7 +249,7 @@ const SelectCampus: React.FC = () => {
                             <img className="shadow-xl  rounded-xl aspect-video hover:scale-110 hover:shadow-2xl hover:shadow-blue-500 duration-150  dark:shadow-gray-900/[.2]" src={sb} alt="San Bartolome Image" />
                           </a>
                           <div className="flex w-auto mt-5 space-x-3 justify-evenly ">
-                            <button type="button" className={`btn hs-tab-active:bg-white hs-tab-active:shadow-md hs-tab-active:hover:border-transparent text-start hover:bg-gray-200 rounded-xl dark:hs-tab-active:bg-slate-900 dark:hover:bg-gray-700 ${activeTab === 1 ? 'hs-tab-active:bg-white bg-transparent' : ''}`} onClick={() => handleTabClick(4)} role="tab">
+                            <button type="button" className={`btn hs-tab-active:bg-white hs-tab-active:shadow-md hs-tab-active: hover:border-transparent text-start hover:bg-gray-200 rounded-xl  dark:hover:bg-gray-700 ${activeTab === 1 ? 'hs-tab-active:bg-white bg-transparent' : ''}`} onClick={() => handleTabClick(4)} role="tab">
                               <span className="flex">
                                 <span className="grow">
                                   <span className="block text-xl font-semibold text-gray-800 hs-tab-active:text-blue-600 dark:hs-tab-active:text-blue-500 dark:text-gray-200">
@@ -241,7 +259,7 @@ const SelectCampus: React.FC = () => {
                                 </span>
                               </span>
                             </button>
-                            <button type="button" className={`btn hs-tab-active:bg-white hs-tab-active:shadow-md hs-tab-active:hover:border-transparent text-start hover:bg-gray-200 rounded-xl dark:hs-tab-active:bg-slate-900 dark:hover:bg-gray-700 ${activeTab === 1 ? 'hs-tab-active:bg-white hs-tab-active:text-accent bg-transparent' : ''}`} onClick={() => handleTabClick(5)} role="tab">
+                            <button type="button" className={`btn hs-tab-active:bg-white hs-tab-active:shadow-md hs-tab-active:hover:border-transparent text-start hover:bg-gray-200 rounded-xl  dark:hover:bg-gray-700 ${activeTab === 1 ? 'hs-tab-active:bg-white hs-tab-active:text-accent bg-transparent' : ''}`} onClick={() => handleTabClick(5)} role="tab">
                               <span className="flex">
                                 <span className="grow">
                                   <span className="block text-xl font-semibold text-gray-800 hs-tab-active:text-blue-600 dark:hs-tab-active:text-blue-500 dark:text-gray-200">
