@@ -8,7 +8,7 @@ import { Bounds, OrbitControls, Stage, Stars } from "@react-three/drei";
 import Clouds from "../sanBartolome/Clouds";
 import Loading from '../../../pages/loading';
 
-import BatasanBuilding from "../../../assets/models/ba_buildings/batasanBuilding.glb"
+import BatasanBuilding from "../../../assets/models/ba_buildings/cbatasan.glb"
 import BatasanCourt from "../../../assets/models/ba_buildings/batasanCourt.glb"
 import BatasanFlooring from "../../../assets/models/ba_buildings/batasanFlooring.glb"
 import BatasanUrban from "../../../assets/models/ba_buildings/batasanUrban.glb"
