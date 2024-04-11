@@ -1,7 +1,7 @@
-import React, { Suspense, useCallback, useEffect, useState } from "react";
-import { Canvas } from "@react-three/fiber";
+import React, { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
 import ModelViewer from "./ModelViewer";
-import { OrbitControls, Stage, Stars } from "@react-three/drei";
+import { Billboard, OrbitControls, Stage, Stars, Text } from "@react-three/drei";
 import Modal from "react-modal";
 import { Icon } from "@iconify/react";
 import {
@@ -16,8 +16,10 @@ import {
 import firebaseConfig, { db } from "../../utils/firebase";
 import { initializeApp } from "firebase/app";
 import Animation from "./animation/Animation";
-import Clouds from "./Clouds";
-import textGuide from '../../../data/textGuide';
+import { useTranslation } from "react-i18next";
+import { Mesh, BufferGeometry, NormalBufferAttributes, Material, Object3DEventMap } from "three";
+import UareHere from '/src/assets/models/others/clocation.glb';
+
 
 interface ContainerProps {
   name: string;
@@ -251,6 +253,49 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
     }
   };
 
+  const { t } = useTranslation();
+  const RotatingMesh = () => {
+    const meshRef =
+      useRef<
+        Mesh<
+          BufferGeometry<NormalBufferAttributes>,
+          Material | Material[],
+          Object3DEventMap
+        >
+      >(null);
+
+    useFrame((state: { clock: { elapsedTime: number } }, delta: any) => {
+      if (meshRef.current) {
+        meshRef.current.rotation.y += 0.05;
+
+        meshRef.current.position.y = Math.sin(state.clock.elapsedTime) * 0.8 + 5;
+      }
+    });
+
+    return (
+      <>
+        {/* <mesh ref={meshRef} position={[38, -20, 49]}>
+        <ModelViewer
+          position={[0, 2, 0]}
+          modelPath={UareHere}
+          mesh={meshRef.current}
+        />
+      </mesh> */}
+        {/* <Billboard follow position={[11, 11, 49]}>
+        <Text
+          fontSize={1.5}
+          outlineColor="#000000"
+          outlineOpacity={1}
+          outlineWidth="20%"
+        >
+          {t("You are here.")}
+        </Text>
+      </Billboard> */}
+      </>
+    );
+  };
+
+
   return (
     <>
       {selectedRoomModel && animation ? (
@@ -265,12 +310,6 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
             selectedFloor={selectedFloor}
             selectedRoom={selectedRoom?.roomCode || ""}
           />
-          <button
-            onClick={clickSB}
-            className="absolute z-10 mt-10 btn btn-secondary ml-60"
-          >
-            Back
-          </button>
         </>
       ) : (
         <>
@@ -327,8 +366,9 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                   />
                 ))}
 
-              {/* <RotatingMesh /> */}
+
             </Stage>
+            <RotatingMesh />
           </Canvas>
           <Modal
             className="flex items-center justify-center w-screen h-screen bg-black/60 text-base-content"
@@ -346,8 +386,8 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                           <button
                             onClick={handleFloorsClick}
                             className={`h-10 btn  hover:bg-base-content hover:text-base-300 ${!showOverview
-                                ? "bg-transparent btn-block shadow-none text-lg text-base-content"
-                                : ""
+                              ? "bg-transparent btn-block shadow-none text-lg text-base-content"
+                              : ""
                               }`}
                           >
                             Floors
@@ -370,7 +410,16 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                               .map((floorLevel, index) => (
                                 <button
                                   key={floorLevel}
-                                  className={`w-full h-10 bg-bsase-100 btn ${selectedFloor === `${floorLevel}`
+                                  className={`w-full h-10 btn ${selectedBuilding === "Bautista Building" &&
+                                    ((index === 0 && selectedFloor === "LG") ||
+                                      (index === 1 && selectedFloor === "G") ||
+                                      (index >= 2 &&
+                                        index <= 8 &&
+                                        selectedFloor === `F${index}`))
+                                    ? "bg-base-content text-base-100"
+                                    : selectedBuilding !==
+                                      "Bautista Building" &&
+                                      selectedFloor === `F${index + 1}`
                                       ? "bg-base-content text-base-100"
                                       : "hover:bg-base-200"
                                     }`}
@@ -409,6 +458,7 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                           </div>
                         </div>
                       )}
+
                     </div>
                   )}
                 </div>
@@ -423,8 +473,8 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                               : handleOverviewClick
                           }
                           className={` btn   w-full bg-transparent btn-square shadow-none ${!showOverview
-                              ? "bg-transparent btn-square shadow-none font-semibold text-base-content"
-                              : ""
+                            ? "bg-transparent btn-square shadow-none font-semibold text-base-content"
+                            : ""
                             }`}
                         >
                           {showOverview ? (
@@ -458,7 +508,16 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                               .map((floorLevel, index) => (
                                 <button
                                   key={floorLevel}
-                                  className={`w-full h-10 bg-bsase-100 btn ${selectedFloor === `${floorLevel}`
+                                  className={`w-full h-10 btn ${selectedBuilding === "Bautista Building" &&
+                                    ((index === 0 && selectedFloor === "LG") ||
+                                      (index === 1 && selectedFloor === "G") ||
+                                      (index >= 2 &&
+                                        index <= 8 &&
+                                        selectedFloor === `F${index}`))
+                                    ? "bg-base-content text-base-100"
+                                    : selectedBuilding !==
+                                      "Bautista Building" &&
+                                      selectedFloor === `F${index + 1}`
                                       ? "bg-base-content text-base-100"
                                       : "hover:bg-base-200"
                                     }`}
@@ -497,6 +556,7 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                           </div>
                         </div>
                       )}
+
                     </div>
                   )}
                 </div>
@@ -507,8 +567,8 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                     <button
                       onClick={handleOverviewClick}
                       className={` rounded-xl text-3xl p-2 font-bold mx-2 mt-4 h-14 hover:bg-base-300 ${showOverview
-                          ? "hover:bg-transparent  text-base-content w-auto mt-4 h-14 mx-4"
-                          : ""
+                        ? "hover:bg-transparent  text-base-content w-auto mt-4 h-14 mx-4"
+                        : ""
                         }`}
                     >
                       {selectedBuilding}
@@ -592,8 +652,8 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                                   <button
                                     key={index}
                                     className={`h-10 z-50 bg-base-100 btn text-sm ${selectedBuilding === building.buildingName
-                                        ? "bg-base-content text-base-100"
-                                        : "hover:bg-base-200"
+                                      ? "bg-base-content text-base-100"
+                                      : "hover:bg-base-200"
                                       }`}
                                     onClick={() =>
                                       handleModelClick(building.buildingName)
@@ -621,22 +681,28 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                                               Building Name:{" "}
                                               {building.buildingName}
                                             </p> */}
-                                            <p className="text-2xl font-semibold">
+                                            <p className="text-2xl font-normal">
                                               Building Name:{" "}
-                                              <span className="text-2xl font-normal">
+                                              <span className="text-2xl font-bold">
                                                 {building.buildingName}
                                               </span>
                                             </p>
-                                            <p className="text-2xl font-semibold">
+                                            <p className="text-2xl font-normal">
                                               Status:{" "}
-                                              <span className="text-2xl font-normal">
+                                              <span className="text-2xl font-bold">
                                                 {building.status}
                                               </span>
                                             </p>
-                                            <p className="text-2xl font-semibold">
+                                            <p className="text-2xl font-normal">
                                               Total Floor/s:{" "}
-                                              <span className="text-2xl font-normal">
+                                              <span className="text-2xl font-bold">
                                                 {building.totalFloor}
+                                              </span>
+                                            </p>
+                                            <p className="text-2xl font-normal">
+                                              ETA:{" "}
+                                              <span className="text-2xl font-bold">
+                                                4:06 Avg. ETA
                                               </span>
                                             </p>
                                             {/* Add more building properties here if needed */}
@@ -653,57 +719,68 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                         </div>
                       </div>
                     ) : (
-                      <div className="w-full h-auto m-6 mt-0 shadow-inner bg-base-300 rounded-2xl">
+                      <div className="w-full h-[450px] m-6 mt-0 shadow-inner bg-base-300 rounded-3xl">
                         <div className="flex flex-col items-center p-0">
-                          <div className="w-full p-6 shadow-inner bg-base-200 h-[420px] rounded-2xl">
+                          <div className="w-full p-6 shadow-inner bg-base-200 h-[360px] rounded-3xl">
                             <div className="relative flex flex-col w-full h-full space-y-3">
-                              <div className="text-base-content">
+
+                              <div className="text-base-content relative">
                                 {selectedBuilding &&
                                   selectedFloor &&
                                   selectedRoom && (
-                                    <div>
-                                      <ul className="space-y-2 text-2xl">
-                                        <h1 className="mb-5 -mt-0 text-3xl font-bold text-center">
-                                          Details
-                                        </h1>
-                                        <li>
-                                          <b>Name: {selectedRoom.roomName}</b>
-                                        </li>
-                                        <li>
-                                          <b>
-                                            Floor: {selectedRoom.floorLevel}
-                                          </b>
-                                        </li>
-                                        <li>
-                                          <b>
-                                            Distance: {selectedRoom.distance}
-                                          </b>
-                                        </li>
-                                        <li>
-                                          <b>ETA: {selectedRoom.eta}</b>
-                                        </li>
-                                        <li>
-                                          <b>
-                                            Area: {selectedRoom.squareMeter}
-                                          </b>
-                                        </li>
-                                        <li>
-                                          <b>Status: {selectedRoom.status}</b>
-                                        </li>
-                                      </ul>
-                                      <div className="w-full p-3">
+                                    <>
+                                      <div className="flex flex-col w-full h-80 mb-5 p-3 ">
+                                        <ul className="space-y-2 text-2xl">
+                                          <h1 className="mb- -mt-2 text-3xl font-bold text-center">
+                                            Details
+                                          </h1>
+                                          <li>Room Name:
+                                            <b> {selectedRoom.roomCode}</b>
+                                          </li>
+                                          <li>Room Type:
+                                            <b> {selectedRoom.roomName}</b>
+                                          </li>
+                                          <li>Floor: {" "}
+                                            <b>
+                                               {selectedRoom.floorLevel}
+                                            </b>
+                                          </li>
+                                         <div className="flex space-x-3 justify-between">
+                                         <li> Distance:
+                                            <b>
+                                              {selectedRoom.distance}
+                                            </b>
+                                          </li>
+                                          <li>
+                                           Area: <b>
+                                               {selectedRoom.squareMeter}
+                                            </b>
+                                          </li>
+                                         </div>
+                                         <div className="flex space-x-3 justify-between">
+                                         <li>
+                                           Status: <b> {selectedRoom.status}</b>
+                                          </li>
+                                          <li>ETA:
+                                            <b> {selectedRoom.eta} N/A</b>
+                                          </li>
+                                         </div>
+                                          
+                                          
+                                        </ul>
+
+                                      </div>
+                                      <div className="absolute w-full mt-4 rounded-2xl">
                                         <button
-                                          className=" btn btn-secondary btn-block"
-                                          onClick={() =>
-                                            clickAnimation(
-                                              selectedRoom.roomCode
-                                            )
-                                          }
+                                          className=" btn bg-base-content text-base-100 btn-block"
+                                          onClick={() => clickAnimation(
+                                            selectedRoom.roomCode
+                                          )}
                                         >
                                           Get Direction {selectedRoom.roomCode}
                                         </button>
                                       </div>
-                                    </div>
+                                    </>
                                   )}
                               </div>
                             </div>
