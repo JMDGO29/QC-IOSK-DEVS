@@ -26,6 +26,7 @@ const SideBar = () => {
   const ClickWelcome = () => {
     // Redirect to the "/Home" route
     history.push("/SanBartolome");
+    window.location.reload();
   };
   const ClickMaps = () => {
     // Redirect to the "/Map" route
