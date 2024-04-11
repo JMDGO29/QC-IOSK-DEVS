@@ -378,7 +378,7 @@ const SelectCampus: React.FC = () => {
                         </div>
 
                         <div id="tabs-with-card-6" className={`tab-content ${activeTab === 7 ? 'block' : 'hidden'}`} role="tabpanel" aria-labelledby="tabs-with-card-item-3">
-                          <a href="/SanFrancisco" className="w-full h-full hover:scale-150">
+                          <a href="/Batasan" className="w-full h-full hover:scale-150">
                             <img className="shadow-xl  rounded-xl aspect-video hover:scale-110 hover:shadow-2xl hover:shadow-blue-500 duration-150  dark:shadow-gray-900/[.2]" src={baloc} alt="San Bartolome Location Image" />
                           </a>
                           <div className="flex w-auto mt-5 space-x-3 justify-evenly ">
