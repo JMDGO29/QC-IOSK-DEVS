@@ -700,9 +700,9 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                                               </span>
                                             </p>
                                             <p className="text-2xl font-normal">
-                                              ETA:{" "}
+                                              Estimated Time of Arrival:{" "}
                                               <span className="text-2xl font-bold">
-                                                4:06 Avg. ETA
+                                                Average of 4 minutes and 6 seconds
                                               </span>
                                             </p>
                                             {/* Add more building properties here if needed */}
@@ -734,16 +734,19 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                                           <h1 className="mb- -mt-2 text-3xl font-bold text-center">
                                             Details
                                           </h1>
-                                          <li>Room Name:
+                                          <li>Room Code:
                                             <b> {selectedRoom.roomCode}</b>
                                           </li>
-                                          <li>Room Type:
+                                          <li>Room Name:
                                             <b> {selectedRoom.roomName}</b>
                                           </li>
                                           <li>Floor: {" "}
                                             <b>
                                                {selectedRoom.floorLevel}
                                             </b>
+                                          </li>
+                                          <li>Estimated Time of Arrival:
+                                            <b> {selectedRoom.eta} N/A</b>
                                           </li>
                                          <div className="flex space-x-3 justify-between">
                                          <li> Distance:
@@ -760,9 +763,6 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                                          <div className="flex space-x-3 justify-between">
                                          <li>
                                            Status: <b> {selectedRoom.status}</b>
-                                          </li>
-                                          <li>ETA:
-                                            <b> {selectedRoom.eta} N/A</b>
                                           </li>
                                          </div>
                                           
@@ -900,13 +900,13 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                     <div className="flex items-center justify-center mt-5">
                       <button
                         onClick={closeBuildingInfoModal}
-                        className="text-xl btn bg-base-300 hover:bg-accent btn-block"
+                        className="text-xl btn bg-base-300 hover:bg-emerald-500 hover:text-white btn-block"
                       >
                         <Icon
                           icon="mingcute:check-2-line"
                           className="w-10 h-10"
                         />
-                        I, Understand.
+                       Accept.
                       </button>
                     </div>
                   </div>
