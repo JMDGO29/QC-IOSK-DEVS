@@ -2,31 +2,31 @@
 <html lang="en" data-theme="cmyk">
 
 <head>
-  <meta charset="utf-8" />
-  <title>QC-IOSK</title>
-
   <base href="/" />
-
+  <meta charset="utf-8" />
   <meta name="color-scheme" content="light dark" />
   <meta name="viewport"
     content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="format-detection" content="telephone=no" />
   <meta name="msapplication-tap-highlight" content="no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Ionic App" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+
+  <title>QC-IOSK</title>
 
   <link rel="manifest" href="/manifest.json" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
   <link rel="shortcut icon" type="image/ico" href="/qcu.ico" />
+  <link rel="stylesheet" href="src/scsaver.css">
 
-  <!-- add to homescreen for ios -->
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-title" content="Ionic App" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
 </head>
 
 <body>
   <div id="root"></div>
-  <script type="module" src="/src/main.tsx"></script>
 
+  <script type="module" src="/src/main.tsx"></script>
+  <script src="dist/scsaver.min.js"></script>
 </body>
 
 </html>

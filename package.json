@@ -51,6 +51,7 @@
     "react-router-dom": "^5.3.4",
     "react-simple-keyboard": "^3.7.86",
     "react-toastify": "^10.0.5",
+    "scsaver": "^0.5.9",
     "simple-keyboard": "^3.7.59",
     "suspend-react": "^0.1.3",
     "theme-change": "^2.5.0",

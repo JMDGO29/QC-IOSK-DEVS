@@ -207,7 +207,7 @@ const RoomManagement: React.FC<ContainerProps> = ({ name }) => {
         size: 150,
         Cell: ({ row }) => {
           return (
-            <div className="truncate text-ellipsis">
+            <div className="truncate text-ellipsis w-40">
               {row.original.textGuide}
             </div>
           );
@@ -219,7 +219,7 @@ const RoomManagement: React.FC<ContainerProps> = ({ name }) => {
         size: 150,
         Cell: ({ row }) => {
           return (
-            <div className="truncate text-ellipsis">
+            <div className="truncate text-ellipsis w-40">
               {row.original.voiceGuide}
             </div>
           );

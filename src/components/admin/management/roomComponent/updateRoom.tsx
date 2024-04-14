@@ -205,7 +205,7 @@ const UpdateRoom: React.FC<ContainerProps> = ({ name }) => {
                           className="w-full max-w-xs input input-bordered"
                           value={floorLevel}
                           onChange={(e) => setFloorLevel(e.target.value)}
-                          readOnly
+                          // readOnly
                         />
                       </td>
                     </tr>

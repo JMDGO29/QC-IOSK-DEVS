@@ -56,12 +56,11 @@
     "windows": [
       {
         "fullscreen": true,
-        "height": 600,
         "resizable": true,
         "title": "QC-IOSK:Campus Navigation System for Quezon City University",
-        "width": 800,
         "decorations": true,
-        "alwaysOnTop": false
+        "alwaysOnTop": false,
+        "center": true
       }
       
     ]
