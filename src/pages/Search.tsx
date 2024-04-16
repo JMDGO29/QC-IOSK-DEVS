@@ -14,6 +14,8 @@ import {
   collection,
   getDocs,
   getFirestore,
+  limit,
+  orderBy,
   query,
   serverTimestamp,
   where,
@@ -38,7 +40,29 @@ interface Room {
   status: string;
   roomAnimation: string;
   voiceGuide: string;
-  textGuide: string;
+  textGuide: string[];
+}
+
+interface Search {
+  id: string;
+  selectedBuilding: string;
+  selectedFloor: string;
+  roomCode: string;
+  roomAnimation: string;
+  selectedRoomName: string;
+  selectedTextGuide: string[];
+  selectedVoiceGuide: string;
+}
+
+
+interface RoomData {
+  buildingName: string;
+  roomCode: string;
+  roomName: string;
+  floorLevel: string;
+  roomAnimation: string;
+  voiceGuide: string;
+  textGuide: string[];
 }
 
 const SearchTab: React.FC = () => {
@@ -54,11 +78,73 @@ const SearchTab: React.FC = () => {
   const [isClicked, setIsClicked] = useState(false);
   const [filteredRooms, setFilteredRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true); // State to track loading status
-
+  const [selectedTextGuide, setSelectedTextGuide] = useState<string[]>([""]);
+  const [selectedRoomName, setSelectedRoomName] = useState("");
+  const [recentRoomCodes, setRecentRoomCodes] = useState<RoomData[]>([]);
   useEffect(() => {
     // Fetch data when component mounts
     fetchRooms();
   }, []);
+
+  const fetchRecentRoomCodes = async (): Promise<RoomData[]> => {
+    try {
+      const today = new Date();
+      const startOfDay = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate()
+      );
+      const endOfDay = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate() + 1
+      );
+
+      const roomsCollection = collection(db, "visitorData2");
+      const queryRoom = query(
+        roomsCollection,
+        where("createdAt", ">=", startOfDay),
+        where("createdAt", "<", endOfDay),
+        orderBy("createdAt", "desc"),
+        limit(3)
+      );
+
+      const roomsSnapshot = await getDocs(queryRoom);
+
+      if (!roomsSnapshot.empty) {
+        const recentRoomData: RoomData[] = []; // Specify RoomData type
+        roomsSnapshot.docs.forEach((doc) => {
+          const roomData = doc.data() as Search;
+          recentRoomData.push({
+            roomCode: roomData.roomCode,
+            roomName: roomData.selectedRoomName,
+            buildingName: roomData.selectedBuilding,
+            floorLevel: roomData.selectedFloor,
+            roomAnimation: roomData.roomAnimation,
+            voiceGuide: roomData.selectedVoiceGuide,
+            textGuide: roomData.selectedTextGuide,
+            // Include selected room name
+          });
+        });
+        return recentRoomData; // Return array of recent room data
+      } else {
+        console.log("No rooms found.");
+        return []; // Return an empty array if no rooms found
+      }
+    } catch (error) {
+      console.error("Error fetching recent room data:", error);
+      return []; // Return an empty array if an error occurs
+    }
+  };
+
+  useEffect(() => {
+    const fetchRecentCodes = async () => {
+      const recentRoomData = await fetchRecentRoomCodes();
+      setRecentRoomCodes(recentRoomData);
+    };
+    fetchRecentCodes();
+  }, []);
+
 
   const fetchRooms = async () => {
     try {
@@ -114,18 +200,22 @@ const SearchTab: React.FC = () => {
 
   const handleSuggestionClick = async (
     roomCode: string,
+    roomName: string,
     floorLevel: string,
     roomAnimation: string,
     voiceGuide: string,
-    buildingName: string
+    buildingName: string,
+    textGuide: string[],
   ) => {
     const now = serverTimestamp();
     if (roomCode) {
       setSelectedRoom(roomCode);
+      setSelectedRoomName(roomName);
       setSelectedFloor(floorLevel);
       setSelectedBuilding(buildingName);
       setSelectedModelPath(roomAnimation);
       setSelectedVoice(voiceGuide);
+      setSelectedTextGuide(textGuide);
       setIsAnimationActive(true);
 
       if (roomAnimation) {
@@ -133,8 +223,12 @@ const SearchTab: React.FC = () => {
         const roomRef = collection(firestore, "visitorData2");
         await addDoc(roomRef, {
           roomCode: roomCode,
+          selectedRoomName: roomName,
           selectedFloor: floorLevel,
           selectedBuilding: buildingName,
+          roomAnimation: roomAnimation,
+          selectedTextGuide: textGuide,
+          selectedVoiceGuide: voiceGuide,
           createdAt: now,
         });
       }
@@ -177,35 +271,11 @@ const SearchTab: React.FC = () => {
                               <div className="w-full py-6 overflow-auto h-96">
                                 <h1 className="text-black">Result:</h1>
                                 <ul className="px-1 space-y-1">
-                                  {filteredRooms
-                                    .sort((a, b) =>
-                                      a.roomCode.localeCompare(b.roomCode)
-                                    )
-                                    .map((room, index) => (
-                                      <li key={index} className="space-y-2">
-                                        <button
-                                          className=" btn btn-block btn-primary"
-                                          onClick={() =>
-                                            handleSuggestionClick(
-                                              room.roomCode,
-                                              room.floorLevel,
-                                              room.roomAnimation,
-                                              room.voiceGuide,
-                                              room.buildingName
-                                            )
-                                          }
-                                        >
-                                          {room.roomCode} - {room.roomName}{" "}
-                                          {room.floorLevel} -{" "}
-                                          {room.buildingName}
 
-                                        </button>
-                                      </li>
-                                    ))}
                                 </ul>
                               </div>
                             ) : (
-                              <div className="w-full py-6 overflow-auto h-full">
+                              <div className="w-full h-full py-6 overflow-auto">
                                 <h1 className="text-black">
                                   No rooms found.
                                 </h1>
@@ -231,19 +301,20 @@ const SearchTab: React.FC = () => {
 
                 <Animation
                   name={""}
-                  roomName={selectedRoom}
+                  roomName={selectedRoomName}
                   modelPath={selectedModelPath}
                   voice={selectedVoice}
                   selectedBuilding={selectedBuilding}
                   selectedFloor={selectedFloor}
                   selectedRoom={selectedRoom}
+                  textGuide={selectedTextGuide || []}
                 />
-                <button
+                {/* <button
                   onClick={clickSearch}
                   className="absolute z-10 mt-10 btn btn-secondary ml-60"
                 >
                   Back
-                </button>
+                </button> */}
               </Suspense>
             ) : (
               <>
@@ -257,9 +328,9 @@ const SearchTab: React.FC = () => {
 
 
                         <div className="z-50 w-screen h-screen">
-                          <div className="flex items-center justify-end space-x-96 w-screen  ">
+                          <div className="flex items-center justify-end w-screen space-x-96 ">
                             <div className="flex flex-col items-center justify-center w-5/12 space-y-3 ">
-                              <h1 className="w-full text-4xl font-bold text-center text-white  sm:text-6xl">
+                              <h1 className="w-full text-4xl font-bold text-center text-white sm:text-6xl">
                                 Search
                               </h1>
                               <div className="w-full">
@@ -273,6 +344,75 @@ const SearchTab: React.FC = () => {
                                 />
                               </div>
 
+                              {recentRoomCodes.length > 0 && (
+                                <div>
+                                  <h2>Recent Room Codes</h2>
+                                  <ul className="flex justify-center space-x-4">
+                                    {recentRoomCodes
+                                      .filter(
+                                        (room, index, self) =>
+                                          index ===
+                                          self.findIndex(
+                                            (r) => r.roomCode === room.roomCode
+                                          )
+                                      )
+                                      .map((room, index) => (
+                                        <li key={index}>
+                                          <button
+                                            className="btn btn-block btn-secondary "
+                                            onClick={() =>
+                                              handleSuggestionClick(
+                                                room.roomCode,
+                                                room.roomName,
+                                                room.floorLevel,
+                                                room.roomAnimation,
+                                                room.voiceGuide,
+                                                room.buildingName,
+                                                room.textGuide
+                                              )
+                                            }
+                                          >
+                                            {room.roomCode} - {room.roomName}
+                                          </button>
+                                        </li>
+                                      ))}
+                                  </ul>
+                                </div>
+                              )}
+
+                              <h2>Suggestions</h2>
+                              <div className="flex justify-center">
+                                {rooms.map((room, index) => (
+                                  <div key={index}>
+                                    {(room.roomName === "NSTP" ||
+                                      room.roomName === "SASD" ||
+                                      room.roomName === "Admission Office" ||
+                                      room.roomName ===
+                                      "College of Computer Studies" ||
+                                      room.roomName === "Registrar Office") && (
+                                        <button
+                                          className="btn btn-block btn-secondary"
+                                          onClick={() =>
+                                            handleSuggestionClick(
+                                              room.roomCode,
+                                              room.roomName,
+                                              room.floorLevel,
+                                              room.roomAnimation,
+                                              room.voiceGuide,
+                                              room.buildingName,
+                                              room.textGuide
+                                            )
+                                          }
+                                        >
+                                          {room.roomName}
+                                        </button>
+                                      )}
+                                  </div>
+                                ))}
+                              </div>
+
+
+
                               <div className="w-full">
                                 <div className="w-auto h-auto bg-white rounded-3xl">
                                   <KeyboardWrapper
@@ -284,7 +424,8 @@ const SearchTab: React.FC = () => {
                               </div>
                             </div>
 
-                            <div className="w-3/12 h-screen  bg-white rounded-3xl">
+
+                            <div className="w-3/12 h-screen bg-white rounded-3xl">
                               <div className="w-full h-full p-3 bg-white shadow-inner rounded-3xl">
                                 {input && filteredRooms.length > 0 ? (
                                   <div className="w-full h-full py-6 pt-0 overflow-auto">
@@ -301,14 +442,16 @@ const SearchTab: React.FC = () => {
                                               onClick={() =>
                                                 handleSuggestionClick(
                                                   room.roomCode,
+                                                  room.roomName,
                                                   room.floorLevel,
                                                   room.roomAnimation,
                                                   room.voiceGuide,
-                                                  room.buildingName
+                                                  room.buildingName,
+                                                  room.textGuide
                                                 )
                                               }
                                             >
-                                              <div className="flex flex-col justify-start w-full ">
+                                              {/* <div className="flex flex-col justify-start w-full ">
                                                 <div className="flex space-x-3 text-sm">
                                                   <div>{room.buildingName}</div>
                                                   <div>{room.floorLevel}</div>
@@ -319,14 +462,27 @@ const SearchTab: React.FC = () => {
                                                     <div className="badge badge-lg">{room.roomCode}</div>
                                                   </div>
                                                 </div>
-                                              </div>
+                                              </div> */}
+                                              {room.roomCode === "" ||
+                                                room.roomName === "" ? (
+                                                <>{room.buildingName}</>
+                                              ) : (
+                                                <>
+                                                  {" "}
+                                                  {room.roomCode}-{" "}
+                                                  {room.roomName} -{" "}
+                                                  {room.floorLevel} -{" "}
+                                                  {room.buildingName}
+                                                </>
+                                              )}
+
                                             </button>
                                           </li>
                                         ))}
                                     </ul>
                                   </div>
                                 ) : (
-                                  <div className="w-full overflow-auto h-full rounded-3xl p-3 space-y-10">
+                                  <div className="w-full h-full p-3 space-y-10 overflow-auto rounded-3xl">
                                     {!input ? ( // Display "Search Suggestions" when input is cleared
                                       <div className="bg-base-100 w-[475px] h-20 fixed -z-1">
                                         <h1 className="text-4xl font-bold text-black">Search Suggestions</h1>
