@@ -19,7 +19,7 @@ export const credits = {
       position: 'Documenter',
     },
     {
-      name: 'Medina, Agatha',
+      name: 'Medina, Agatha Cyril',
       position: 'Documenter',
     },
     // Add more documentor entries here
