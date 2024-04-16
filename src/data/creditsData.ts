@@ -3,7 +3,7 @@
 export const credits = {
   documentors: [
     {
-      name: 'Medina, Agatha',
+      name: 'Gigantone, Reza May',
       position: 'Technical Writer',
     },
     {
@@ -19,7 +19,7 @@ export const credits = {
       position: 'Documenter',
     },
     {
-      name: 'Gigantone, Reza May',
+      name: 'Medina, Agatha',
       position: 'Documenter',
     },
     // Add more documentor entries here
