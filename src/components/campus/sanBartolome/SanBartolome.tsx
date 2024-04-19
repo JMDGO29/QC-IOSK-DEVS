@@ -279,8 +279,11 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
             roomCode: roomData.roomCode,
             selectedFloor: selectedFloor,
             selectedBuilding: selectedBuilding,
-
+            selectedRoomName: roomData.roomName,
+            selectedTextGuide: roomData.textGuide,
             createdAt: now,
+            roomAnimation: roomData.roomAnimation,
+            selectedVoiceGuide: roomData.voiceGuide,
           });
         }
       } else {
@@ -390,7 +393,7 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
 
 
             </Stage>
-            <RotatingMesh />
+            {/* <RotatingMesh /> */}
           </Canvas>
           <Modal
             className="flex items-center justify-center w-screen h-screen bg-black/60 text-base-content"
@@ -843,12 +846,12 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                 </button>
               </div>
               <div className="flex justify-around mt-10">
-                <button onClick={lineNavClick} className="flex flex-col w-40 h-40 btn bg-base-300">
-                  <Icon icon="mingcute:navigation-line" className="w-10 h-10" />
+                <button onClick={lineNavClick} className="flex flex-col w-40 h-40 rounded-2xl btn bg-base-300">
+                  <Icon icon="mingcute:navigation-line" className="w-20 h-20" />
                   <p className="">Line Navigation</p>
                 </button>
-                <button onClick={arNavClick} className="flex flex-col w-40 h-40 btn bg-base-300">
-                  <Icon icon="mynaui:ar" className="w-10 h-10" />
+                <button onClick={arNavClick} className="flex flex-col w-40 h-40 btn rounded-2xl bg-base-300">
+                  <Icon icon="mynaui:ar" className="w-20 h-20" />
                   <p className="">Augmented Reality Navigation</p>
                 </button>
               </div>

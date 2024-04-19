@@ -18,7 +18,7 @@ interface Manual {
     id: string;
     name: string;
     manualDesc: string;
-    imageUrl: string;
+    manualImageUrl: string;
 }
 
 const KioskManual: React.FC<ContainerProps> = ({ name }) => {
@@ -144,7 +144,7 @@ const KioskManual: React.FC<ContainerProps> = ({ name }) => {
                             <div className="flex space-x-4">
                                 <div>
                                     <img
-                                        src={selectedManual.imageUrl}
+                                        src={selectedManual.manualImageUrl}
                                         alt="Manual Alt"
                                         className="w-auto h-96 rounded-2xl"
                                     // style={{ maxWidth: "100px" }}

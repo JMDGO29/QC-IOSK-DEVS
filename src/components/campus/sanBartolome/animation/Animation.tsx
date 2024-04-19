@@ -240,7 +240,7 @@ const Animation: React.FC<ContainerProps> = ({
                 </div>
               </div>
 
-              <div className="w-full h-24 bg-base-300/80 text-base-content rounded-3xl">
+              <div className="w-full h-24 bg-base-300 text-base-content rounded-3xl">
                 <div className="flex items-center justify-around w-full h-24 px-3 ">
                   <button
                     onClick={clickHome}

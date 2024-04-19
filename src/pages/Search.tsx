@@ -358,8 +358,8 @@ const SearchTab: React.FC = () => {
                             </div>
 
 
-                            <div className="w-3/12 h-screen bg-white">
-                              <div className="w-full h-full p-3 bg-white shadow-inner rounded-3xl">
+                            <div className="w-3/12 h-screen bg-base-100">
+                              <div className="w-full h-full p-3 shadow-inner bg-base-100 rounded-3xl">
                                 {input && filteredRooms.length > 0 ? (
                                   <div className="w-full h-full py-6 pt-0 overflow-auto">
                                     <div className="bg-base-100 w-[448px] h-20 fixed -z-1">
