@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent, useRef, useEffect, startTransition, Suspense } from "react";
+import React, { useState, ChangeEvent, useRef, useEffect, Suspense } from "react";
 import { IonContent, IonPage } from "@ionic/react";
 import "react-simple-keyboard/build/css/index.css";
 import Backbtn from "../components/navigation/Backbtn";
@@ -6,7 +6,7 @@ import "../assets/css/search.css";
 import "../assets/css/keyboard.css";
 import KeyboardWrapper from "./keyboard/Keyboard";
 import Animation from "../components/campus/sanBartolome/animation/Animation";
-// Import your loading component here
+import Loading from "./loading"; // Import your loading component here
 import {
   DocumentData,
   Query,
@@ -14,13 +14,14 @@ import {
   collection,
   getDocs,
   getFirestore,
+  limit,
+  orderBy,
   query,
   serverTimestamp,
   where,
 } from "firebase/firestore";
 import firebaseConfig, { db } from "../components/utils/firebase";
 import { initializeApp } from "firebase/app";
-import Loading from "./loading";
 
 export interface KeyboardRef {
   setInput: (input: string) => void;
@@ -42,6 +43,28 @@ interface Room {
   textGuide: string[];
 }
 
+interface Search {
+  id: string;
+  selectedBuilding: string;
+  selectedFloor: string;
+  roomCode: string;
+  roomAnimation: string;
+  selectedRoomName: string;
+  selectedTextGuide: string[];
+  selectedVoiceGuide: string;
+}
+
+
+interface RoomData {
+  buildingName: string;
+  roomCode: string;
+  roomName: string;
+  floorLevel: string;
+  roomAnimation: string;
+  voiceGuide: string;
+  textGuide: string[];
+}
+
 const SearchTab: React.FC = () => {
   const [input, setInput] = useState("");
   const [selectedModelPath, setSelectedModelPath] = useState<string>("");
@@ -56,13 +79,72 @@ const SearchTab: React.FC = () => {
   const [filteredRooms, setFilteredRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true); // State to track loading status
   const [selectedTextGuide, setSelectedTextGuide] = useState<string[]>([""]);
+  const [selectedRoomName, setSelectedRoomName] = useState("");
+  const [recentRoomCodes, setRecentRoomCodes] = useState<RoomData[]>([]);
   useEffect(() => {
-
-    startTransition(() => {
-      // Fetch data when component mounts
-      fetchRooms();
-    })
+    // Fetch data when component mounts
+    fetchRooms();
   }, []);
+
+  const fetchRecentRoomCodes = async (): Promise<RoomData[]> => {
+    try {
+      const today = new Date();
+      const startOfDay = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate()
+      );
+      const endOfDay = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate() + 1
+      );
+
+      const roomsCollection = collection(db, "visitorData2");
+      const queryRoom = query(
+        roomsCollection,
+        where("createdAt", ">=", startOfDay),
+        where("createdAt", "<", endOfDay),
+        orderBy("createdAt", "desc"),
+        limit(3)
+      );
+
+      const roomsSnapshot = await getDocs(queryRoom);
+
+      if (!roomsSnapshot.empty) {
+        const recentRoomData: RoomData[] = []; // Specify RoomData type
+        roomsSnapshot.docs.forEach((doc) => {
+          const roomData = doc.data() as Search;
+          recentRoomData.push({
+            roomCode: roomData.roomCode,
+            roomName: roomData.selectedRoomName,
+            buildingName: roomData.selectedBuilding,
+            floorLevel: roomData.selectedFloor,
+            roomAnimation: roomData.roomAnimation,
+            voiceGuide: roomData.selectedVoiceGuide,
+            textGuide: roomData.selectedTextGuide,
+            // Include selected room name
+          });
+        });
+        return recentRoomData; // Return array of recent room data
+      } else {
+        console.log("No rooms found.");
+        return []; // Return an empty array if no rooms found
+      }
+    } catch (error) {
+      console.error("Error fetching recent room data:", error);
+      return []; // Return an empty array if an error occurs
+    }
+  };
+
+  useEffect(() => {
+    const fetchRecentCodes = async () => {
+      const recentRoomData = await fetchRecentRoomCodes();
+      setRecentRoomCodes(recentRoomData);
+    };
+    fetchRecentCodes();
+  }, []);
+
 
   const fetchRooms = async () => {
     try {
@@ -111,33 +193,42 @@ const SearchTab: React.FC = () => {
 
   const handleSearchBarBlur = () => {
     setIsClicked(false);
+    if (!input) {
+      setFilteredRooms([]);
+    }
   };
 
   const handleSuggestionClick = async (
     roomCode: string,
+    roomName: string,
     floorLevel: string,
     roomAnimation: string,
     voiceGuide: string,
     buildingName: string,
-    textGuide: string[]
+    textGuide: string[],
   ) => {
     const now = serverTimestamp();
     if (roomCode) {
       setSelectedRoom(roomCode);
+      setSelectedRoomName(roomName);
       setSelectedFloor(floorLevel);
       setSelectedBuilding(buildingName);
       setSelectedModelPath(roomAnimation);
       setSelectedVoice(voiceGuide);
-      setIsAnimationActive(true);
       setSelectedTextGuide(textGuide);
+      setIsAnimationActive(true);
 
       if (roomAnimation) {
         const firestore = getFirestore(initializeApp(firebaseConfig));
         const roomRef = collection(firestore, "visitorData2");
         await addDoc(roomRef, {
           roomCode: roomCode,
+          selectedRoomName: roomName,
           selectedFloor: floorLevel,
           selectedBuilding: buildingName,
+          roomAnimation: roomAnimation,
+          selectedTextGuide: textGuide,
+          selectedVoiceGuide: voiceGuide,
           createdAt: now,
         });
       }
@@ -180,35 +271,11 @@ const SearchTab: React.FC = () => {
                               <div className="w-full py-6 overflow-auto h-96">
                                 <h1 className="text-black">Result:</h1>
                                 <ul className="px-1 space-y-1">
-                                  {filteredRooms
-                                    .sort((a, b) =>
-                                      a.roomCode.localeCompare(b.roomCode)
-                                    )
-                                    .map((room, index) => (
-                                      <li key={index} className="space-y-2">
-                                        <button
-                                          className=" btn btn-block btn-primary"
-                                          onClick={() =>
-                                            handleSuggestionClick(
-                                              room.roomCode,
-                                              room.floorLevel,
-                                              room.roomAnimation,
-                                              room.voiceGuide,
-                                              room.buildingName,
-                                              room.textGuide
-                                            )
-                                          }
-                                        >
-                                          {room.roomCode} -{" "}
-                                          {room.floorLevel} -{" "}
-                                          {room.buildingName}
-                                        </button>
-                                      </li>
-                                    ))}
+
                                 </ul>
                               </div>
                             ) : (
-                              <div className="w-full py-6 overflow-auto h-96">
+                              <div className="w-full h-full py-6 overflow-auto">
                                 <h1 className="text-black">
                                   No rooms found.
                                 </h1>
@@ -230,10 +297,11 @@ const SearchTab: React.FC = () => {
           <>
             {/* Your content here */}
             {selectedModelPath && isAnimationActive ? (
-              <Suspense fallback={<Loading/>}>
+              <Suspense fallback={<Loading />}>
+
                 <Animation
                   name={""}
-                  roomName={selectedRoom}
+                  roomName={selectedRoomName}
                   modelPath={selectedModelPath}
                   voice={selectedVoice}
                   selectedBuilding={selectedBuilding}
@@ -241,24 +309,30 @@ const SearchTab: React.FC = () => {
                   selectedRoom={selectedRoom}
                   textGuide={selectedTextGuide || []}
                 />
+                {/* <button
+                  onClick={clickSearch}
+                  className="absolute z-10 mt-10 btn btn-secondary ml-60"
+                >
+                  Back
+                </button> */}
               </Suspense>
             ) : (
               <>
                 {/* Your content here */}
-                <div className="absolute top-0 left-0 z-50 ">
-                  <Backbtn name={""} />
-                </div>
-                <div className="h-screen overflow-hidden">
-                  <div className="relative overflow-hidden ">
-                    <div className="max-h-screen px-4 mx-auto max-w-screen sm:px-6 lg:px-8">
-                      <div className="flex flex-col items-center justify-center w-screen h-screen text-center mt-72">
-                        <h1 className="w-screen text-4xl font-bold text-center text-white sm:text-6xl">
-                          Search
-                        </h1>
 
-                        <div className="z-50 flex-col items-center justify-center w-screen h-screen ">
-                          <div className="flex items-start justify-center w-screen space-x-3 ">
-                            <div className="flex flex-col w-5/12 space-y-3 ">
+
+                <div className="w-screen h-screen overflow-hidden">
+                  <div className="relative w-screen h-fit">
+                    <div className="w-screen max-h-screen mx-auto max-w-screen">
+                      <div className="flex flex-col items-center justify-center w-screen h-screen text-center ">
+
+
+                        <div className="z-50 w-screen h-screen">
+                          <div className="flex items-center justify-end w-screen space-x-96 ">
+                            <div className="flex flex-col items-center justify-center w-5/12 space-y-3 ">
+                              <h1 className="w-full text-4xl font-bold text-center text-white sm:text-6xl">
+                                Search
+                              </h1>
                               <div className="w-full">
                                 <input
                                   value={input}
@@ -270,6 +344,75 @@ const SearchTab: React.FC = () => {
                                 />
                               </div>
 
+                              {recentRoomCodes.length > 0 && (
+                                <div>
+                                  <h2>Recent Room Codes</h2>
+                                  <ul className="flex justify-center space-x-4">
+                                    {recentRoomCodes
+                                      .filter(
+                                        (room, index, self) =>
+                                          index ===
+                                          self.findIndex(
+                                            (r) => r.roomCode === room.roomCode
+                                          )
+                                      )
+                                      .map((room, index) => (
+                                        <li key={index}>
+                                          <button
+                                            className="btn btn-block btn-secondary "
+                                            onClick={() =>
+                                              handleSuggestionClick(
+                                                room.roomCode,
+                                                room.roomName,
+                                                room.floorLevel,
+                                                room.roomAnimation,
+                                                room.voiceGuide,
+                                                room.buildingName,
+                                                room.textGuide
+                                              )
+                                            }
+                                          >
+                                            {room.roomCode} - {room.roomName}
+                                          </button>
+                                        </li>
+                                      ))}
+                                  </ul>
+                                </div>
+                              )}
+
+                              <h2>Suggestions</h2>
+                              <div className="flex justify-center">
+                                {rooms.map((room, index) => (
+                                  <div key={index}>
+                                    {(room.roomName === "NSTP" ||
+                                      room.roomName === "SASD" ||
+                                      room.roomName === "Admission Office" ||
+                                      room.roomName ===
+                                      "College of Computer Studies" ||
+                                      room.roomName === "Registrar Office") && (
+                                        <button
+                                          className="btn btn-block btn-secondary"
+                                          onClick={() =>
+                                            handleSuggestionClick(
+                                              room.roomCode,
+                                              room.roomName,
+                                              room.floorLevel,
+                                              room.roomAnimation,
+                                              room.voiceGuide,
+                                              room.buildingName,
+                                              room.textGuide
+                                            )
+                                          }
+                                        >
+                                          {room.roomName}
+                                        </button>
+                                      )}
+                                  </div>
+                                ))}
+                              </div>
+
+
+
                               <div className="w-full">
                                 <div className="w-auto h-auto bg-white rounded-3xl">
                                   <KeyboardWrapper
@@ -280,53 +423,92 @@ const SearchTab: React.FC = () => {
                                 </div>
                               </div>
                             </div>
-                            {input && (
-                              <div className="w-96">
-                                <div className="h-auto p-3 bg-white w-96 rounded-xl">
-                                  {filteredRooms.length > 0 ? (
-                                    <div className="w-full py-6 overflow-auto h-96">
-                                      <h1 className="text-black">Result:</h1>
-                                      <ul className="px-1 space-y-1">
-                                        {filteredRooms
-                                          .sort((a, b) =>
-                                            a.roomCode.localeCompare(b.roomCode)
-                                          )
-                                          .map((room, index) => (
-                                            <li key={index} className="space-y-2">
-                                              <button
-                                                className=" btn btn-block btn-primary"
-                                                onClick={() =>
-                                                  handleSuggestionClick(
-                                                    room.roomCode,
-                                                    room.floorLevel,
-                                                    room.roomAnimation,
-                                                    room.voiceGuide,
-                                                    room.buildingName,
-                                                    room.textGuide
-                                                  )
-                                                }
-                                              >
-                                                {room.roomCode} -{" "}
-                                                {room.floorLevel} -{" "}
-                                                {room.buildingName}
-                                              </button>
-                                            </li>
-                                          ))}
-                                      </ul>
+
+
+                            <div className="w-3/12 h-screen bg-white rounded-3xl">
+                              <div className="w-full h-full p-3 bg-white shadow-inner rounded-3xl">
+                                {input && filteredRooms.length > 0 ? (
+                                  <div className="w-full h-full py-6 pt-0 overflow-auto">
+                                    <div className="bg-base-100 w-[499px] h-20 fixed -z-1">
+                                      <h1 className="text-4xl font-bold text-black">Result:</h1>
                                     </div>
-                                  ) : (
-                                    <div className="w-full py-6 overflow-auto h-96">
-                                      <h1 className="text-black">
-                                        No rooms found.
-                                      </h1>
-                                      <h1 className="text-black">
-                                        Enter another entry.
-                                      </h1>
-                                    </div>
-                                  )}
-                                </div>
+                                    <ul className="px-1 space-y-3 mt-28">
+                                      {filteredRooms
+                                        .sort((a, b) => a.roomCode.localeCompare(b.roomCode))
+                                        .map((room, index) => (
+                                          <li key={index} className="space-y-3">
+                                            <button
+                                              className="text-left shadow-inner h-28 btn btn-block btn-primary rounded-3xl"
+                                              onClick={() =>
+                                                handleSuggestionClick(
+                                                  room.roomCode,
+                                                  room.roomName,
+                                                  room.floorLevel,
+                                                  room.roomAnimation,
+                                                  room.voiceGuide,
+                                                  room.buildingName,
+                                                  room.textGuide
+                                                )
+                                              }
+                                            >
+                                              {/* <div className="flex flex-col justify-start w-full ">
+                                                <div className="flex space-x-3 text-sm">
+                                                  <div>{room.buildingName}</div>
+                                                  <div>{room.floorLevel}</div>
+                                                </div>
+                                                <div className="flex justify-between ">
+                                                  <div className="text-xl">{room.roomName}</div>{" "}
+                                                  <div className="flex flex-col items-end justify-center">
+                                                    <div className="badge badge-lg">{room.roomCode}</div>
+                                                  </div>
+                                                </div>
+                                              </div> */}
+                                              {room.roomCode === "" ||
+                                                room.roomName === "" ? (
+                                                <>{room.buildingName}</>
+                                              ) : (
+                                                <>
+                                                  {" "}
+                                                  {room.roomCode}-{" "}
+                                                  {room.roomName} -{" "}
+                                                  {room.floorLevel} -{" "}
+                                                  {room.buildingName}
+                                                </>
+                                              )}
+
+                                            </button>
+                                          </li>
+                                        ))}
+                                    </ul>
+                                  </div>
+                                ) : (
+                                  <div className="w-full h-full p-3 space-y-10 overflow-auto rounded-3xl">
+                                    {!input ? ( // Display "Search Suggestions" when input is cleared
+                                      <div className="bg-base-100 w-[475px] h-20 fixed -z-1">
+                                        <h1 className="text-4xl font-bold text-black">Search Suggestions</h1>
+                                      </div>
+
+                                    ) : (
+                                      // Display "Nothing's found" message when input is not empty but no results are found
+                                      <>
+                                        <div className="bg-base-100 w-[475px] h-20 fixed -z-1">
+                                          <h1 className="text-4xl font-bold text-black">Result:</h1>
+                                        </div>
+                                        <ul className="px-1 space-y-3 mt-28">
+                                          <h1 className="text-black">Nothing's found.</h1>
+                                          <h1 className="text-black">Enter another entry.</h1>
+                                        </ul>
+                                      </>
+                                    )}
+                                  </div>
+                                )}
                               </div>
-                            )}
+                            </div>
+
+
+
+
+
                           </div>
                         </div>
                       </div>

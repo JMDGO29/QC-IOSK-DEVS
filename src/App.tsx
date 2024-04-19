@@ -68,6 +68,7 @@ import Batasan from './components/campus/batasan/Batasan';
 import SanFrancisco from './components/campus/sanFrancisco/SanFrancisco';
 import SanBartolome from './components/campus/sanBartolome/SanBartolome';
 import Layout from './pages/layout';
+import ScreenSaver from './pages/screenSaver';
 
 setupIonicReact();
 interface ContainerProps {
@@ -79,7 +80,7 @@ const App: React.FC<ContainerProps> = ({ name }) => (
     <IonReactRouter>
       <IonRouterOutlet>
         <Route path="/" exact component={Home} />
-
+        <Route path="/screen-saver" exact component={ScreenSaver} />
         <Route path="/Maps">
           <Maps />
         </Route>

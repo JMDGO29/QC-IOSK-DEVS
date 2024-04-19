@@ -378,7 +378,7 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
           >
             <div className="w-6/12 py-0 pl-0 shadow-xl m-80 bg-base-100 rounded-3xl h-fit">
               <div className="relative flex justify-center space-x-3">
-                <div className="w-20 h-full px-3 mr-2 shadow-lg rounded-3xl">
+                <div className="w-40 h-full px-3 mr-3 rounded-3xl">
                   <div className="flex flex-col justify-center py-3 space-y-3 border-b-2 border-base-100">
                     {selectedBuilding && (
                       <>
@@ -462,7 +462,7 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                     </div>
                   )}
                 </div>
-                <div className="absolute w-20 h-full px-3 shadow-inner -left-3 bg-base-300 rounded-l-3xl">
+                <div className="absolute w-40 h-full px-3 pr-3 shadow-inner -left-10 bg-base-300 rounded-l-3xl">
                   <div className="flex flex-col justify-center pt-3">
                     {selectedBuilding && (
                       <>
@@ -496,7 +496,22 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                   </div>
                   {showOverview ? (
                     <>
-                      <div className="h-full overflow-y-auto"></div>
+                      <div className="h-96 mt-7 pr-3 rounded-2xl overflow-y-auto w-full space-y-2">
+                      {buildings.map((building, index) => (
+                                  <button
+                                    key={index}
+                                    className={`h-10 z-50 bg-base-100 btn btn-block rounded-2xl text-sm ${selectedBuilding === building.buildingName
+                                      ? "bg-base-content text-base-100"
+                                      : "hover:bg-base-200"
+                                      }`}
+                                    onClick={() =>
+                                      handleModelClick(building.buildingName)
+                                    }
+                                  >
+                                    {building.buildingName}
+                                  </button>
+                                ))}
+                      </div>
                     </>
                   ) : (
                     <div>
@@ -541,10 +556,10 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                                 >
                                   {selectedBuilding === "Bautista Building" &&
                                     index === 0
-                                    ? "LG"
+                                    ? "Lower Ground Floor"
                                     : selectedBuilding ===
                                       "Bautista Building" && index === 1
-                                      ? "G"
+                                      ? "Ground Floor"
                                       : selectedBuilding ===
                                         "Bautista Building" &&
                                         index >= 2 &&
@@ -645,10 +660,10 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                       <div className="w-full h-full duration-150 bg-base-100 rounded-2xl">
                         <div className="flex items-center p-6 pt-0 pl-0">
                           <div className="w-full p-6 shadow-inner bg-base-200 h-96 rounded-2xl">
-                            <div className="flex w-full h-full space-x-3 ">
-                              <div className="flex flex-col pr-3 space-y-3 overflow-x-auto">
+                            <div className="flex w-full h-full ">
+                              <div className="flex flex-col  space-y-3 overflow-x-auto">
                                 {/* Render building information here */}
-                                {buildings.map((building, index) => (
+                                {/* {buildings.map((building, index) => (
                                   <button
                                     key={index}
                                     className={`h-10 z-50 bg-base-100 btn text-sm ${selectedBuilding === building.buildingName
@@ -661,15 +676,15 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                                   >
                                     {building.buildingName}
                                   </button>
-                                ))}
+                                ))} */}
                               </div>
-                              <div className="flex flex-col items-center justify-center w-full h-5 rounded-2xl ">
+                              <div className="flex relative flex-col items-center justify-center w-full h-5 rounded-2xl ">
                                 <h1 className="text-3xl font-semibold text-base-content">
                                   Details
                                 </h1>
                                 {/* Render building data here */}
                                 {selectedBuilding && (
-                                  <div className="p-6 absolute top-[155px] w-7/12 bg-base-300 space-y-2 h-72 rounded-2xl">
+                                  <div className=" absolute top-12 w-full  space-y-2 h-72 rounded-2xl">
                                     {buildings.map((building) => {
                                       if (
                                         building.buildingName ===
@@ -700,9 +715,9 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                                               </span>
                                             </p>
                                             <p className="text-2xl font-normal">
-                                              ETA:{" "}
+                                              Estimated Time of Arrival:{" "}
                                               <span className="text-2xl font-bold">
-                                                4:06 Avg. ETA
+                                                Average of 4 minutes and 6 seconds
                                               </span>
                                             </p>
                                             {/* Add more building properties here if needed */}
@@ -734,16 +749,19 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                                           <h1 className="mb- -mt-2 text-3xl font-bold text-center">
                                             Details
                                           </h1>
-                                          <li>Room Name:
+                                          <li>Room Code:
                                             <b> {selectedRoom.roomCode}</b>
                                           </li>
-                                          <li>Room Type:
+                                          <li>Room Name:
                                             <b> {selectedRoom.roomName}</b>
                                           </li>
                                           <li>Floor: {" "}
                                             <b>
                                                {selectedRoom.floorLevel}
                                             </b>
+                                          </li>
+                                          <li>Estimated Time of Arrival:
+                                            <b> {selectedRoom.eta} N/A</b>
                                           </li>
                                          <div className="flex space-x-3 justify-between">
                                          <li> Distance:
@@ -760,9 +778,6 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                                          <div className="flex space-x-3 justify-between">
                                          <li>
                                            Status: <b> {selectedRoom.status}</b>
-                                          </li>
-                                          <li>ETA:
-                                            <b> {selectedRoom.eta} N/A</b>
                                           </li>
                                          </div>
                                           
@@ -900,13 +915,13 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                     <div className="flex items-center justify-center mt-5">
                       <button
                         onClick={closeBuildingInfoModal}
-                        className="text-xl btn bg-base-300 hover:bg-accent btn-block"
+                        className="text-xl btn bg-base-300 hover:bg-emerald-500 hover:text-white btn-block"
                       >
                         <Icon
                           icon="mingcute:check-2-line"
                           className="w-10 h-10"
                         />
-                        I, Understand.
+                       Accept.
                       </button>
                     </div>
                   </div>

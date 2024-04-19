@@ -202,6 +202,30 @@ const RoomManagement: React.FC<ContainerProps> = ({ name }) => {
         size: 150,
       },
       {
+        accessorKey: "textGuide",
+        header: "Text Guide",
+        size: 150,
+        Cell: ({ row }) => {
+          return (
+            <div className="truncate text-ellipsis w-40">
+              {row.original.textGuide}
+            </div>
+          );
+        },
+      },
+      {
+        accessorKey: "voiceGuide",
+        header: "Voice Guide",
+        size: 150,
+        Cell: ({ row }) => {
+          return (
+            <div className="truncate text-ellipsis w-40">
+              {row.original.voiceGuide}
+            </div>
+          );
+        },
+      },
+      {
         accessorKey: "updatedAt",
         header: "Updated At",
         Cell: ({ row }) => {

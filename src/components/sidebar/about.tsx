@@ -210,27 +210,7 @@ const About: React.FC = () => {
               ))}
             </div>
             <div className="py-4 mx-auto">
-              <h1 className="text-2xl font-bold text-center">{t("3D Modelers")}</h1>
-              {credits.modelers.map((person, index) => (
-                <div
-                  key={index}
-                  className="grid grid-cols-1 mx-auto text-center text-base-content rounded-3xl hover:drop-shadow-xl backdrop-blur-lg "
-                >
-                  <div className="flex items-center gap-x-4 ">
-                    <div className="grow">
-                      <h3 className="font-medium text-base-content">
-                        {person.name}
-                      </h3>
-                      <p className="text-xs uppercase text-base-content">
-                        {person.position}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="py-4 mx-auto">
-              <h1 className="text-2xl font-bold text-center">{t("The Programmers")}</h1>
+              <h1 className="text-2xl font-bold text-center">{t("The Developers")}</h1>
               {credits.programmers.map((person, index) => (
                 <div
                   key={index}
