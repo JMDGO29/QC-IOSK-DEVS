@@ -36,25 +36,15 @@ const UpdateEvent: React.FC<ContainerProps> = ({ name }) => {
   const [startDate, setStartDate] = useState<string>("");
   const [startTime, setStartTime] = useState<string>("");
   const [event, setEvent] = useState<Event | null>(null);
-  const [eventImage, setEventImage] = useState<File | null>(null);
-  const [orgImage, setOrgImage] = useState<File | null>(null);
+
+  const [eventImage, setEventImage] = useState<string>("");
+  const [eventImageFile, setEventImageFile] = useState<File | null>(null);
+
+  const [orgImage, setOrgImage] = useState<string>("");
+  const [orgImageFile, setOrgImageFile] = useState<File | null>(null);
 
   const EventManagement = () => {
     history.push("/Events");
-  };
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setEventImage(file);
-    }
-  };
-
-  const handleOrgImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setOrgImage(file);
-    }
   };
 
   useEffect(() => {
@@ -73,6 +63,8 @@ const UpdateEvent: React.FC<ContainerProps> = ({ name }) => {
           setEventPlace(eventData.eventPlace);
           setStartDate(eventData.startDate);
           setStartTime(eventData.startTime);
+          setEventImage(eventData.imageUrl);
+          setOrgImage(eventData.organizerImageUrl);
         } else {
           console.error("Event not found");
           history.push("/Events");
@@ -90,13 +82,15 @@ const UpdateEvent: React.FC<ContainerProps> = ({ name }) => {
       const now = serverTimestamp();
       let imageUrl = "";
       let orgImageUrl = "";
-      if (eventImage && orgImage) {
+      if (eventImageFile) {
         const storageRef = ref(storage, `event-images/${eventId}`);
-        const snapshot = await uploadBytes(storageRef, eventImage);
+        const snapshot = await uploadBytes(storageRef, eventImageFile);
         imageUrl = await getDownloadURL(snapshot.ref);
+      }
 
+      if (orgImageFile) {
         const storageRef2 = ref(storage, `organizer-images/${eventId}`);
-        const snapshot2 = await uploadBytes(storageRef2, orgImage);
+        const snapshot2 = await uploadBytes(storageRef2, orgImageFile);
         orgImageUrl = await getDownloadURL(snapshot2.ref);
       }
 
@@ -108,8 +102,8 @@ const UpdateEvent: React.FC<ContainerProps> = ({ name }) => {
         eventPlace: eventPlace,
         startDate: startDate,
         startTime: startTime,
-        imageUrl: imageUrl,
-        organizerImageUrl: orgImageUrl,
+        imageUrl: imageUrl || eventImage,
+        organizerImageUrl: orgImageUrl || orgImage,
         updatedAt: now,
       });
 
@@ -182,7 +176,11 @@ const UpdateEvent: React.FC<ContainerProps> = ({ name }) => {
                         <input
                           type="file"
                           accept="image/jpeg, image/png, umage/gif"
-                          onChange={handleOrgImageChange}
+                          onChange={(e) =>
+                            setOrgImageFile(
+                              e.target.files ? e.target.files[0] : null
+                            )
+                          } // Update file state
                           className="w-full max-w-xs file-input"
                         />
                       </td>
@@ -230,7 +228,11 @@ const UpdateEvent: React.FC<ContainerProps> = ({ name }) => {
                         <input
                           type="file"
                           accept="image/jpeg, image/png, umage/gif"
-                          onChange={handleImageChange}
+                          onChange={(e) =>
+                            setEventImageFile(
+                              e.target.files ? e.target.files[0] : null
+                            )
+                          } // Update file state
                           className="w-full max-w-xs file-input"
                         />
                       </td>

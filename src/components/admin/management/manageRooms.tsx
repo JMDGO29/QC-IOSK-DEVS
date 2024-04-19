@@ -196,10 +196,22 @@ const RoomManagement: React.FC<ContainerProps> = ({ name }) => {
         header: "Room Name",
         size: 150,
       },
+      // {
+      //   accessorKey: "status",
+      //   header: "Status",
+      //   size: 150,
+      // },
       {
-        accessorKey: "status",
-        header: "Status",
+        accessorKey: "roomAnimation",
+        header: "Animation",
         size: 150,
+        Cell: ({ row }) => {
+          return (
+            <div className="truncate text-ellipsis w-40">
+              {row.original.roomAnimation}
+            </div>
+          );
+        },
       },
       {
         accessorKey: "textGuide",

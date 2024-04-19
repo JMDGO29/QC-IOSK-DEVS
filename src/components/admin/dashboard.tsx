@@ -35,6 +35,10 @@ interface Visitor {
   selectedBuilding: string;
   selectedFloor: string;
   roomCode: string;
+  selectedRoomName: string;
+  selectedTextGuide: string;
+  selectedVoiceGuide: string;
+  roomAnimation: string;
   createdAt: firebase.firestore.Timestamp;
   createdAtTime: firebase.firestore.Timestamp;
 }
@@ -80,12 +84,6 @@ const Dashboard: React.FC<ContainerProps> = ({ name }) => {
   );
   const chartRef = useRef<Chart | null>(null);
 
-  const [selectedBuilding, setSelectedBuilding] = useState<string>("");
-
-  const handleBuildingSelect = (building: string) => {
-    setSelectedBuilding(building);
-  };
-
   const fetchData = async (filter: string) => {
     try {
       const visitorsCollection = collection(db, "visitorData2");
@@ -125,38 +123,42 @@ const Dashboard: React.FC<ContainerProps> = ({ name }) => {
         where("createdAt", "<", endDate)
       );
 
-      const unsubscribe = onSnapshot(q, (querySnapshot) => {
-        const visitorsData = querySnapshot.docs.map((doc) => {
-          const data = doc.data();
-          const visitor: Visitor = {
-            id: doc.id,
-            selectedBuilding: data.selectedBuilding,
-            selectedFloor: data.selectedFloor,
-            roomCode: data.roomCode,
-            createdAt: data.createdAt,
-            createdAtTime: data.createdAAt,
-          };
-          return visitor;
-        });
-
-        // Filter visitorsData to include only today's data or weekly, monthly, yearly as per filter
-        let filteredData = visitorsData;
-        if (filter === "today") {
-          // Filter for today's data based on createdAt timestamp
-          filteredData = visitorsData.filter((visitor) => {
-            const visitorDate = visitor.createdAt.toDate();
-            return visitorDate >= startDate && visitorDate < endDate;
-          });
-        }
-        // Similarly add logic for weekly, monthly, yearly filtering
-
-        setVisitors(filteredData);
-        setLoading(false);
-        // Update building data
-        updateBuildingData(filteredData);
+      const querySnapshot = await getDocs(q);
+      const visitorsData = querySnapshot.docs.map((doc) => {
+        const data = doc.data();
+        const visitor: Visitor = {
+          id: doc.id,
+          selectedBuilding: data.selectedBuilding,
+          selectedFloor: data.selectedFloor,
+          roomCode: data.roomCode,
+          selectedRoomName: data.selectedRoomName,
+          roomAnimation: data.roomAnimation,
+          selectedTextGuide: data.selectedTextGuide,
+          selectedVoiceGuide: data.selectedVoiceGuide,
+          createdAt: data.createdAt,
+          createdAtTime: data.createdAAt,
+        };
+        return visitor;
       });
 
-      setUnsubscribeVisitors(() => unsubscribe); // Assign the unsubscribe function to the state variable
+      // Filter visitorsData to include only today's data or weekly, monthly, yearly as per filter
+      let filteredData = visitorsData;
+      if (filter === "today") {
+        // Filter for today's data based on createdAt timestamp
+        filteredData = visitorsData.filter((visitor) => {
+          const visitorDate = visitor.createdAt.toDate();
+          return visitorDate >= startDate && visitorDate < endDate;
+        });
+      }
+      // Similarly add logic for weekly, monthly, yearly filtering
+
+      setVisitors(filteredData);
+      setLoading(false);
+      // Update building data
+      updateBuildingData(filteredData);
+
+      // Set total visitors for the selected filter
+      setTotalVisitorsToday(filteredData.length);
     } catch (error) {
       console.error("Error fetching visitors: ", error);
       setLoading(false);
@@ -192,8 +194,12 @@ const Dashboard: React.FC<ContainerProps> = ({ name }) => {
               selectedBuilding: data.selectedBuilding,
               selectedFloor: data.selectedFloor,
               roomCode: data.roomCode,
+              selectedRoomName: data.selectedRoomName,
+              roomAnimation: data.roomAnimation,
+              selectedTextGuide: data.selectedTextGuide,
+              selectedVoiceGuide: data.selectedVoiceGuide,
               createdAt: data.createdAt,
-              createdAtTime: data.createdAAt,
+              createdAtTime: data.createdAt,
             };
             return visitor;
           });
@@ -255,6 +261,33 @@ const Dashboard: React.FC<ContainerProps> = ({ name }) => {
         size: 150,
       },
       {
+        accessorKey: "selectedRoomName",
+        header: "Room Name",
+        size: 150,
+      },
+      {
+        accessorKey: "roomAnimation",
+        header: "Room Animation",
+        size: 150,
+      },
+      {
+        accessorKey: "selectedTextGuide",
+        header: "Text Guide",
+        size: 150,
+        Cell: ({ row }) => {
+          return (
+            <div className="w-40 truncate text-ellipsis">
+              {row.original.selectedTextGuide}
+            </div>
+          );
+        },
+      },
+      {
+        accessorKey: "selectedVoiceGuide",
+        header: "Voice Guide",
+        size: 150,
+      },
+      {
         accessorKey: "createdAt",
         header: "Created At",
         Cell: ({ row }) => {
@@ -302,8 +335,8 @@ const Dashboard: React.FC<ContainerProps> = ({ name }) => {
     const buildingCounts: { [key: string]: number } = {};
 
     data.forEach((visitor) => {
-      buildingCounts[visitor.selectedBuilding] =
-        (buildingCounts[visitor.selectedBuilding] || 0) + 1;
+      buildingCounts[visitor.roomCode] =
+        (buildingCounts[visitor.roomCode] || 0) + 1;
     });
 
     setBuildingData(buildingCounts);
@@ -321,7 +354,7 @@ const Dashboard: React.FC<ContainerProps> = ({ name }) => {
       labels,
       datasets: [
         {
-          label: "Visitor Counts by Building",
+          label: "Search Counts by Room",
           data,
           backgroundColor: [
             "rgba(255, 99, 132, 0.2)",
@@ -362,13 +395,13 @@ const Dashboard: React.FC<ContainerProps> = ({ name }) => {
               beginAtZero: true,
               title: {
                 display: true,
-                text: "Number of Visitors",
+                text: "Number of Search",
               },
             },
             x: {
               title: {
                 display: true,
-                text: "Building Names",
+                text: "Room Names",
               },
             },
           },
@@ -441,7 +474,7 @@ const Dashboard: React.FC<ContainerProps> = ({ name }) => {
                     <div className="flex flex-col items-start">
                       <h1>{totalVisitorsToday}</h1>
 
-                      <p>Today Visitors</p>
+                      <p>Total Search </p>
                     </div>
                     <div className="flex">
                       <Icon
@@ -470,7 +503,7 @@ const Dashboard: React.FC<ContainerProps> = ({ name }) => {
                   <div className="flex items-center justify-between space-x-12">
                     <div className="flex flex-col items-start">
                       <h1>{totalEvents}</h1>
-                      <p>Active Events</p>
+                      <p>Total Events</p>
                     </div>
                     <div className="flex">
                       <Icon
@@ -486,7 +519,7 @@ const Dashboard: React.FC<ContainerProps> = ({ name }) => {
                   <div className="flex items-center justify-between space-x-12">
                     <div className="flex flex-col items-start">
                       <h1>{totalAnnouncements}</h1>
-                      <p>Active Announcements</p>
+                      <p>Total Announcements</p>
                     </div>
                     <div className="flex">
                       <Icon
@@ -503,7 +536,9 @@ const Dashboard: React.FC<ContainerProps> = ({ name }) => {
           <div className="items-center justify-center text-base-content bg-base-300 lg:ps-64 ">
             <div className="w-full p-10 bg-base-100 ">
               <div className="flex items-center justify-between">
-                <h1 className="text-4xl font-bold">Visitor Count</h1>
+                <h1 className="text-4xl font-bold">
+                  Search Count: {totalVisitorsToday}
+                </h1>
               </div>
               <div className="flex justify-center space-x-4">
                 <button
@@ -548,7 +583,9 @@ const Dashboard: React.FC<ContainerProps> = ({ name }) => {
           <div className="items-center justify-center text-base-content bg-base-300 lg:ps-64 ">
             <div className="w-full p-10 bg-base-100 ">
               <div className="flex items-center justify-between">
-                <h1 className="text-4xl font-bold">Activity Log</h1>
+                <h1 className="text-4xl font-bold">
+                  Search Log: {totalVisitorsToday}
+                </h1>
               </div>
               {loading ? (
                 <>
@@ -578,141 +615,6 @@ const Dashboard: React.FC<ContainerProps> = ({ name }) => {
               ) : (
                 <MaterialReactTable table={table} />
               )}
-            </div>
-          </div>
-
-          <div className="items-center justify-center text-base-content bg-base-300 lg:ps-64 ">
-            <div className="w-full p-10 bg-base-100 ">
-              <div className="flex items-center justify-between">
-                <h1 className="text-4xl font-bold">
-                  Building Visitor By Month
-                </h1>
-              </div>
-              <div className="flex justify-center space-x-4">
-                <button
-                  onClick={() => handleBuildingSelect("Academic Building")}
-                  className={
-                    selectedBuilding === "Academic Building"
-                      ? "btn btn-primary"
-                      : "btn btn-secondary"
-                  }
-                >
-                  Academic
-                </button>
-                <button
-                  onClick={() => handleBuildingSelect("Admin Building")}
-                  className={
-                    selectedBuilding === "Admin Building"
-                      ? "btn btn-primary"
-                      : "btn btn-secondary"
-                  }
-                >
-                  Admin
-                </button>
-                <button
-                  onClick={() => handleBuildingSelect("Ballroom Building")}
-                  className={
-                    selectedBuilding === "Ballroom Building"
-                      ? "btn btn-primary"
-                      : "btn btn-secondary"
-                  }
-                >
-                  Ballroom
-                </button>
-                <button
-                  onClick={() => handleBuildingSelect("Bautista Building")}
-                  className={
-                    selectedBuilding === "Bautista Building"
-                      ? "btn btn-primary"
-                      : "btn btn-secondary"
-                  }
-                >
-                  Bautista
-                </button>
-                <button
-                  onClick={() => handleBuildingSelect("Belmonte Building")}
-                  className={
-                    selectedBuilding === "Belmonte Building"
-                      ? "btn btn-primary"
-                      : "btn btn-secondary"
-                  }
-                >
-                  Belmonte
-                </button>
-                <button
-                  onClick={() => handleBuildingSelect("CHED")}
-                  className={
-                    selectedBuilding === "CHED"
-                      ? "btn btn-primary"
-                      : "btn btn-secondary"
-                  }
-                >
-                  CHED
-                </button>
-                <button
-                  onClick={() => handleBuildingSelect("Chinese B")}
-                  className={
-                    selectedBuilding === "Chinese B"
-                      ? "btn btn-primary"
-                      : "btn btn-secondary"
-                  }
-                >
-                  Chinese B
-                </button>
-                <button
-                  onClick={() => handleBuildingSelect("KorPhil Building")}
-                  className={
-                    selectedBuilding === "KorPhil Building"
-                      ? "btn btn-primary"
-                      : "btn btn-secondary"
-                  }
-                >
-                  KorPhil
-                </button>
-                <button
-                  onClick={() => handleBuildingSelect("Multipurpose")}
-                  className={
-                    selectedBuilding === "Multipurpose"
-                      ? "btn btn-primary"
-                      : "btn btn-secondary"
-                  }
-                >
-                  Multipurpose
-                </button>
-                <button
-                  onClick={() => handleBuildingSelect("Techvoc Building")}
-                  className={
-                    selectedBuilding === "Techvoc Building"
-                      ? "btn btn-primary"
-                      : "btn btn-secondary"
-                  }
-                >
-                  Techvoc
-                </button>
-                <button
-                  onClick={() => handleBuildingSelect("Urban Farming")}
-                  className={
-                    selectedBuilding === "Urban Farming"
-                      ? "btn btn-primary"
-                      : "btn btn-secondary"
-                  }
-                >
-                  Urban Farming
-                </button>
-                <button
-                  onClick={() => handleBuildingSelect("Yellow Building")}
-                  className={
-                    selectedBuilding === "Yellow Building"
-                      ? "btn btn-primary"
-                      : "btn btn-secondary"
-                  }
-                >
-                  Yellow
-                </button>
-              </div>
-              <div className="w-full p-10 bg-base-100 ">
-                <BuildingVisitorChart selectedBuilding={selectedBuilding} />
-              </div>
             </div>
           </div>
         </IonContent>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { IonContent, IonPage } from "@ionic/react";
 import { Switch, Route } from "react-router-dom";
 import { themeChange } from "theme-change";
@@ -12,6 +12,8 @@ import { Analytics } from "@vercel/analytics/react";
 import SanBartolome from "../components/campus/sanBartolome/SanBartolome";
 import Batasan from "../components/campus/batasan/Batasan";
 import SanFrancisco from "../components/campus/sanFrancisco/SanFrancisco";
+import qcuLogo from "../assets/imgs/logo/qculogo.png";
+import bg from "../assets/imgs/sc-bg.png";
 
 // Import your other components here
 
@@ -28,7 +30,7 @@ const Layout: React.FC<ContainerProps> = ({ name }) => {
     // Set a timeout to change isActive to true after 1 minute (30000 milliseconds)
     const timeoutId = setTimeout(() => {
       setIsActive(true);
-    }, 30000); // 1 minute timeout
+    }, 10000); // 1 minute timeout
 
     return () => clearTimeout(timeoutId);
   }, []);
@@ -58,32 +60,142 @@ const Layout: React.FC<ContainerProps> = ({ name }) => {
 
         {/* Conditionally render ScreenSaver based on isActive state */}
         {isActive && (
-          <section onClick={handleClick} className="w-screen h-full min-h-screen overflow-hidden text-center bg-black cursor-pointer place-items-stretch">
-            {/* Your ScreenSaver content here */}
-            <div className="z-50 flex items-center justify-center w-screen h-screen skeleton bg-base-100">
-            <div className="grid items-center grid-cols-3 grid-rows-3">
-                <div className="flex content-center justify-center w-screen h-screen col-span-3 row-span-3">
+          <div className="absolute z-50">
+            <section onClick={handleClick} className="w-screen h-full min-h-screen overflow-hidden text-center cursor-pointer bg-sc place-items-stretch">
+              {/* Your ScreenSaver content here */}
+              <div className="z-50 flex items-center justify-center w-screen h-screen skeleton bg-base-100">
+                <div className="grid items-center grid-cols-3 grid-rows-3">
+                  <div className="flex content-center justify-center w-screen h-screen col-span-3 row-span-3">
                     <div className="content-center">
-                        <div id="scsaver" className="scsaver">
-                            <div className="scsaver-inner text-base-content">
-                                <p>Hello, Scsaver.</p>
-                                {/* <!-- Customize: Place images and videos and customize them to your liking. --> */}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                      <div id="scsaver" className="scsaver">
+                        <div className="scsaver-inner text-base-content">
 
-        </div>
-          </section>
+                          <div className="max-w-[100rem] px-4 py-10 sm:px-6 lg:px-8 lg:py-14 mx-auto">
+
+                            <div className="grid gap-40 md:grid-cols-5">
+                              <div className="md:col-span-2">
+                                <div className="max-w-lg">
+                                  <img src={qcuLogo} className="w-40 h-40" />
+                                  <h2 className="text-4xl font-bold text-left md:text-4xl md:leading-tight">QUEZON CITY UNIVERSITY<br /></h2>
+                                  <p className="hidden mt-1 text-3xl text-left text-base-content md:block">Offered Courses</p>
+                                </div>
+                                <div className="absolute inset-x-0 flex items-center justify-center py-3 text-xl animate-bounce bottom-1 drop-shadow-md">
+                                  Touch anywhere to return
+                                </div>
+                              </div>
+
+
+                              <div className="md:col-span-3">
+
+                                <div className="space-y-3">
+                                  <div className=" hs-accordion active" id="hs-basic-with-title-and-arrow-stretched-heading-one">
+                                    <button className="inline-flex items-center justify-between w-full font-semibold transition border-2 rounded-xl text-base-content hs-accordion-toggle group gap-x-3 md:text-2xl text-start btn border-base-content" aria-controls="hs-basic-with-title-and-arrow-stretched-collapse-one">
+                                      Bachelor of Science and Accountancy
+
+                                    </button>
+                                    <div id="hs-basic-with-title-and-arrow-stretched-collapse-one" className="hs-accordion-content w-full overflow-hidden transition-[height] duration-300" aria-labelledby="hs-basic-with-title-and-arrow-stretched-heading-one">
+
+                                    </div>
+                                  </div>
+                                  <div className=" hs-accordion active" id="hs-basic-with-title-and-arrow-stretched-heading-one">
+                                    <button className="inline-flex items-center justify-between w-full font-semibold transition border-2 rounded-xl text-base-content hs-accordion-toggle group gap-x-3 md:text-2xl text-start btn border-base-content" aria-controls="hs-basic-with-title-and-arrow-stretched-collapse-one">
+                                      Bachelor of Science in Entrepreneurship
+
+                                    </button>
+                                    <div id="hs-basic-with-title-and-arrow-stretched-collapse-one" className="hs-accordion-content w-full overflow-hidden transition-[height] duration-300" aria-labelledby="hs-basic-with-title-and-arrow-stretched-heading-one">
+
+                                    </div>
+                                  </div>
+                                  <div className=" hs-accordion active" id="hs-basic-with-title-and-arrow-stretched-heading-one">
+                                    <button className="inline-flex items-center justify-between w-full font-semibold transition border-2 rounded-xl text-base-content hs-accordion-toggle group gap-x-3 md:text-2xl text-start btn border-base-content" aria-controls="hs-basic-with-title-and-arrow-stretched-collapse-one">
+                                      Bachelor of Science in Electronics Engineering
+
+                                    </button>
+                                    <div id="hs-basic-with-title-and-arrow-stretched-collapse-one" className="hs-accordion-content w-full overflow-hidden transition-[height] duration-300" aria-labelledby="hs-basic-with-title-and-arrow-stretched-heading-one">
+
+                                    </div>
+                                  </div>
+                                  <div className=" hs-accordion active" id="hs-basic-with-title-and-arrow-stretched-heading-one">
+                                    <button className="inline-flex items-center justify-between w-full font-semibold transition border-2 rounded-xl text-base-content hs-accordion-toggle group gap-x-3 md:text-2xl text-start btn border-base-content" aria-controls="hs-basic-with-title-and-arrow-stretched-collapse-one">
+                                      Bachelor of Science in Industrial Engineering
+
+                                    </button>
+                                    <div id="hs-basic-with-title-and-arrow-stretched-collapse-one" className="hs-accordion-content w-full overflow-hidden transition-[height] duration-300" aria-labelledby="hs-basic-with-title-and-arrow-stretched-heading-one">
+
+                                    </div>
+                                  </div>
+                                  <div className=" hs-accordion active" id="hs-basic-with-title-and-arrow-stretched-heading-one">
+                                    <button className="inline-flex items-center justify-between w-full font-semibold transition border-2 rounded-xl text-base-content hs-accordion-toggle group gap-x-3 md:text-2xl text-start btn border-base-content" aria-controls="hs-basic-with-title-and-arrow-stretched-collapse-one">
+                                      Bachelor of Science in Information Technology
+
+                                    </button>
+                                    <div id="hs-basic-with-title-and-arrow-stretched-collapse-one" className="hs-accordion-content w-full overflow-hidden transition-[height] duration-300" aria-labelledby="hs-basic-with-title-and-arrow-stretched-heading-one">
+
+                                    </div>
+                                  </div>
+                                  <div className=" hs-accordion active" id="hs-basic-with-title-and-arrow-stretched-heading-one">
+                                    <button className="inline-flex items-center justify-between w-full font-semibold transition border-2 rounded-xl text-base-content hs-accordion-toggle group gap-x-3 md:text-2xl text-start btn border-base-content" aria-controls="hs-basic-with-title-and-arrow-stretched-collapse-one">
+                                      Bachelor of Science in Management Accounting
+
+                                    </button>
+                                    <div id="hs-basic-with-title-and-arrow-stretched-collapse-one" className="hs-accordion-content w-full overflow-hidden transition-[height] duration-300" aria-labelledby="hs-basic-with-title-and-arrow-stretched-heading-one">
+
+                                    </div>
+                                  </div>
+                                  <div className=" hs-accordion active" id="hs-basic-with-title-and-arrow-stretched-heading-one">
+                                    <button className="inline-flex items-center justify-between w-full font-semibold transition border-2 rounded-xl text-base-content hs-accordion-toggle group gap-x-3 md:text-2xl text-start btn border-base-content" aria-controls="hs-basic-with-title-and-arrow-stretched-collapse-one">
+                                      Bachelor of Science in Early Childhood Education
+
+                                    </button>
+                                    <div id="hs-basic-with-title-and-arrow-stretched-collapse-one" className="hs-accordion-content w-full overflow-hidden transition-[height] duration-300" aria-labelledby="hs-basic-with-title-and-arrow-stretched-heading-one">
+
+                                    </div>
+                                  </div>
+                                  <div className=" hs-accordion active" id="hs-basic-with-title-and-arrow-stretched-heading-one">
+                                    <button className="inline-flex items-center justify-between w-full font-semibold transition border-2 rounded-xl text-base-content hs-accordion-toggle group gap-x-3 md:text-2xl text-start btn border-base-content" aria-controls="hs-basic-with-title-and-arrow-stretched-collapse-one">
+                                      Bachelor of Science in Information Systems
+
+                                    </button>
+                                    <div id="hs-basic-with-title-and-arrow-stretched-collapse-one" className="hs-accordion-content w-full overflow-hidden transition-[height] duration-300" aria-labelledby="hs-basic-with-title-and-arrow-stretched-heading-one">
+
+                                    </div>
+                                  </div>
+                                  <div className=" hs-accordion active" id="hs-basic-with-title-and-arrow-stretched-heading-one">
+                                    <button className="inline-flex items-center justify-between w-full font-semibold transition border-2 rounded-xl text-base-content hs-accordion-toggle group gap-x-3 md:text-2xl text-start btn border-base-content" aria-controls="hs-basic-with-title-and-arrow-stretched-collapse-one">
+                                      Bachelor of Science in Computer Science
+
+                                    </button>
+                                    <div id="hs-basic-with-title-and-arrow-stretched-collapse-one" className="hs-accordion-content w-full overflow-hidden transition-[height] duration-300" aria-labelledby="hs-basic-with-title-and-arrow-stretched-heading-one">
+
+                                    </div>
+                                  </div>
+                                </div>
+
+                              </div>
+
+                            </div>
+
+
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </section>
+          </div>
         )}
 
         {/* Rendering selected option */}
+        <Suspense fallback={<Loading/>}>
         <Switch>
           <Route path="/SanBartolome" component={SanBartolome} />
           {/* <Route path="/Batasan" component={Batasan} />
           <Route path="/SanFrancisco" component={SanFrancisco} /> */}
         </Switch>
+        </Suspense>
       </IonContent>
     </IonPage>
   );
