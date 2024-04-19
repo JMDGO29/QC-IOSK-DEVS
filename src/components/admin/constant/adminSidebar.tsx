@@ -15,7 +15,7 @@ interface ContainerProps {
 const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
   const { t } = useTranslation();
   const history = useHistory();
-  
+
   const handleLogout = () => {
     // Clear user information from local storage
     localStorage.removeItem("currentUser");
@@ -32,8 +32,6 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
         console.error("Sign-out error:", error);
       });
   };
-
-
 
   const Archive = () => {
     history.replace("/Archive");
@@ -112,7 +110,7 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
               to="/Building"
             >
               <Icon icon="bi:building-gear" className="w-7 h-7" />
-              Building
+              Buildings
             </NavLink>
           </li>
 
@@ -147,7 +145,7 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
               onClick={Announcements}
             >
               <Icon icon="mingcute:announcement-line" className="w-7 h-7" />
-              Announcement
+              Announcements
             </NavLink>
           </li>
           <li>
@@ -170,7 +168,7 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
                 icon="material-symbols:archive-outline"
                 className="w-7 h-7"
               />
-              Archive
+              Archives
             </NavLink>
           </li>
 

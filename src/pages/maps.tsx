@@ -424,7 +424,9 @@ const SelectCampus: React.FC = () => {
             </section>
           )}
 
+          <div className="absolute top-5 left-5">
           <Backbtn name={""} />
+            </div>
         </main>
       </IonContent>
     </IonPage>

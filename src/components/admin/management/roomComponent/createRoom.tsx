@@ -81,7 +81,7 @@ const CreateRoom: React.FC<ContainerProps> = ({ name }) => {
 
       const levels = Array.from(
         { length: totalFloors },
-        (_, i) => `Floor ${i + 1}`
+        (_, i) => `F${i + 1}`
       );
       setFloorLevels(levels);
     } catch (error) {

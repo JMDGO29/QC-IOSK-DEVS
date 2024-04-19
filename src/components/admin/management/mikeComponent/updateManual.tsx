@@ -26,18 +26,12 @@ const UpdateManual: React.FC<ContainerProps> = ({ name }) => {
   const { manualId } = useParams<{ manualId: string }>();
   const [manualName, setManualName] = useState<string>("");
   const [manualDesc, setManualDesc] = useState<string>("");
-  const [manualImage, setManualImage] = useState<File | null>(null);
+  const [manualImage, setManualImage] = useState<string>("");
+  const [manualImageFile, setManualImageFile] = useState<File | null>(null);
   const [manual, setManual] = useState<Manual | null>(null);
 
   const ManualManagement = () => {
     history.push("/Mike");
-  };
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setManualImage(file);
-    }
   };
 
   useEffect(() => {
@@ -52,6 +46,7 @@ const UpdateManual: React.FC<ContainerProps> = ({ name }) => {
 
           setManualName(manualData.name);
           setManualDesc(manualData.manualDesc);
+          setManualImage(manualData.manualImageUrl);
         } else {
           console.error("Manual not found");
           history.push("/Mike");
@@ -68,9 +63,9 @@ const UpdateManual: React.FC<ContainerProps> = ({ name }) => {
     try {
       const now = serverTimestamp();
       let manualImageUrl = "";
-      if (manualImage) {
+      if (manualImageFile) {
         const storageRef = ref(storage, `manual-images/${manualId}`);
-        const snapshot = await uploadBytes(storageRef, manualImage);
+        const snapshot = await uploadBytes(storageRef, manualImageFile);
         manualImageUrl = await getDownloadURL(snapshot.ref);
       }
 
@@ -78,7 +73,7 @@ const UpdateManual: React.FC<ContainerProps> = ({ name }) => {
       await updateDoc(manualRef, {
         name: manualName,
         manualDesc: manualDesc,
-        manualImageUrl: manualImageUrl,
+        manualImageUrl: manualImageUrl || manualImage,
         updatedAt: now,
       });
 
@@ -143,7 +138,11 @@ const UpdateManual: React.FC<ContainerProps> = ({ name }) => {
                         <input
                           type="file"
                           accept="image/jpeg, image/png, image/gif"
-                          onChange={handleImageChange}
+                          onChange={(e) =>
+                            setManualImageFile(
+                              e.target.files ? e.target.files[0] : null
+                            )
+                          } // Update file state
                           className="w-full max-w-xs file-input"
                         />
                       </td>
