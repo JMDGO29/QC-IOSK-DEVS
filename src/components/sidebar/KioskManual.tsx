@@ -82,7 +82,7 @@ const KioskManual: React.FC<ContainerProps> = ({ name }) => {
                 </div>
                 {loading ? (
                     <>
-                        <div className="px-3 pr-6  w-96 h-96 rounded-2xl">
+                        <div className="px-3 pr-6 w-96 h-96 rounded-2xl">
                             <div className="flex flex-col gap-4">
                                 <div className="w-full h-16 skeleton rounded-2xl"></div>
                                 <div className="w-full h-16 skeleton rounded-2xl"></div>
@@ -133,14 +133,14 @@ const KioskManual: React.FC<ContainerProps> = ({ name }) => {
             {/* Modal for Manual Details */}
             <div className="">
                 <Modal
-                    className="flex items-center justify-center w-screen h-screen  bg-black/60"
+                    className="flex items-center justify-center w-screen h-screen bg-black/60"
                     isOpen={isModalOpen}
                     onRequestClose={closeModal}
                     contentLabel="Announcement Details"
                     ariaHideApp={false}
                 >
                     {selectedManual && (
-                        <div className="items-center justify-center w-auto p-6 duration-150 ease-in-out shadow-inner  bg-base-100 rounded-3xl h-8/12">
+                        <div className="items-center justify-center w-auto p-6 duration-150 ease-in-out shadow-inner bg-base-100 rounded-3xl h-8/12">
                             <div className="flex space-x-4">
                                 <div>
                                     <img

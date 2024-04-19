@@ -269,17 +269,17 @@ const SearchTab: React.FC = () => {
                           <div className="h-auto p-3 bg-white w-96 rounded-xl">
                             {filteredRooms.length > 0 ? (
                               <div className="w-full py-6 overflow-auto h-96">
-                                <h1 className="text-black">Result:</h1>
+                                <h1 className="text-base-content">Result:</h1>
                                 <ul className="px-1 space-y-1">
 
                                 </ul>
                               </div>
                             ) : (
                               <div className="w-full h-full py-6 overflow-auto">
-                                <h1 className="text-black">
+                                <h1 className="text-base-content">
                                   No rooms found.
                                 </h1>
-                                <h1 className="text-black">
+                                <h1 className="text-base-content">
                                   Enter another entry.
                                 </h1>
                               </div>
@@ -340,75 +340,8 @@ const SearchTab: React.FC = () => {
                                   onChange={(e) => onChangeInput(e)}
                                   onClick={handleSearchBarClick}
                                   onBlur={handleSearchBarBlur}
-                                  className="z-50 w-full h-16 p-5 text-black bg-white outline-none rounded-xl"
+                                  className="z-50 w-full h-16 p-5 bg-white outline-none text-base-content rounded-xl"
                                 />
-                              </div>
-
-                              {recentRoomCodes.length > 0 && (
-                                <div>
-                                  <h2>Recent Room Codes</h2>
-                                  <ul className="flex justify-center space-x-4">
-                                    {recentRoomCodes
-                                      .filter(
-                                        (room, index, self) =>
-                                          index ===
-                                          self.findIndex(
-                                            (r) => r.roomCode === room.roomCode
-                                          )
-                                      )
-                                      .map((room, index) => (
-                                        <li key={index}>
-                                          <button
-                                            className="btn btn-block btn-secondary "
-                                            onClick={() =>
-                                              handleSuggestionClick(
-                                                room.roomCode,
-                                                room.roomName,
-                                                room.floorLevel,
-                                                room.roomAnimation,
-                                                room.voiceGuide,
-                                                room.buildingName,
-                                                room.textGuide
-                                              )
-                                            }
-                                          >
-                                            {room.roomCode} - {room.roomName}
-                                          </button>
-                                        </li>
-                                      ))}
-                                  </ul>
-                                </div>
-                              )}
-
-                              <h2>Suggestions</h2>
-                              <div className="flex justify-center">
-                                {rooms.map((room, index) => (
-                                  <div key={index}>
-                                    {(room.roomName === "NSTP" ||
-                                      room.roomName === "SASD" ||
-                                      room.roomName === "Admission Office" ||
-                                      room.roomName ===
-                                      "College of Computer Studies" ||
-                                      room.roomName === "Registrar Office") && (
-                                        <button
-                                          className="btn btn-block btn-secondary"
-                                          onClick={() =>
-                                            handleSuggestionClick(
-                                              room.roomCode,
-                                              room.roomName,
-                                              room.floorLevel,
-                                              room.roomAnimation,
-                                              room.voiceGuide,
-                                              room.buildingName,
-                                              room.textGuide
-                                            )
-                                          }
-                                        >
-                                          {room.roomName}
-                                        </button>
-                                      )}
-                                  </div>
-                                ))}
                               </div>
 
 
@@ -425,12 +358,12 @@ const SearchTab: React.FC = () => {
                             </div>
 
 
-                            <div className="w-3/12 h-screen bg-white rounded-3xl">
+                            <div className="w-3/12 h-screen bg-white">
                               <div className="w-full h-full p-3 bg-white shadow-inner rounded-3xl">
                                 {input && filteredRooms.length > 0 ? (
                                   <div className="w-full h-full py-6 pt-0 overflow-auto">
-                                    <div className="bg-base-100 w-[499px] h-20 fixed -z-1">
-                                      <h1 className="text-4xl font-bold text-black">Result:</h1>
+                                    <div className="bg-base-100 w-[448px] h-20 fixed -z-1">
+                                      <h1 className="text-4xl font-bold text-base-content">Result:</h1>
                                     </div>
                                     <ul className="px-1 space-y-3 mt-28">
                                       {filteredRooms
@@ -438,7 +371,7 @@ const SearchTab: React.FC = () => {
                                         .map((room, index) => (
                                           <li key={index} className="space-y-3">
                                             <button
-                                              className="text-left shadow-inner h-28 btn btn-block btn-primary rounded-3xl"
+                                              className="h-24 text-left shadow-inner btn btn-block btn-primary rounded-3xl"
                                               onClick={() =>
                                                 handleSuggestionClick(
                                                   room.roomCode,
@@ -450,31 +383,28 @@ const SearchTab: React.FC = () => {
                                                   room.textGuide
                                                 )
                                               }
-                                            >
-                                              {/* <div className="flex flex-col justify-start w-full ">
-                                                <div className="flex space-x-3 text-sm">
-                                                  <div>{room.buildingName}</div>
-                                                  <div>{room.floorLevel}</div>
-                                                </div>
-                                                <div className="flex justify-between ">
-                                                  <div className="text-xl">{room.roomName}</div>{" "}
-                                                  <div className="flex flex-col items-end justify-center">
-                                                    <div className="badge badge-lg">{room.roomCode}</div>
+                                            > {room.roomCode === "" ||
+                                              room.roomName === "" ? (
+                                              <> {room.buildingName}</>
+                                            ) : (
+                                              <>
+                                                <div className="flex flex-col justify-start w-full ">
+                                                  <div className="flex justify-between space-x-3 text-sm">
+                                                    <div className="flex space-x-3 text-sm">
+                                                      <div>{room.buildingName}</div>
+                                                      <div>{room.floorLevel}</div>
+                                                    </div>
+                                                    <div className="flex flex-col items-end justify-center">
+                                                      <div className="badge badge-md">{room.roomCode}</div>
+                                                    </div>
+                                                  </div>
+                                                  <div className="flex justify-between">
+                                                    <div className="text-xl">{room.roomName}</div>{" "}
+
                                                   </div>
                                                 </div>
-                                              </div> */}
-                                              {room.roomCode === "" ||
-                                                room.roomName === "" ? (
-                                                <>{room.buildingName}</>
-                                              ) : (
-                                                <>
-                                                  {" "}
-                                                  {room.roomCode}-{" "}
-                                                  {room.roomName} -{" "}
-                                                  {room.floorLevel} -{" "}
-                                                  {room.buildingName}
-                                                </>
-                                              )}
+                                              </>
+                                            )}
 
                                             </button>
                                           </li>
@@ -484,20 +414,98 @@ const SearchTab: React.FC = () => {
                                 ) : (
                                   <div className="w-full h-full p-3 space-y-10 overflow-auto rounded-3xl">
                                     {!input ? ( // Display "Search Suggestions" when input is cleared
-                                      <div className="bg-base-100 w-[475px] h-20 fixed -z-1">
-                                        <h1 className="text-4xl font-bold text-black">Search Suggestions</h1>
-                                      </div>
+                                      <>
+                                        <div className="flex flex-col justify-between h-full">
+                                          {recentRoomCodes.length > 0 && (
+                                            <div>
+                                              <div className="bg-base-100 w-[400px] h-20 sticky top-2 -z-1">
+                                                <h1 className="text-4xl font-bold text-base-content">Recent Search</h1>
+                                              </div>
+                                              <ul className="flex flex-col justify-center space-y-3">
+                                                {recentRoomCodes
+                                                  .filter(
+                                                    (room, index, self) =>
+                                                      index ===
+                                                      self.findIndex(
+                                                        (r) => r.roomCode === room.roomCode
+                                                      )
+                                                  )
+                                                  .map((room, index) => (
+                                                    <li key={index} className="space-y-3">
+                                                      <button
+                                                        className="h-16 text-xl btn btn-block rounded-2xl btn-success"
+                                                        onClick={() =>
+                                                          handleSuggestionClick(
+                                                            room.roomCode,
+                                                            room.roomName,
+                                                            room.floorLevel,
+                                                            room.roomAnimation,
+                                                            room.voiceGuide,
+                                                            room.buildingName,
+                                                            room.textGuide
+                                                          )
+                                                        }
+                                                      >
+                                                        {room.roomCode} - {room.roomName}
+                                                      </button>
+                                                    </li>
+                                                  ))}
+                                              </ul>
+                                            </div>
+                                          )}
+                                          <div>
+                                            <div className="bg-base-100 w-[400px] sticky top-2 -z-1">
+                                              <h1 className="text-4xl font-bold text-base-content">Search Suggestions</h1>
+                                            </div>
+                                            <div className="flex flex-col justify-center">
+                                              {rooms.map((room, index) => (
+                                                <div key={index} className="space-y-3">
+                                                  {(room.roomName === "NSTP" ||
+                                                    room.roomName === "SASD" ||
+                                                    room.roomName === "Admission Office" ||
+                                                    room.roomName ===
+                                                    "College of Computer Studies" ||
+                                                    room.roomName === "Registrar Office") && (
+                                                      <button
+                                                        className="h-16 my-2 text-xl btn btn-block rounded-2xl btn-primary"
+                                                        onClick={() => handleSuggestionClick(
+                                                          room.roomCode,
+                                                          room.roomName,
+                                                          room.floorLevel,
+                                                          room.roomAnimation,
+                                                          room.voiceGuide,
+                                                          room.buildingName,
+                                                          room.textGuide
+                                                        )}
+                                                      >
+                                                        {room.roomName}
+                                                      </button>
+                                                    )}
+                                                </div>
+                                              ))}
+                                            </div>
+                                          </div>
+                                        </div>
 
+
+                                      </>
                                     ) : (
                                       // Display "Nothing's found" message when input is not empty but no results are found
                                       <>
-                                        <div className="bg-base-100 w-[475px] h-20 fixed -z-1">
-                                          <h1 className="text-4xl font-bold text-black">Result:</h1>
+                                        <div className="bg-base-100 w-[400px] h-20 -z-1">
+                                          <h1 className="text-4xl font-bold text-base-content">Result:</h1>
                                         </div>
-                                        <ul className="px-1 space-y-3 mt-28">
-                                          <h1 className="text-black">Nothing's found.</h1>
-                                          <h1 className="text-black">Enter another entry.</h1>
+                                        <ul className="flex flex-col items-center justify-center px-10 space-y-3 mt-88">
+                                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" className="w-40 h-40 dark:text-gray-400">
+                                            <path fill="currentColor" d="M256,16C123.452,16,16,123.452,16,256S123.452,496,256,496,496,388.548,496,256,388.548,16,256,16ZM403.078,403.078a207.253,207.253,0,1,1,44.589-66.125A207.332,207.332,0,0,1,403.078,403.078Z"></path>
+                                            <rect width="176" height="32" x="168" y="320" fill="currentColor"></rect>
+                                            <polygon fill="currentColor" points="210.63 228.042 186.588 206.671 207.958 182.63 184.042 161.37 162.671 185.412 138.63 164.042 117.37 187.958 141.412 209.329 120.042 233.37 143.958 254.63 165.329 230.588 189.37 251.958 210.63 228.042"></polygon>
+                                            <polygon fill="currentColor" points="383.958 182.63 360.042 161.37 338.671 185.412 314.63 164.042 293.37 187.958 317.412 209.329 296.042 233.37 319.958 254.63 341.329 230.588 365.37 251.958 386.63 228.042 362.588 206.671 383.958 182.63"></polygon>
+                                          </svg>
+                                          <h1 className="font-semibold text-base-content">Sorry, We can't find your request.</h1>
+                                          <p className="mt-4 mb-8 dark:text-gray-600">But dont worry, you can double check and try again.</p>
                                         </ul>
+
                                       </>
                                     )}
                                   </div>
@@ -515,7 +523,9 @@ const SearchTab: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                {/* <Backbtn name={"Back"} /> */}
+                <div className="absolute z-50 top-5 left-5">
+                <Backbtn name={"Back"} />
+                </div>
               </>
             )}
           </>
