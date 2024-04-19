@@ -1,20 +1,64 @@
-import React, { FunctionComponent, useState, useRef } from "react";
+import React, { FunctionComponent, useState, useRef, useEffect } from "react";
 import Keyboard from "react-simple-keyboard";
 import "react-simple-keyboard/build/css/index.css";
 import { KeyboardRef } from "../Search";
-import { roomData } from "../../data/roomData";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { db } from "../../components/utils/firebase";
 
 interface IProps {
   onChange: (input: string) => void;
   keyboardRef: React.MutableRefObject<KeyboardRef | undefined>;
+  onFilteredRoomsChange: (filteredRooms: Room[]) => void;
+}
+
+interface Room {
+  id: string;
+  buildingName: string;
+  floorLevel: string;
+  roomCode: string;
+  roomName: string;
+  distance: string;
+  eta: string;
+  squareMeter: string;
+  status: string;
+  roomAnimation: string;
+  voiceGuide: string;
+  textGuide: string[];
+}
+
+interface Suggestion {
+  roomCode: string;
+  // Add other properties as needed
 }
 
 const KeyboardWrapper: FunctionComponent<IProps> = ({
   onChange,
   keyboardRef,
+  onFilteredRoomsChange,
 }) => {
   const [layoutName, setLayoutName] = useState("default");
   const internalKeyboardRef = useRef<any>(null);
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [filteredRooms, setFilteredRooms] = useState<Room[]>([]);
+
+  useEffect(() => {
+    fetchRooms();
+  }, []);
+
+  const fetchRooms = async () => {
+    try {
+      const roomsCollection = collection(db, "roomData");
+      const roomsSnapshot = await getDocs(roomsCollection);
+      const roomsData = roomsSnapshot.docs.map((doc) => {
+        const roomData = doc.data() as Room;
+        return { ...roomData, id: doc.id } as Room;
+      });
+
+      setRooms(roomsData);
+    } catch (error) {
+      console.error("Error fetching rooms: ", error);
+    }
+  };
 
   const onKeyPress = (button: string) => {
     if (button === "{shift}" || button === "{lock}") {
@@ -23,34 +67,44 @@ const KeyboardWrapper: FunctionComponent<IProps> = ({
       const inputValue = internalKeyboardRef.current.getInput();
       console.log("Input value:", inputValue);
 
-      // Match input value with room data
-      const matchingRooms = Object.values(roomData).flatMap((building) =>
-        Object.values(building).flatMap((rooms) =>
-          rooms.filter(
-            (room) => room.name.toLowerCase() === inputValue.toLowerCase()
-          )
-        )
-      );
+      if (rooms.length > 0) {
+        const filteredRooms = rooms.filter(
+          (room) =>
+            (room.roomCode &&
+              room.roomCode.toLowerCase().includes(inputValue)) ||
+            (room.roomName && room.roomName.toLowerCase().includes(inputValue)) ||
+            (room.buildingName &&
+              room.buildingName.toLowerCase().includes(inputValue))
+        );
 
-      // Log matching rooms
-      if (matchingRooms.length > 0) {
-        console.log("Matching rooms:", matchingRooms);
-      } else {
-        console.log("No matching rooms found.");
+        setFilteredRooms(filteredRooms); // Update filtered rooms
+        onFilteredRoomsChange(filteredRooms); // Call callback function
+        console.log(filteredRooms);
       }
     }
+  };
+
+  const onChangeInput = (input: string) => {
+    onChange(input); // Update input state
+    const inputValue = input.toLowerCase();
+    const filteredRooms = rooms.filter(
+      (room) =>
+        (room.roomCode && room.roomCode.toLowerCase().includes(inputValue)) ||
+        (room.roomName && room.roomName.toLowerCase().includes(inputValue)) ||
+        (room.buildingName && room.buildingName.toLowerCase().includes(inputValue))
+    );
+    onFilteredRoomsChange(filteredRooms); // Update filtered rooms
   };
 
   keyboardRef.current = internalKeyboardRef.current;
 
   return (
-    <div className="w-full h-full flex justify-center">
+    <div className="flex justify-center w-full h-full">
       <Keyboard
         keyboardRef={(r) => (internalKeyboardRef.current = r)}
         layoutName={layoutName}
-        onChange={onChange}
         onKeyPress={onKeyPress}
-        onRender={() => console.log("Rendered")}
+        onChange={onChangeInput}
       />
     </div>
   );

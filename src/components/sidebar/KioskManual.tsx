@@ -22,11 +22,12 @@ interface Manual {
 }
 
 const KioskManual: React.FC<ContainerProps> = ({ name }) => {
+    const { t } = useTranslation();
     const [manuals, setManuals] = useState<Manual[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedManual, setSelectedManual] = useState<Manual | null>(null);
-    const { t } = useTranslation();
+    
 
     const openModal = (manual: Manual) => {
         setSelectedManual(manual);
@@ -77,12 +78,7 @@ const KioskManual: React.FC<ContainerProps> = ({ name }) => {
             <div className="h-screen py-10 mb-20 space-y-2 bg-base-100">
                 <div className="sticky top-0 z-50 px-3 py-1 pb-5 transition-all duration-150 ease-in-out bg-base-100">
                     <h1 className="text-4xl font-bold text-left ">{t("KioskManual")}</h1>
-                    <p className="text-sm 0">Welcome to QC-IOSK! This manual will
-                     guide you through the process of using the QC-IOSK for navigation purposes. 
-                     Whether you're a first-time user or someone looking for a refresher, this guide will assist
-                      you in efficiently utilizing our QC-IOSK.</p>
-
-                      
+                    <p className="text-sm 0">{t("Welcome to QC-IOSK! This manual will guide you through the process of using the QC-IOSK for navigation purposes. Whether you're a first-time user or someone looking for a refresher, this guide will assist you in efficiently utilizing our QC-IOSK.")}</p>    
                 </div>
                 {loading ? (
                     <>
@@ -107,7 +103,7 @@ const KioskManual: React.FC<ContainerProps> = ({ name }) => {
                             <div className="px-3 space-y-2">
                                 <div role="alert" className="flex justify-center h-16 shadow-inner alert rounded-2xl" >
                                     <Icon icon="uil:comment-info-alt" className="w-8 h-8" />
-                                    <span className="text-xl">No manual found.</span>
+                                    <span className="text-xl">{t("No manual found.")}</span>
                                 </div>
                             </div>
                         ) : (

@@ -3,7 +3,7 @@
 export const credits = {
   documentors: [
     {
-      name: 'Medina, Agatha',
+      name: 'Gigantone, Reza May',
       position: 'Technical Writer',
     },
     {
@@ -19,7 +19,7 @@ export const credits = {
       position: 'Documenter',
     },
     {
-      name: 'Gigantone, Reza May',
+      name: 'Medina, Agatha Cyril',
       position: 'Documenter',
     },
     // Add more documentor entries here
@@ -72,7 +72,7 @@ export const credits = {
     },
     {
       name: 'Sabuga, Mike Gester',
-      position: 'Assistant Programmer / Front-End Developer',
+      position: 'Main Programmer / Front-End Developer',
     },
 
     {
@@ -80,41 +80,39 @@ export const credits = {
       position: 'Augmented Reality Developer',
     },
     {
-      name: 'Felicidario, David Lian G.',
-      position: 'programmer / 3d modeler',
-    },
-    {
       name: 'Bulilan, Christian G.',
-      position: 'programmer / 3d modeler',
-    },
-    // Add more programmer entries here
-  ],
-  modelers: [
-    {
-      name: 'Chan, Kurt Zaimond',
-      position: 'Head 3D Modeler',
+      position: '3d Model Animator / Developer',
     },
     {
       name: 'Carza, Alfred Joshua',
-      position: '3D Modeler / Programmer',
+      position: '3D Model Animator / Developer',
     },
     {
-      name: 'Adamos, David Adrian',
-      position: '3D Modeler',
+      name: 'Chan, Kurt Zaimond',
+      position: '3D Modeler / Developer',
     },
     {
       name: 'Vinas, Christopher',
-      position: '3D Modeler',
+      position: '3D Modeler / Developer',
     },
     {
+      name: 'Adamos, David Adrian',
+      position: '3D Modeler / Developer',
+    },
+
+    {
       name: 'Longalong, Johnel',
-      position: '3D Modeler',
+      position: '3D Modeler / Developer',
     },
     {
       name: 'Angeles, Phoebi Nicole',
-      position: '3D Modeler',
+      position: '3D Modeler / Developer',
     },
-    // Add more 3D modeler entries here
+    {
+      name: 'Felicidario, David Lian G.',
+      position: '3d Modeler / Developer',
+    },
+    // Add more programmer entries here
   ],
 
   projectManagers: [
@@ -130,8 +128,13 @@ export const credits = {
   ],
   translator: [
     {
-      name: 'Niki',
+      name: 'Veronaiki',
       position: 'Deutsch Translation',
+
+    },
+    {
+      name: 'Adamos, David Adrian',
+      position: 'Eng / Fil   Translations',
 
     },
     {

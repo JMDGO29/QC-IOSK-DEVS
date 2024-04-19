@@ -16,6 +16,7 @@ interface Event {
   eventDesc: string;
   eventSource: string;
   imageUrl: string;
+  organizerImageUrl: string;
   startDate: string;
   endDate: string;
 }
@@ -71,14 +72,14 @@ const Events: React.FC<ContainerProps> = ({ name }) => {
 
   return (
     <>
-      <div className="h-screen py-10 space-y-2 bg-base-100">
+      <div className="h-screen py-10 space-y-2 overflow-auto bg-base-100">
         <div className="sticky top-0 z-50 px-3 py-1 transition-all duration-150 ease-in-out bg-base-100">
           <h1 className="text-4xl font-bold text-left ">{t("Events")}</h1>
-          <p className="text-sm 0">Showing events for the current month</p>
+          <p className="text-sm 0">{t("Showing events for the current month")}</p>
         </div>
         {loading ? (
           <>
-            <div className="px-3 pt-10 pr-6  w-96 h-96 rounded-2xl">
+            <div className="px-3 pt-10 w-96 h-96 rounded-2xl">
 
               <div className="flex flex-col gap-4">
                 <div className="w-full skeleton h-96 rounded-2xl"></div>
@@ -93,7 +94,7 @@ const Events: React.FC<ContainerProps> = ({ name }) => {
               <div className="px-3 mt-10 space-y-4">
                 <div role="alert" className="flex justify-center shadow-inner alert h-28 rounded-2xl">
                 <Icon icon="uil:comment-info-alt" className="w-8 h-8" />
-                  <span className="text-xl">No events found.</span>
+                  <span className="text-xl">{t("No events found.")}</span>
                 </div>
               </div>
             ) : (
@@ -112,7 +113,7 @@ const Events: React.FC<ContainerProps> = ({ name }) => {
 
                               <div className="flex items-center">
                                 <div className="flex-shrink-0">
-                                  <img className="h-[2.875rem] w-[2.875rem] border-2 border-white rounded-full" src="https://images.unsplash.com/photo-1669837401587-f9a4cfe3126e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=320&h=320&q=80" alt="Image Description" />
+                                  <img className="h-[2.875rem] w-[2.875rem] border-2 border-white rounded-full" src={event.organizerImageUrl} alt="Image Description" />
                                 </div>
                                 <div className="ms-2.5 sm:ms-4">
                                   <h4 className="font-semibold text-white">
@@ -151,14 +152,14 @@ const Events: React.FC<ContainerProps> = ({ name }) => {
       {/* Modal for Event Details */}
       <div className="">
         <Modal
-          className="flex items-center justify-center w-screen h-screen duration-150 ease-in-out  bg-black/60"
+          className="flex items-center justify-center w-screen h-screen duration-150 ease-in-out bg-black/60"
           isOpen={isModalOpen}
           onRequestClose={closeModal}
           contentLabel="Event Details"
           ariaHideApp={false}
         >
           {selectedEvent && (
-            <div className="items-center justify-center w-auto h-auto p-6 duration-150 ease-in-out shadow-md  bg-base-100 rounded-3xl">
+            <div className="items-center justify-center w-auto h-auto p-6 duration-150 ease-in-out shadow-md bg-base-100 rounded-3xl">
               <div className="flex space-x-4">
                 <div>
                   <img

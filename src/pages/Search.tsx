@@ -1,51 +1,190 @@
-import React, { useState, ChangeEvent, useRef, Suspense } from "react";
+import React, { useState, ChangeEvent, useRef, useEffect, Suspense } from "react";
 import { IonContent, IonPage } from "@ionic/react";
 import "react-simple-keyboard/build/css/index.css";
 import Backbtn from "../components/navigation/Backbtn";
 import "../assets/css/search.css";
 import "../assets/css/keyboard.css";
 import KeyboardWrapper from "./keyboard/Keyboard";
-import { roomData } from "../data/roomData";
 import Animation from "../components/campus/sanBartolome/animation/Animation";
-import SideBar from "../components/sidebar/sidebarLayout";
-import Loading from "../pages/loading";
+import Loading from "./loading"; // Import your loading component here
+import {
+  DocumentData,
+  Query,
+  addDoc,
+  collection,
+  getDocs,
+  getFirestore,
+  limit,
+  orderBy,
+  query,
+  serverTimestamp,
+  where,
+} from "firebase/firestore";
+import firebaseConfig, { db } from "../components/utils/firebase";
+import { initializeApp } from "firebase/app";
 
 export interface KeyboardRef {
   setInput: (input: string) => void;
   // Add other methods if needed
 }
 
+interface Room {
+  id: string;
+  buildingName: string;
+  floorLevel: string;
+  roomCode: string;
+  roomName: string;
+  distance: string;
+  eta: string;
+  squareMeter: string;
+  status: string;
+  roomAnimation: string;
+  voiceGuide: string;
+  textGuide: string[];
+}
+
+interface Search {
+  id: string;
+  selectedBuilding: string;
+  selectedFloor: string;
+  roomCode: string;
+  roomAnimation: string;
+  selectedRoomName: string;
+  selectedTextGuide: string[];
+  selectedVoiceGuide: string;
+}
+
+
+interface RoomData {
+  buildingName: string;
+  roomCode: string;
+  roomName: string;
+  floorLevel: string;
+  roomAnimation: string;
+  voiceGuide: string;
+  textGuide: string[];
+}
+
 const SearchTab: React.FC = () => {
   const [input, setInput] = useState("");
-  const [suggestions, setSuggestions] = useState<any[]>([]);
-  const [isClicked, setIsClicked] = useState(false);
   const [selectedModelPath, setSelectedModelPath] = useState<string>("");
-  const [selectedVoice, setSelectedVoice] = useState("");
+  const [selectedVoice, setSelectedVoice] = useState<string>("");
   const [isAnimationActive, setIsAnimationActive] = useState(false);
   const keyboard = useRef<KeyboardRef | undefined>(undefined);
   const [selectedBuilding, setSelectedBuilding] = useState("");
   const [selectedFloor, setSelectedFloor] = useState("");
   const [selectedRoom, setSelectedRoom] = useState("");
-  const [selectedOffice, setSelectedOffice] = useState("");
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [isClicked, setIsClicked] = useState(false);
+  const [filteredRooms, setFilteredRooms] = useState<Room[]>([]);
+  const [loading, setLoading] = useState(true); // State to track loading status
+  const [selectedTextGuide, setSelectedTextGuide] = useState<string[]>([""]);
+  const [selectedRoomName, setSelectedRoomName] = useState("");
+  const [recentRoomCodes, setRecentRoomCodes] = useState<RoomData[]>([]);
+  useEffect(() => {
+    // Fetch data when component mounts
+    fetchRooms();
+  }, []);
 
-  const onChangeInput = (event: ChangeEvent<HTMLInputElement>): void => {
-    const input = event.target.value;
+  const fetchRecentRoomCodes = async (): Promise<RoomData[]> => {
+    try {
+      const today = new Date();
+      const startOfDay = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate()
+      );
+      const endOfDay = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate() + 1
+      );
+
+      const roomsCollection = collection(db, "visitorData2");
+      const queryRoom = query(
+        roomsCollection,
+        where("createdAt", ">=", startOfDay),
+        where("createdAt", "<", endOfDay),
+        orderBy("createdAt", "desc"),
+        limit(3)
+      );
+
+      const roomsSnapshot = await getDocs(queryRoom);
+
+      if (!roomsSnapshot.empty) {
+        const recentRoomData: RoomData[] = []; // Specify RoomData type
+        roomsSnapshot.docs.forEach((doc) => {
+          const roomData = doc.data() as Search;
+          recentRoomData.push({
+            roomCode: roomData.roomCode,
+            roomName: roomData.selectedRoomName,
+            buildingName: roomData.selectedBuilding,
+            floorLevel: roomData.selectedFloor,
+            roomAnimation: roomData.roomAnimation,
+            voiceGuide: roomData.selectedVoiceGuide,
+            textGuide: roomData.selectedTextGuide,
+            // Include selected room name
+          });
+        });
+        return recentRoomData; // Return array of recent room data
+      } else {
+        console.log("No rooms found.");
+        return []; // Return an empty array if no rooms found
+      }
+    } catch (error) {
+      console.error("Error fetching recent room data:", error);
+      return []; // Return an empty array if an error occurs
+    }
+  };
+
+  useEffect(() => {
+    const fetchRecentCodes = async () => {
+      const recentRoomData = await fetchRecentRoomCodes();
+      setRecentRoomCodes(recentRoomData);
+    };
+    fetchRecentCodes();
+  }, []);
+
+
+  const fetchRooms = async () => {
+    try {
+      const roomsCollection = collection(db, "roomData");
+      const queryRoom = query(roomsCollection);
+      const roomsSnapshot = await getDocs(queryRoom);
+      const roomsData = roomsSnapshot.docs.map((doc) => {
+        const roomData = doc.data() as Room;
+        return { ...roomData, id: doc.id } as Room;
+      });
+
+      setRooms(roomsData);
+      setLoading(false); // Set loading to false once data is fetched
+    } catch (error) {
+      console.error("Error fetching rooms: ", error);
+    }
+  };
+
+  const onChangeInput = async (
+    event: ChangeEvent<HTMLInputElement>
+  ): Promise<void> => {
+    const input = event.target.value.toLowerCase();
     setInput(input);
     keyboard.current?.setInput(input);
 
-    // Find matching room names
-    const matchingRooms = Object.values(roomData).flatMap((building) =>
-      Object.values(building).flatMap((rooms) =>
-        rooms.filter(
-          (room) =>
-            room.name.toLowerCase().includes(input) ||
-            room.buildingName.toLowerCase().includes(input) ||
-            (room.officeName && room.officeName.toLowerCase().includes(input))
-        )
-      )
-    );
+    if (rooms.length > 0) {
+      const filteredRooms = rooms.filter(
+        (room) =>
+          (room.roomCode && room.roomCode.toLowerCase().includes(input)) ||
+          (room.roomName && room.roomName.toLowerCase().includes(input)) ||
+          (room.buildingName && room.buildingName.toLowerCase().includes(input))
+      );
 
-    setSuggestions(matchingRooms);
+      setFilteredRooms(filteredRooms);
+    }
+  };
+
+  const clickSearch = () => {
+    setIsAnimationActive(false);
+    return;
   };
 
   const handleSearchBarClick = () => {
@@ -54,176 +193,333 @@ const SearchTab: React.FC = () => {
 
   const handleSearchBarBlur = () => {
     setIsClicked(false);
-  };
-
-  const handleRoomButtonClick = (
-    roomName: string,
-    buildingName: string,
-    floorNumber: string,
-    officeName: string
-  ) => {
-    // Find the matching room
-    let selectedRoomModelPath = "";
-    let selectedRoomVoice = "";
-    let building = "";
-    let floor = "";
-    let office = null;
-    Object.entries(roomData).forEach(([building, floors]) => {
-      Object.entries(floors).forEach(([floor, rooms]) => {
-        rooms.forEach((room) => {
-          if (room.name === roomName) {
-            selectedRoomModelPath = room.modelPath;
-            selectedRoomVoice = room.voice;
-            building = room.buildingName;
-            floor = floor; // Assuming the floor number is a single-digit string
-            office = room.officeName;
-          }
-        });
-      });
-    });
-
-    if (selectedRoomModelPath) {
-      console.log("Selected room:", roomName);
-      console.log("Model path:", selectedRoomModelPath);
-      setSelectedModelPath(selectedRoomModelPath); // Update selected model path state
-      setSelectedVoice(selectedRoomVoice);
-      setSelectedBuilding(buildingName);
-      setSelectedFloor(floorNumber);
-      setSelectedOffice(officeName);
-      setSelectedRoom(roomName);
-      setIsAnimationActive(true);
-    } else {
-      console.log("Model path not found for the selected room.");
+    if (!input) {
+      setFilteredRooms([]);
     }
   };
 
-  const clickSearch = () => {
-    setIsAnimationActive(false);
+  const handleSuggestionClick = async (
+    roomCode: string,
+    roomName: string,
+    floorLevel: string,
+    roomAnimation: string,
+    voiceGuide: string,
+    buildingName: string,
+    textGuide: string[],
+  ) => {
+    const now = serverTimestamp();
+    if (roomCode) {
+      setSelectedRoom(roomCode);
+      setSelectedRoomName(roomName);
+      setSelectedFloor(floorLevel);
+      setSelectedBuilding(buildingName);
+      setSelectedModelPath(roomAnimation);
+      setSelectedVoice(voiceGuide);
+      setSelectedTextGuide(textGuide);
+      setIsAnimationActive(true);
 
-    return;
+      if (roomAnimation) {
+        const firestore = getFirestore(initializeApp(firebaseConfig));
+        const roomRef = collection(firestore, "visitorData2");
+        await addDoc(roomRef, {
+          roomCode: roomCode,
+          selectedRoomName: roomName,
+          selectedFloor: floorLevel,
+          selectedBuilding: buildingName,
+          roomAnimation: roomAnimation,
+          selectedTextGuide: textGuide,
+          selectedVoiceGuide: voiceGuide,
+          createdAt: now,
+        });
+      }
+    } else {
+      console.error("No room selected.");
+    }
   };
 
   return (
     <IonPage>
       <IonContent fullscreen className="bg-sc">
-        <>
-          {selectedModelPath && isAnimationActive ? (
-            <>
+        {loading ? ( // Render loading component if loading is true
+          <div className="h-screen overflow-hidden">
+            <div className="relative overflow-hidden ">
+              <div className="max-h-screen px-4 mx-auto max-w-screen sm:px-6 lg:px-8">
+                <div className="flex flex-col items-center justify-center w-screen h-screen text-center mt-72">
+                  <h1 className="w-screen text-4xl font-bold text-center text-white sm:text-6xl">
+                    <div className="flex flex-col items-center justify-center w-full gap-4">
+                      <div className="w-56 skeleton h-14"></div>
+                    </div>
+                  </h1>
+
+                  <div className="z-50 flex-col items-center justify-center w-screen h-screen ">
+                    <div className="flex items-start justify-center w-screen space-x-3 ">
+                      <div className="flex flex-col w-5/12 space-y-3 ">
+                        <div className="w-full">
+                          <div className="w-full h-16 skeleton"></div>
+                        </div>
+
+                        <div className="w-full">
+                          <div className="w-auto h-auto bg-white rounded-3xl">
+                            <div className="w-full h-64 skeleton"></div>
+                          </div>
+                        </div>
+                      </div>
+                      {input && (
+                        <div className="w-96">
+                          <div className="h-auto p-3 bg-white w-96 rounded-xl">
+                            {filteredRooms.length > 0 ? (
+                              <div className="w-full py-6 overflow-auto h-96">
+                                <h1 className="text-black">Result:</h1>
+                                <ul className="px-1 space-y-1">
+
+                                </ul>
+                              </div>
+                            ) : (
+                              <div className="w-full h-full py-6 overflow-auto">
+                                <h1 className="text-black">
+                                  No rooms found.
+                                </h1>
+                                <h1 className="text-black">
+                                  Enter another entry.
+                                </h1>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Your content here */}
+            {selectedModelPath && isAnimationActive ? (
               <Suspense fallback={<Loading />}>
+
                 <Animation
                   name={""}
-                  roomName={"selectedRoom"}
+                  roomName={selectedRoomName}
                   modelPath={selectedModelPath}
                   voice={selectedVoice}
-                  shortPath={"selectedShortPath"}
-                  roomData={roomData}
                   selectedBuilding={selectedBuilding}
                   selectedFloor={selectedFloor}
                   selectedRoom={selectedRoom}
+                  textGuide={selectedTextGuide || []}
                 />
-                <button
+                {/* <button
                   onClick={clickSearch}
                   className="absolute z-10 mt-10 btn btn-secondary ml-60"
                 >
                   Back
-                </button>
+                </button> */}
               </Suspense>
-            </>
-          ) : (
-            <>
-              <div className="h-screen overflow-hidden">
-                <div className="relative overflow-hidden ">
-                  <div className="max-h-screen px-4 mx-auto max-w-screen sm:px-6 lg:px-8">
-                    <div className="flex flex-col items-center justify-center w-screen h-screen text-center mt-72">
-                      <h1 className="w-screen text-4xl font-bold text-center text-white sm:text-6xl">
-                        Search
-                      </h1>
-                      
+            ) : (
+              <>
+                {/* Your content here */}
 
-                      <div className="z-50 flex-col items-center justify-center w-screen h-screen ">
-                        <div className="flex items-start justify-center w-screen space-x-3 ">
-                          <div className="flex flex-col w-5/12 space-y-3 ">
-                          <div className="w-full">
-                            <input
-                              value={input}
-                              placeholder={
-                                "Tap on the virtual keyboard to start"
-                              }
-                              onChange={(e) => onChangeInput(e)}
-                              onClick={handleSearchBarClick}
-                              onBlur={handleSearchBarBlur}
-                              className="z-50 w-full h-16 p-5 text-black bg-white outline-none rounded-3xl"
-                            />
-                          </div>  
-                          
-                        <div className="w-full">
-                          <div className="w-auto h-auto ">
-                            <KeyboardWrapper
-                              keyboardRef={keyboard}
-                              onChange={setInput}
-                            />
-                          </div>
-                        </div>
-                          </div>
-                          {input && (
-                          <div className="w-96">
-                            <div className="h-auto p-3 bg-white w-96 rounded-3xl">
-                              {suggestions.length > 0 ? (
-                                <div className="w-full py-6 overflow-auto h-96">
-                                  <h1 className="text-black">Result:</h1>
-                                  <ul className="px-1 space-y-1">
-                                    {suggestions.map((room, index) => (
-                                      <li key={index} className="space-">
+
+                <div className="w-screen h-screen overflow-hidden">
+                  <div className="relative w-screen h-fit">
+                    <div className="w-screen max-h-screen mx-auto max-w-screen">
+                      <div className="flex flex-col items-center justify-center w-screen h-screen text-center ">
+
+
+                        <div className="z-50 w-screen h-screen">
+                          <div className="flex items-center justify-end w-screen space-x-96 ">
+                            <div className="flex flex-col items-center justify-center w-5/12 space-y-3 ">
+                              <h1 className="w-full text-4xl font-bold text-center text-white sm:text-6xl">
+                                Search
+                              </h1>
+                              <div className="w-full">
+                                <input
+                                  value={input}
+                                  placeholder={"Are you looking for something?"}
+                                  onChange={(e) => onChangeInput(e)}
+                                  onClick={handleSearchBarClick}
+                                  onBlur={handleSearchBarBlur}
+                                  className="z-50 w-full h-16 p-5 text-black bg-white outline-none rounded-xl"
+                                />
+                              </div>
+
+                              {recentRoomCodes.length > 0 && (
+                                <div>
+                                  <h2>Recent Room Codes</h2>
+                                  <ul className="flex justify-center space-x-4">
+                                    {recentRoomCodes
+                                      .filter(
+                                        (room, index, self) =>
+                                          index ===
+                                          self.findIndex(
+                                            (r) => r.roomCode === room.roomCode
+                                          )
+                                      )
+                                      .map((room, index) => (
+                                        <li key={index}>
+                                          <button
+                                            className="btn btn-block btn-secondary "
+                                            onClick={() =>
+                                              handleSuggestionClick(
+                                                room.roomCode,
+                                                room.roomName,
+                                                room.floorLevel,
+                                                room.roomAnimation,
+                                                room.voiceGuide,
+                                                room.buildingName,
+                                                room.textGuide
+                                              )
+                                            }
+                                          >
+                                            {room.roomCode} - {room.roomName}
+                                          </button>
+                                        </li>
+                                      ))}
+                                  </ul>
+                                </div>
+                              )}
+
+                              <h2>Suggestions</h2>
+                              <div className="flex justify-center">
+                                {rooms.map((room, index) => (
+                                  <div key={index}>
+                                    {(room.roomName === "NSTP" ||
+                                      room.roomName === "SASD" ||
+                                      room.roomName === "Admission Office" ||
+                                      room.roomName ===
+                                      "College of Computer Studies" ||
+                                      room.roomName === "Registrar Office") && (
                                         <button
-                                          className=" btn btn-block btn-secondary"
+                                          className="btn btn-block btn-secondary"
                                           onClick={() =>
-                                            handleRoomButtonClick(
-                                              room.name,
+                                            handleSuggestionClick(
+                                              room.roomCode,
+                                              room.roomName,
+                                              room.floorLevel,
+                                              room.roomAnimation,
+                                              room.voiceGuide,
                                               room.buildingName,
-                                              room.floorNumber,
-                                              room.officeName
+                                              room.textGuide
                                             )
                                           }
                                         >
-                                          {room.name} - {room.buildingName} -{" "}
-                                          {""}
-                                          {room.floorNumber} Floor
-                                          {room.officeName && (
-                                            <> - Office: {room.officeName}</>
-                                          )}
+                                          {room.roomName}
                                         </button>
-                                      </li>
-                                    ))}
-                                  </ul>
+                                      )}
+                                  </div>
+                                ))}
+                              </div>
+
+
+
+                              <div className="w-full">
+                                <div className="w-auto h-auto bg-white rounded-3xl">
+                                  <KeyboardWrapper
+                                    keyboardRef={keyboard}
+                                    onChange={setInput}
+                                    onFilteredRoomsChange={setFilteredRooms}
+                                  />
                                 </div>
-                              ) : (
-                                <div className="w-full py-6 overflow-auto h-96">
-                                  <h1 className="text-black">
-                                    No rooms found.
-                                  </h1>
-                                  <h1 className="text-black">
-                                    Enter another entry.
-                                  </h1>
-                                </div>
-                              )}
+                              </div>
                             </div>
+
+
+                            <div className="w-3/12 h-screen bg-white rounded-3xl">
+                              <div className="w-full h-full p-3 bg-white shadow-inner rounded-3xl">
+                                {input && filteredRooms.length > 0 ? (
+                                  <div className="w-full h-full py-6 pt-0 overflow-auto">
+                                    <div className="bg-base-100 w-[499px] h-20 fixed -z-1">
+                                      <h1 className="text-4xl font-bold text-black">Result:</h1>
+                                    </div>
+                                    <ul className="px-1 space-y-3 mt-28">
+                                      {filteredRooms
+                                        .sort((a, b) => a.roomCode.localeCompare(b.roomCode))
+                                        .map((room, index) => (
+                                          <li key={index} className="space-y-3">
+                                            <button
+                                              className="text-left shadow-inner h-28 btn btn-block btn-primary rounded-3xl"
+                                              onClick={() =>
+                                                handleSuggestionClick(
+                                                  room.roomCode,
+                                                  room.roomName,
+                                                  room.floorLevel,
+                                                  room.roomAnimation,
+                                                  room.voiceGuide,
+                                                  room.buildingName,
+                                                  room.textGuide
+                                                )
+                                              }
+                                            >
+                                              {/* <div className="flex flex-col justify-start w-full ">
+                                                <div className="flex space-x-3 text-sm">
+                                                  <div>{room.buildingName}</div>
+                                                  <div>{room.floorLevel}</div>
+                                                </div>
+                                                <div className="flex justify-between ">
+                                                  <div className="text-xl">{room.roomName}</div>{" "}
+                                                  <div className="flex flex-col items-end justify-center">
+                                                    <div className="badge badge-lg">{room.roomCode}</div>
+                                                  </div>
+                                                </div>
+                                              </div> */}
+                                              {room.roomCode === "" ||
+                                                room.roomName === "" ? (
+                                                <>{room.buildingName}</>
+                                              ) : (
+                                                <>
+                                                  {" "}
+                                                  {room.roomCode}-{" "}
+                                                  {room.roomName} -{" "}
+                                                  {room.floorLevel} -{" "}
+                                                  {room.buildingName}
+                                                </>
+                                              )}
+
+                                            </button>
+                                          </li>
+                                        ))}
+                                    </ul>
+                                  </div>
+                                ) : (
+                                  <div className="w-full h-full p-3 space-y-10 overflow-auto rounded-3xl">
+                                    {!input ? ( // Display "Search Suggestions" when input is cleared
+                                      <div className="bg-base-100 w-[475px] h-20 fixed -z-1">
+                                        <h1 className="text-4xl font-bold text-black">Search Suggestions</h1>
+                                      </div>
+
+                                    ) : (
+                                      // Display "Nothing's found" message when input is not empty but no results are found
+                                      <>
+                                        <div className="bg-base-100 w-[475px] h-20 fixed -z-1">
+                                          <h1 className="text-4xl font-bold text-black">Result:</h1>
+                                        </div>
+                                        <ul className="px-1 space-y-3 mt-28">
+                                          <h1 className="text-black">Nothing's found.</h1>
+                                          <h1 className="text-black">Enter another entry.</h1>
+                                        </ul>
+                                      </>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+
+
+
+
                           </div>
-                        )}
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-              {/* <Backbtn name={"Back"} /> */}
-            </>
-          )}
-
-          <div className="absolute top-0 left-0 z-50 ">
-            <SideBar />
-          </div>
-         
-        </>
+                {/* <Backbtn name={"Back"} /> */}
+              </>
+            )}
+          </>
+        )}
       </IonContent>
     </IonPage>
   );

@@ -9,8 +9,10 @@ import {
 } from "three";
 import ModelViewer from "./ModelViewer";
 import { Billboard, Html, Text } from "@react-three/drei";
-import UareHere from "/src/assets/models/others/location2.glb";
+import UareHere from "../../../assets/models/others/clocation.glb";
+import { useTranslation } from "react-i18next";
 
+const { t } = useTranslation();
 const RotatingMesh = () => {
   const meshRef =
     useRef<
@@ -31,21 +33,21 @@ const RotatingMesh = () => {
 
   return (
     <>
-      <mesh ref={meshRef} position={[3.6, 0, 49]}>
+      <mesh ref={meshRef} position={[11, 0, 49]}>
         <ModelViewer
           position={[0, 2, 0]}
           modelPath={UareHere}
           mesh={meshRef.current}
         />
       </mesh>
-      <Billboard follow position={[3.6, 11, 49]}>
+      <Billboard follow position={[11, 11, 49]}>
         <Text
           fontSize={1.5}
           outlineColor="#000000"
           outlineOpacity={1}
           outlineWidth="20%"
         >
-          You are here
+          {t("You are here.")}
         </Text>
       </Billboard>
     </>

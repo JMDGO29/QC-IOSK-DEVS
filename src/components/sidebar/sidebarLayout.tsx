@@ -12,7 +12,7 @@ import Announcements from './annoucements';
 import Themes from "./themes";
 import About from "./about";
 import { useHistory } from "react-router-dom";
-import FpsViewer from "./FpsViewer";
+// import FpsViewer from "./FpsViewer";
 
 interface SideBarIconProps {
   icon: string;
@@ -26,6 +26,7 @@ const SideBar = () => {
   const ClickWelcome = () => {
     // Redirect to the "/Home" route
     history.push("/SanBartolome");
+    window.location.reload();
   };
   const ClickMaps = () => {
     // Redirect to the "/Map" route
@@ -157,7 +158,7 @@ const SideBar = () => {
                   text={t("Admin")}
                   onClick={() => handleContentChange("Settings")}
                 />
-                <FpsViewer />
+                {/* <FpsViewer /> */}
               </div>
             </div>
           </div>

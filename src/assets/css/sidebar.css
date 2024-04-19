@@ -36,9 +36,9 @@
 @tailwind utilities;
 
 ::-webkit-scrollbar {
-  @apply w-2 bg-base-100;
+  @apply w-2 bg-base-300 rounded-full;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-base-300 rounded-full;
+  @apply bg-base-content rounded-full;
 }

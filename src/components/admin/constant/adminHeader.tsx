@@ -10,6 +10,7 @@ interface ContainerProps {
 }
 
 const adminHeader: React.FC<ContainerProps> = ({ name }) => {
+  const { t } = useTranslation();
   const history = useHistory();
 
   const ClickWelcome = () => {
@@ -28,7 +29,7 @@ const adminHeader: React.FC<ContainerProps> = ({ name }) => {
   useEffect(() => {
     themeChange(false);
   });
-  const { t } = useTranslation();
+
 
   const reloadPage = () => {
     window.location.reload();
