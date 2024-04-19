@@ -176,7 +176,7 @@ const BuildingManagement: React.FC<ContainerProps> = ({ name }) => {
         ),
       },
       { accessorKey: "buildingName", header: "Building Name", size: 150 },
-      { accessorKey: "TotalFloor", header: "TotalFloor", size: 150 },
+      { accessorKey: "totalFloor", header: "Total Floor", size: 150 },
       {
         accessorKey: "buildingPosition",
         header: "Building Position",
@@ -254,7 +254,9 @@ const BuildingManagement: React.FC<ContainerProps> = ({ name }) => {
           <div className="items-center justify-center text-base-content bg-base-300 lg:ps-64 ">
             <div className="w-full h-full p-10 bg-base-100 rounded-tl-3xl">
               <div className="flex items-center justify-between">
-                <h1 className="text-4xl font-bold">Building Model Management</h1>
+                <h1 className="text-4xl font-bold">
+                  Building Model Management
+                </h1>
                 <div className="flex items-center mr-5 space-x-3">
                   <button
                     onClick={createBuilding}
