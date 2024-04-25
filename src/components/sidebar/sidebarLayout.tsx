@@ -153,11 +153,11 @@ const SideBar = () => {
                   text={t("About")}
                   onClick={() => handleContentChange("About")}
                 />
-                <SideBarIcon
+                {/* <SideBarIcon
                   icon="mdi:administrator"
                   text={t("Admin")}
                   onClick={() => handleContentChange("Settings")}
-                />
+                /> */}
                 {/* <FpsViewer /> */}
               </div>
             </div>
