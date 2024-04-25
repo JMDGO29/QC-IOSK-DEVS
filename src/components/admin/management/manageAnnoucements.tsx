@@ -13,6 +13,8 @@ import {
   query,
   orderBy,
   addDoc,
+  updateDoc,
+  serverTimestamp,
 } from "@firebase/firestore";
 import { useEffect, useState, useMemo } from "react";
 import Modal from "react-modal";
@@ -22,6 +24,7 @@ import {
   useMaterialReactTable,
   type MRT_ColumnDef,
 } from "material-react-table";
+import { onSnapshot } from "firebase/firestore";
 
 Modal.setAppElement("#root");
 interface ContainerProps {
@@ -33,7 +36,8 @@ interface Announcement {
   announcementSource: string;
   announcementDesc: string;
   startDate: string;
-  startTime: string;
+  endDate: string;
+  status: string;
 }
 
 const ManageAnnouncements: React.FC<ContainerProps> = ({ name }) => {
@@ -79,9 +83,17 @@ const ManageAnnouncements: React.FC<ContainerProps> = ({ name }) => {
         accessorKey: "announcementDesc",
         header: "Description",
         size: 150,
+        Cell: ({ row }) => {
+          return (
+            <div className="truncate text-ellipsis w-40">
+              {row.original.announcementDesc}
+            </div>
+          );
+        },
       },
       { accessorKey: "startDate", header: "Start Date", size: 150 },
-      { accessorKey: "startTime", header: "Start Time", size: 150 },
+      { accessorKey: "endDate", header: "End Date", size: 150 },
+      { accessorKey: "status", header: "Status", size: 150 },
     ],
     []
   );
@@ -181,20 +193,54 @@ const ManageAnnouncements: React.FC<ContainerProps> = ({ name }) => {
   };
 
   useEffect(() => {
+    let unsubscribeAnnouncements: () => void;
+
     const fetchAnnouncements = async () => {
       try {
         const announcementsCollection = collection(db, "announcements");
-        const queryAnnouncement = query(
-          announcementsCollection,
-          orderBy("createdAt", "desc")
+        const queryAnnouncement = query(announcementsCollection);
+        unsubscribeAnnouncements = onSnapshot(
+          queryAnnouncement,
+          (querySnapshot) => {
+            const announcementData = querySnapshot.docs.map((doc) => {
+              const data = doc.data();
+              const announcement: Announcement = {
+                id: doc.id,
+                name: data.name,
+                announcementSource: data.announcementSource,
+                announcementDesc: data.announcementDesc,
+                startDate: data.startDate,
+                endDate: data.endDate,
+                status: data.status,
+              };
+
+              // Check if end date has passed for each announcement
+              const now = new Date();
+              const endDateTimestamp = new Date(announcement.endDate);
+
+              if (
+                now > endDateTimestamp &&
+                announcement.status !== "not available"
+              ) {
+                // If end date has passed and status is not already "Not Available", update status
+                const announcementRef = doc.ref;
+                // or: const announcementRef = doc(db, "announcements", announcement.id);
+                updateDoc(announcementRef, {
+                  status: "not available",
+                  updatedAt: serverTimestamp(),
+                });
+
+                // Update the status in the local announcement object
+                announcement.status = "not available";
+              }
+
+              return announcement;
+            });
+
+            setAnnouncements(announcementData);
+            setLoading(false);
+          }
         );
-        const announcementsSnapshot = await getDocs(queryAnnouncement);
-        const announcementsData = announcementsSnapshot.docs.map((doc) => {
-          const announcementsData = doc.data() as Announcement;
-          return { ...announcementsData, id: doc.id } as Announcement;
-        });
-        setAnnouncements(announcementsData);
-        setLoading(false);
       } catch (error) {
         console.error("Error fetching announcements: ", error);
         setLoading(false);
@@ -202,7 +248,12 @@ const ManageAnnouncements: React.FC<ContainerProps> = ({ name }) => {
     };
 
     fetchAnnouncements();
-  }, []);
+    return () => {
+      if (unsubscribeAnnouncements) {
+        unsubscribeAnnouncements();
+      }
+    };
+  }, [announcements]);
 
   return (
     <IonPage>

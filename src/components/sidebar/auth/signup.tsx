@@ -1,8 +1,15 @@
 import { IonContent, IonPage } from "@ionic/react";
 import { useState } from "react";
 import { NavLink, useHistory } from "react-router-dom";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../../utils/firebase.js";
+import {
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+  updateProfile,
+} from "firebase/auth";
+import { auth, db } from "../../utils/firebase.js";
+import "../../../assets/css/search.css";
+import { networkInterfaces } from "os";
+import { serverTimestamp } from "firebase/firestore";
 
 interface ContainerProps {
   name: string;
@@ -11,46 +18,132 @@ interface ContainerProps {
 const Signup: React.FC<ContainerProps> = ({ name }) => {
   const history = useHistory();
 
+  const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  const onSubmit = async (e: { preventDefault: () => void; }) => {
+  const onSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
 
+    // Check if email or password fields are empty
+    if (!email.trim() || !password.trim()) {
+      alert("Please enter both email and password.");
+      return;
+    }
+
+    // Check if password and confirm password match
+    if (password !== confirmPassword) {
+      alert("Passwords do not match.");
+      return;
+    }
+
+    // Check if password is at least 8 characters long
+    if (password.length < 8) {
+      alert("Password should be at least 8 characters long.");
+      return;
+    }
+
+    // Email validation regular expression
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    // Check if email matches the pattern
+    if (!emailPattern.test(email)) {
+      alert("Please enter a valid email address.");
+      return;
+    }
+
     await createUserWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
+      .then(async (userCredential) => {
         // Signed in
         const user = userCredential.user;
         console.log(user);
+        const now = serverTimestamp();
+
+        // Update user profile with role as superAdmin
+        await updateProfile(user, { displayName: displayName });
+
+        // Add role to Firestore
+        await db.collection("users").doc(user.uid).set({
+          displayName: displayName,
+          email: email,
+          role: "superAdmin",
+          status: "available",
+          createdAt: now,
+        });
+
+        // Send email verification
+        const currentUser = auth.currentUser;
+        if (currentUser) {
+          await sendEmailVerification(currentUser);
+          alert(
+            "A verification email has been sent to your email address. Please verify your email before signing in."
+          );
+          setEmail("");
+          setPassword("");
+        } else {
+          alert("User is not authenticated.");
+        }
+
         history.push("/Login");
+
+        setEmail("");
+        setPassword("");
       })
       .catch((error) => {
         const errorCode = error.code;
         const errorMessage = error.message;
         console.log(errorCode, errorMessage);
+        alert("Error on Signing up.");
       });
+  };
+
+  const handleReload = () => {
+    window.location.replace("/Login");
   };
 
   return (
     <IonPage>
-      <IonContent fullscreen>
+      <IonContent fullscreen className="bg-sc">
         <main className="w-full h-auto max-w-md mx-auto text-base-content rounded-3xl">
           <div className="bg-white border border-gray-200 shadow-sm my-28 rounded-3xl dark:bg-gray-800 dark:border-gray-700">
             <div className="p-4 sm:p-7">
               <div className="text-center">
                 <h1 className="block text-2xl font-bold text-gray-800 dark:text-white">
+                  QC-IOSK ADMIN SYSTEM
+                </h1>
+                <h1 className="block text-2xl font-bold text-gray-800 dark:text-white">
                   Sign up
                 </h1>
                 <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                  Temporarily Sign up as an admin to access admin controls 
-                 
+                  Sign up as an admin to access admin controls
                 </p>
               </div>
 
               <div className="mt-5">
-               
                 <form>
                   <div className="grid gap-y-4">
+                    <div>
+                      <label
+                        htmlFor="name"
+                        className="block mb-2 text-sm dark:text-white"
+                      >
+                        Name
+                      </label>
+                      <div className="relative">
+                        <input
+                          autoComplete="off"
+                          type="text"
+                          onChange={(e) => setDisplayName(e.target.value)}
+                          id="name"
+                          name="name"
+                          className="block w-full px-4 py-3 text-sm border-gray-200 rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
+                          required
+                          aria-describedby="name-error"
+                        />
+                      </div>
+                    </div>
+
                     <div>
                       <label
                         htmlFor="email"
@@ -60,6 +153,7 @@ const Signup: React.FC<ContainerProps> = ({ name }) => {
                       </label>
                       <div className="relative">
                         <input
+                          autoComplete="off"
                           type="email"
                           onChange={(e) => setEmail(e.target.value)}
                           id="email"
@@ -68,26 +162,7 @@ const Signup: React.FC<ContainerProps> = ({ name }) => {
                           required
                           aria-describedby="email-error"
                         />
-                        <div className="absolute inset-y-0 items-center hidden pointer-events-none end-0 pe-3">
-                          <svg
-                            className="w-5 h-5 text-blue-500"
-                            width="16"
-                            height="16"
-                            fill="currentColor"
-                            viewBox="0 0 16 16"
-                            aria-hidden="true"
-                          >
-                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z" />
-                          </svg>
-                        </div>
                       </div>
-                      <p
-                        className="hidden mt-2 text-xs text-red-600"
-                        id="email-error"
-                      >
-                        Please include a valid email address so we can get back
-                        to you
-                      </p>
                     </div>
 
                     <div>
@@ -99,6 +174,7 @@ const Signup: React.FC<ContainerProps> = ({ name }) => {
                       </label>
                       <div className="relative">
                         <input
+                          autoComplete="off"
                           type="password"
                           id="password"
                           onChange={(e) => setPassword(e.target.value)}
@@ -107,30 +183,13 @@ const Signup: React.FC<ContainerProps> = ({ name }) => {
                           required
                           aria-describedby="password-error"
                         />
-                        <div className="absolute inset-y-0 items-center hidden pointer-events-none end-0 pe-3">
-                          <svg
-                            className="w-5 h-5 text-red-500"
-                            width="16"
-                            height="16"
-                            fill="currentColor"
-                            viewBox="0 0 16 16"
-                            aria-hidden="true"
-                          >
-                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z" />
-                          </svg>
-                        </div>
                       </div>
-                      <p
-                        className="hidden mt-2 text-xs text-red-600"
-                        id="password-error"
-                      >
-                        8+ characters required
-                      </p>
                     </div>
 
-                    {/* <div>
+                    {/* Password confirmation field */}
+                    <div>
                       <label
-                        for="confirm-password"
+                        htmlFor="confirm-password"
                         className="block mb-2 text-sm dark:text-white"
                       >
                         Confirm Password
@@ -139,54 +198,12 @@ const Signup: React.FC<ContainerProps> = ({ name }) => {
                         <input
                           type="password"
                           id="confirm-password"
+                          onChange={(e) => setConfirmPassword(e.target.value)}
                           name="confirm-password"
                           className="block w-full px-4 py-3 text-sm border-gray-200 rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
                           required
                           aria-describedby="confirm-password-error"
                         />
-                        <div className="absolute inset-y-0 flex items-center pointer-events-none end-0 pe-3">
-                          <svg
-                            className="w-5 h-5 text-red-500"
-                            width="16"
-                            height="16"
-                            fill="currentColor"
-                            viewBox="0 0 16 16"
-                            aria-hidden="true"
-                          >
-                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z" />
-                          </svg>
-                        </div>
-                      </div>
-                      <p
-                        className="hidden mt-2 text-xs text-red-600"
-                        id="confirm-password-error"
-                      >
-                        Password does not match the password
-                      </p>
-                    </div> */}
-
-                    <div className="flex items-center">
-                      <div className="flex">
-                        <input
-                          id="remember-me"
-                          name="remember-me"
-                          type="checkbox"
-                          className="shrink-0 mt-0.5 border-gray-200 rounded text-blue-600 pointer-events-none focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
-                        />
-                      </div>
-                      <div className="ms-3">
-                        <label
-                          htmlFor="remember-me"
-                          className="text-sm dark:text-white"
-                        >
-                          I accept the{" "}
-                          <a
-                            className="font-medium text-blue-600 decoration-2 hover:underline dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
-                            href="#"
-                          >
-                            Terms and Conditions
-                          </a>
-                        </label>
                       </div>
                     </div>
 
@@ -200,16 +217,22 @@ const Signup: React.FC<ContainerProps> = ({ name }) => {
                       Or
                     </div>
                     <div className="text-center">
-                <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                 Already have an account? &nbsp;
-                  <NavLink
-                    to="/Login"
-                    className="font-medium text-blue-600 decoration-2 hover:underline dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
-                  >
-                    Sign in here
-                  </NavLink>
-                </p>
-              </div>
+                      <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                        Already have an account? &nbsp;
+                        <button
+                          onClick={handleReload}
+                          className="font-medium text-blue-600 decoration-2 hover:underline dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+                        >
+                          Sign in here
+                        </button>
+                        <br />
+                        <br />
+                        <br />
+                        <NavLink to="/SanBartolome">
+                          Go Back to QC-IOSK Map
+                        </NavLink>
+                      </p>
+                    </div>
                   </div>
                 </form>
               </div>

@@ -64,7 +64,7 @@ const Archive: React.FC<ContainerProps> = ({ name }) => {
                   <RoomsArchive name="" />
                 </div>
 
-                <input
+                {/* <input
                   type="radio"
                   name="my_tabs_2"
                   role="tab"
@@ -78,16 +78,16 @@ const Archive: React.FC<ContainerProps> = ({ name }) => {
                   className="tab-content bg-base-100 border-base-300 rounded-box p-6"
                 >
                   <EventsArchive name="" />
-                </div>
+                </div> */}
 
                 <input
                   type="radio"
                   name="my_tabs_2"
                   role="tab"
-                  className={selectedTab === 4 ? "tab bg-base-300" : "tab"}
+                  className={selectedTab === 3 ? "tab bg-base-300" : "tab"}
                   aria-label="Announcements"
-                  checked={selectedTab === 4}
-                  onChange={() => handleTabChange(4)}
+                  checked={selectedTab === 3}
+                  onChange={() => handleTabChange(3)}
                 />
                 <div
                   role="tabpanel"
@@ -99,10 +99,10 @@ const Archive: React.FC<ContainerProps> = ({ name }) => {
                   type="radio"
                   name="my_tabs_2"
                   role="tab"
-                  className={selectedTab === 5 ? "tab bg-base-300" : "tab"}
+                  className={selectedTab === 4 ? "tab bg-base-300" : "tab"}
                   aria-label="Manual"
-                  checked={selectedTab === 5}
-                  onChange={() => handleTabChange(5)}
+                  checked={selectedTab === 4}
+                  onChange={() => handleTabChange(4)}
                 />
                 <div
                   role="tabpanel"

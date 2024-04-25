@@ -19,7 +19,8 @@ interface Announcement {
   announcementSource: string;
   announcementDesc: string;
   startDate: string;
-  startTime: string;
+  endDate: string;
+  status: string;
 }
 
 const UpdateAnnouncement: React.FC<ContainerProps> = ({ name }) => {
@@ -30,7 +31,9 @@ const UpdateAnnouncement: React.FC<ContainerProps> = ({ name }) => {
   const [announcementSource, setAnnouncementSource] = useState<string>("");
   const [announcementDesc, setAnnouncementDesc] = useState<string>("");
   const [startDate, setStartDate] = useState<string>("");
-  const [startTime, setStartTime] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
+  const [status, setStatus] = useState<string>("");
+  const [selectedStatus, setSelectedStatus] = useState<string>("");
 
   const AnnouncementManagement = () => {
     history.push("/Announcements");
@@ -50,7 +53,8 @@ const UpdateAnnouncement: React.FC<ContainerProps> = ({ name }) => {
           setAnnouncementSource(announcementData.announcementSource);
           setAnnouncementDesc(announcementData.announcementDesc);
           setStartDate(announcementData.startDate);
-          setStartTime(announcementData.startTime);
+          setEndDate(announcementData.endDate);
+          setStatus(announcementData.status);
         } else {
           console.error("Announcement not found");
           history.push("/Announcements");
@@ -73,7 +77,8 @@ const UpdateAnnouncement: React.FC<ContainerProps> = ({ name }) => {
         announcementSource,
         announcementDesc,
         startDate,
-        startTime,
+        endDate,
+        status: selectedStatus || status,
         updatedAt: now,
       });
 
@@ -84,6 +89,11 @@ const UpdateAnnouncement: React.FC<ContainerProps> = ({ name }) => {
       console.error("Error updating announcement: ", error);
       alert("Error on updating announcement.");
     }
+  };
+
+  const handleStatutsChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const selected = event.target.value;
+    setSelectedStatus(selected);
   };
 
   return (
@@ -148,7 +158,7 @@ const UpdateAnnouncement: React.FC<ContainerProps> = ({ name }) => {
                       <th>Start Date:</th>
                       <td>
                         <input
-                          type="date"
+                          type="datetime-local"
                           value={startDate}
                           onChange={(e) => setStartDate(e.target.value)}
                           className="w-full max-w-xs input input-bordered"
@@ -156,17 +166,29 @@ const UpdateAnnouncement: React.FC<ContainerProps> = ({ name }) => {
                       </td>
                     </tr>
                     <tr>
-                      <th>Time:</th>
+                      <th>End Date:</th>
                       <td>
                         <input
-                          type="time"
-                          value={startTime}
-                          onChange={(e) => setStartTime(e.target.value)}
+                          type="datetime-local"
+                          value={endDate}
+                          onChange={(e) => setEndDate(e.target.value)}
                           className="w-full max-w-xs input input-bordered"
                         />
                       </td>
                     </tr>
-
+                    <tr>
+                      <th>Status:</th>
+                      <td>
+                        <select
+                          className="w-full max-w-xs input input-bordered"
+                          value={selectedStatus || status}
+                          onChange={handleStatutsChange}
+                        >
+                          <option value="available">Available</option>
+                          <option value="not available">Not Available</option>
+                        </select>
+                      </td>
+                    </tr>
                     <tr>
                       <td colSpan={2}></td>
                     </tr>

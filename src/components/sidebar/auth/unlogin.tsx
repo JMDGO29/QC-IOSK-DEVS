@@ -1,10 +1,14 @@
 import { IonContent, IonPage } from "@ionic/react";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import {
+  sendEmailVerification,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
 import { useState } from "react";
-import { auth } from "../../utils/firebase";
+import { auth, db } from "../../utils/firebase";
 import { useHistory } from "react-router";
 import { NavLink } from "react-router-dom";
-// import sheesh from '../../../assets/imgs/sc-bg.png';
+import "../../../assets/css/search.css";
+import { doc, getDoc, getFirestore } from "firebase/firestore";
 
 interface ContainerProps {
   name: string;
@@ -16,151 +20,172 @@ const Login: React.FC<ContainerProps> = ({ name }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const onLogin = (e: { preventDefault: () => void; }) => {
+  const onLogin = (e: { preventDefault: () => void }) => {
     e.preventDefault();
+
+    // Check if email or password fields are empty
+    if (!email.trim() || !password.trim()) {
+      alert("Please enter both email and password.");
+      return;
+    }
+
+    // Email validation regular expression
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    // Check if email matches the pattern
+    if (!emailPattern.test(email)) {
+      alert("Please enter a valid email address.");
+      return;
+    }
+
     signInWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
+      .then(async (userCredential) => {
         // Signed in
         const user = userCredential.user;
-        history.push("/Dashboard");
-        console.log(user);
+
+        if (user) {
+          // Fetch user status from Firestore
+          const userDoc = await db.collection("users").doc(user.uid).get();
+          const userData = userDoc.data();
+          if (userData && userData.status === "inactive") {
+            alert(
+              "Your account is inactive or deleted. Please contact support."
+            );
+            return;
+          }
+
+          if (user && !user.emailVerified) {
+            alert("Please verify your email before logging in.");
+            await sendEmailVerification(user);
+            return;
+          }
+
+          // Check Firestore for user data
+          const firestore = getFirestore();
+          const userDocRef = doc(firestore, "users", user.uid);
+          const userDocSnap = await getDoc(userDocRef);
+
+          if (!userDocSnap.exists()) {
+            alert(
+              "User data not found. It may be inactive or deleted. Cannot proceed to login."
+            );
+            return;
+          }
+
+          history.push("/Dashboard");
+          console.log(user);
+          alert("Login successful!");
+
+          setEmail("");
+          setPassword("");
+        }
       })
       .catch((error) => {
         const errorCode = error.code;
         const errorMessage = error.message;
         console.log(errorCode, errorMessage);
+        alert("Wrong email or password.");
       });
+  };
+
+  const handleReload = () => {
+    window.location.replace("/Signup");
   };
 
   return (
     <IonPage>
-      <IonContent fullscreen>
-        <main className="w-full h-screen text-base-content">
-          <div>
-            <div className="">
-              <div className="">
-                {/* <img src={sheesh} alt="" className="w-full h-screen" /> */}
+      <IonContent fullscreen className="bg-sc">
+        <main className="w-full h-auto max-w-md mx-auto text-base-content rounded-3xl">
+          <div className="bg-white border border-gray-200 shadow-sm my-28 rounded-3xl dark:bg-gray-800 dark:border-gray-700">
+            <div className="p-4 sm:p-7">
+              <div className="text-center">
+                <h1 className="block text-2xl font-bold text-gray-800 dark:text-white">
+                  QC-IOSK ADMIN SYSTEM
+                </h1>
+                <h1 className="block text-2xl font-bold text-gray-800 dark:text-white">
+                  Login
+                </h1>
+                <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                  Login as an admin to access admin controls
+                </p>
               </div>
-              <div className="w-screen h-screen">
-                <section className="border border-gray-200 shadow-inner bg-base-100">
-                  <div className="w-full h-screen p-4 sm:p-7">
+
+              <div className="mt-5">
+                <form>
+                  <div className="grid gap-y-4">
+                    <div>
+                      <label
+                        htmlFor="email"
+                        className="block mb-2 text-sm dark:text-white"
+                      >
+                        Email address
+                      </label>
+                      <div className="relative">
+                        <input
+                          autoComplete="off"
+                          onChange={(e) => setEmail(e.target.value)}
+                          type="email"
+                          id="email"
+                          name="email"
+                          className="block w-full px-4 py-3 text-sm border-gray-200 rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
+                          required
+                          aria-describedby="email-error"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor="password"
+                        className="block mb-2 text-sm dark:text-white"
+                      >
+                        Password
+                      </label>
+                      <div className="relative">
+                        <input
+                          autoComplete="off"
+                          onChange={(e) => setPassword(e.target.value)}
+                          type="password"
+                          id="password"
+                          name="password"
+                          className="block w-full px-4 py-3 text-sm border-gray-200 rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
+                          required
+                          aria-describedby="password-error"
+                        />
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={onLogin}
+                      className="inline-flex items-center justify-center w-full px-4 py-3 text-sm font-semibold text-white bg-blue-600 border border-transparent gap-x-2 rounded-2xl hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+                    >
+                      Sign in
+                    </button>
+                    <div className="py-3 flex items-center text-xs text-gray-400 uppercase before:flex-[1_1_0%] before:border-t before:border-gray-200 before:me-6 after:flex-[1_1_0%] after:border-t after:border-gray-200 after:ms-6 dark:text-gray-500 dark:before:border-gray-600 dark:after:border-gray-600">
+                      Or
+                    </div>
                     <div className="text-center">
-                      <h1 className="block text-5xl font-bold">
-                        Sign in
-                      </h1>
-                      <p className="mt-2 text-sm">
-                        Sign in to had Admin Privileges
+                      <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                        Don't have an account yet? &nbsp;
+                        <button
+                          onClick={handleReload}
+                          className="font-medium text-blue-600 decoration-2 hover:underline dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+                        >
+                          Sign up here
+                        </button>
+                        <br />
+                        <br />
+                        <br />
+                        <NavLink to="/SanBartolome">
+                          Go Back to QC-IOSK Map
+                        </NavLink>
                       </p>
                     </div>
-                    <div className="px-20 mt-32">
-                      <form>
-                        <div className="grid gap-y-4">
-                          <div>
-                            <label
-                              htmlFor="email"
-                              className="block mb-2 text-md"
-                            >
-                              Email address
-                            </label>
-                            <div className="relative">
-                              <input
-                                autoComplete="off"
-                                onChange={(e) => setEmail(e.target.value)}
-                                type="email"
-                                id="email"
-                                name="email"
-                                className="w-full px-4 py-3 text-sm border-gray-200 rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none bg-base-300 dark:focus:ring-gray-600"
-                                required
-                                aria-describedby="email-error"
-                              />
-                              <div className="absolute inset-y-0 items-center hidden pointer-events-none end-0 pe-3">
-                                <svg
-                                  className="w-5 h-5 text-red-500"
-                                  width="16"
-                                  height="16"
-                                  fill="currentColor"
-                                  viewBox="0 0 16 16"
-                                  aria-hidden="true"
-                                >
-                                  <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z" />
-                                </svg>
-                              </div>
-                            </div>
-                            <p
-                              className="hidden mt-2 text-xs text-red-600"
-                              id="email-error"
-                            >
-                              Please include a valid email address so we can get back
-                              to you
-                            </p>
-                          </div>
-
-                          <div>
-                            <div className="flex items-center justify-between">
-                              <label
-                                htmlFor="password"
-                                className="block mb-2 text-md"
-                              >
-                                Password
-                              </label>
-                            </div>
-                            <div className="relative">
-                              <input
-                                autoComplete="off"
-                                onChange={(e) => setPassword(e.target.value)}
-                                type="password"
-                                id="password"
-                                name="password"
-                                className="block w-full px-4 py-3 text-sm border-gray-200 rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none bg-base-300 dark:focus:ring-gray-600"
-                                required
-                                aria-describedby="password-error"
-                              />
-                              <div className="absolute inset-y-0 items-center hidden pointer-events-none end-0 pe-3">
-                                <svg
-                                  className="w-5 h-5 text-red-500"
-                                  width="16"
-                                  height="16"
-                                  fill="currentColor"
-                                  viewBox="0 0 16 16"
-                                  aria-hidden="true"
-                                >
-                                  <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z" />
-                                </svg>
-                              </div>
-                            </div>
-                            <p
-                              className="hidden mt-2 text-xs text-red-600"
-                              id="password-error"
-                            >
-                              8+ characters required
-                            </p>
-                          </div>
-
-
-
-                          <div className="flex space-x-3">
-                            <button
-                              onClick={onLogin}
-                              className="inline-flex items-center justify-center w-full px-4 py-3 text-sm font-semibold border-2 text-base-content bg-base-300 gap-x-2 rounded-2xl hover:bg-base-200 disabled:opacity-50 disabled:pointer-events-none"
-                            >
-                              Sign in
-                            </button>
-                            <NavLink
-                              to="/SanBartolome"
-                              className="w-full py-3 font-semibold text-center bg-base-100 hover:bg-base-300 rounded-2xl text-base-content decoration-2 "
-                            >
-                              Back to map
-                            </NavLink>
-                          </div>
-                        </div>
-                      </form>
-                    </div>
                   </div>
-                </section>
+                </form>
               </div>
             </div>
           </div>
-
         </main>
       </IonContent>
     </IonPage>

@@ -30,7 +30,8 @@ interface Announcement {
   announcementSource: string;
   announcementDesc: string;
   startDate: string;
-  startTime: string;
+  endDate: string;
+  status: string;
 }
 
 const AnnouncementArchive: React.FC<ContainerProps> = ({ name }) => {
@@ -79,7 +80,8 @@ const AnnouncementArchive: React.FC<ContainerProps> = ({ name }) => {
         size: 150,
       },
       { accessorKey: "startDate", header: "Start Date", size: 150 },
-      { accessorKey: "startTime", header: "Start Time", size: 150 },
+      { accessorKey: "endDate", header: "End Date", size: 150 },
+      { accessorKey: "status", header: "Status", size: 150 },
     ],
     []
   );
@@ -199,10 +201,7 @@ const AnnouncementArchive: React.FC<ContainerProps> = ({ name }) => {
     const fetchAnnouncements = async () => {
       try {
         const announcementsCollection = collection(db, "announcementsArchive");
-        const queryAnnouncement = query(
-          announcementsCollection,
-          orderBy("createdAt", "desc")
-        );
+        const queryAnnouncement = query(announcementsCollection);
         const announcementsSnapshot = await getDocs(queryAnnouncement);
         const announcementsData = announcementsSnapshot.docs.map((doc) => {
           const announcementData = doc.data() as Announcement;
