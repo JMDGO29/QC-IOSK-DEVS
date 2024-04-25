@@ -1,6 +1,6 @@
 /*Imported Dependencies */
 
-import { Redirect, Route } from 'react-router-dom';
+import { Redirect, Route } from "react-router-dom";
 
 import { IonReactRouter } from "@ionic/react-router";
 /* Map*/
@@ -14,7 +14,6 @@ import { IonReactRouter } from "@ionic/react-router";
 import Maps from "./pages/maps";
 import Home from "./pages/layout";
 import SearchTab from "./pages/Search";
-
 
 /** Admin Routing */
 import Login from "./components/sidebar/auth/unlogin";
@@ -64,11 +63,12 @@ import Loading from "../src/pages/loading";
 import SBMapScene from "./components/admin/management/manageSBMap";
 import Create3DModel from "../src/components/admin/management/3DMapComponent/create3DModel";
 import Update3DModel from "./components/admin/management/3DMapComponent/update3DMode";
-import Batasan from './components/campus/batasan/Batasan';
-import SanFrancisco from './components/campus/sanFrancisco/SanFrancisco';
-import SanBartolome from './components/campus/sanBartolome/SanBartolome';
-import Layout from './pages/layout';
-import ScreenSaver from './pages/screenSaver';
+import Batasan from "./components/campus/batasan/Batasan";
+import SanFrancisco from "./components/campus/sanFrancisco/SanFrancisco";
+import SanBartolome from "./components/campus/sanBartolome/SanBartolome";
+import Layout from "./pages/layout";
+import ScreenSaver from "./pages/screenSaver";
+import RegistrarOffice from "./components/qr_code/RegistrarOffice";
 
 setupIonicReact();
 interface ContainerProps {
@@ -89,8 +89,13 @@ const App: React.FC<ContainerProps> = ({ name }) => (
           <Home name={"Home"} />
         </Route> */}
         <Route exact path="/SanBartolome">
-          <Layout name={"SanBartolome"} buildingName={''} />
+          <Layout name={"SanBartolome"} buildingName={""} />
         </Route>
+
+        <Route exact path="/SanBartolome/Registrar">
+          <RegistrarOffice name={""} />
+        </Route>
+
         <Route exact path="/SanFrancisco">
           <SanFrancisco name={"SanFrancisco"} />
         </Route>
@@ -130,7 +135,7 @@ const App: React.FC<ContainerProps> = ({ name }) => (
         </Route>
 
         <Route path="/updateRoom/:roomId">
-          <UpdateRoom name={''} />
+          <UpdateRoom name={""} />
         </Route>
 
         <Route exact path="/Building">
@@ -157,21 +162,21 @@ const App: React.FC<ContainerProps> = ({ name }) => (
           <Update3DModel name={"Update 3d Model"} />
         </Route>
 
-        <Route exact path="/Settings">
+        {/* <Route exact path="/Settings">
           <AdminSettings name={"Settings"} />
-        </Route>
+        </Route> */}
 
-        <Route path="/Events">
+        {/* <Route path="/Events">
           <EventManagement name={"Event Management"} />
-        </Route>
+        </Route> */}
 
-        <Route path="/createEvent">
+        {/* <Route path="/createEvent">
           <CreateEvent name={"Create Events"} />
-        </Route>
+        </Route> */}
 
-        <Route path="/updateEvent/:eventId">
+        {/* <Route path="/updateEvent/:eventId">
           <UpdateEvent name={"Update Events"} />
-        </Route>
+        </Route> */}
 
         <Route path="/createAnnouncement">
           <CreateAnnouncement name={"Create Announcements"} />
