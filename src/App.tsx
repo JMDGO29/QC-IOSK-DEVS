@@ -69,6 +69,8 @@ import SanBartolome from "./components/campus/sanBartolome/SanBartolome";
 import Layout from "./pages/layout";
 import ScreenSaver from "./pages/screenSaver";
 import RegistrarOffice from "./components/qr_code/RegistrarOffice";
+import Confirmation from "./components/sidebar/auth/confirmation";
+import UpdateSettings from "./components/admin/management/settingsComponent/updateSettings";
 
 setupIonicReact();
 interface ContainerProps {
@@ -114,6 +116,10 @@ const App: React.FC<ContainerProps> = ({ name }) => (
 
         <Route path="/Signup">
           <Signup name={"Signup"} />
+        </Route>
+
+        <Route path="/Confirmation">
+          <Confirmation name={"Confirmation"} />
         </Route>
 
         {/* ADMIN ROUTES */}
@@ -162,9 +168,13 @@ const App: React.FC<ContainerProps> = ({ name }) => (
           <Update3DModel name={"Update 3d Model"} />
         </Route>
 
-        {/* <Route exact path="/Settings">
+        <Route exact path="/Settings">
           <AdminSettings name={"Settings"} />
-        </Route> */}
+        </Route>
+
+        <Route exact path="/Settings/:userId">
+          <UpdateSettings name={" Update Settings"} />
+        </Route>
 
         {/* <Route path="/Events">
           <EventManagement name={"Event Management"} />

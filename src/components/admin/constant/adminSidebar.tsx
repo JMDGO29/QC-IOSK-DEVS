@@ -3,10 +3,12 @@ import { useHistory } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 // import { useEffect } from "react";
-import { auth } from "../../utils/firebase";
+import { auth, db } from "../../utils/firebase";
 import logo from "../../../assets/imgs/logo/qculogo.png";
 import { NavLink } from "react-router-dom";
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { collection, doc, getDoc, onSnapshot, query } from "firebase/firestore";
+import { uid } from "chart.js/dist/helpers/helpers.core";
 
 interface ContainerProps {
   name: string;
@@ -15,6 +17,7 @@ interface ContainerProps {
 const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
   const { t } = useTranslation();
   const history = useHistory();
+  const [displayName, setDisplayName] = useState("");
 
   const handleLogout = () => {
     // Clear user information from local storage
@@ -24,7 +27,7 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
     signOut(auth)
       .then(() => {
         // Sign-out successful.
-        history.push("/SanBartolome");
+        window.location.replace("/Login");
         console.log("Signed out successfully");
       })
       .catch((error) => {
@@ -48,6 +51,37 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
   const Manual = () => {
     history.replace("/Mike");
   };
+
+  useEffect(() => {
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // User is signed in
+        const uid = user.uid;
+
+        // Fetch user document from Firestore
+        const userDocRef = doc(db, "users", uid);
+        getDoc(userDocRef)
+          .then((docSnapshot) => {
+            if (docSnapshot.exists()) {
+              const userData = docSnapshot.data();
+              if (userData) {
+                // Set the displayName in state
+                setDisplayName(userData.displayName);
+              }
+            } else {
+              console.log("No such document!");
+            }
+          })
+          .catch((error) => {
+            console.error("Error getting user document:", error);
+          });
+      } else {
+        // User is signed out
+        history.push("/Login");
+      }
+    });
+  }, []);
+
   return (
     <div
       id="application-sidebar"
@@ -127,7 +161,7 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
             </NavLink>
           </li>
 
-          <li>
+          {/* <li>
             <NavLink
               className="w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm  rounded-lg hover:bg-base-100 text-base-content dark:focus:outline-none"
               to="/Events"
@@ -136,7 +170,7 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
               <Icon icon="mdi:events" className="w-7 h-7" />
               Events
             </NavLink>
-          </li>
+          </li> */}
 
           <li>
             <NavLink
@@ -172,17 +206,20 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
             </NavLink>
           </li>
 
-          {/* <li>
-            <NavLink
-              className="w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm  rounded-lg hover:bg-base-100 text-base-content dark:focus:outline-none"
-              to="/Settings"
-            >
-              <Icon icon="ci:settings" className="w-7 h-7" />
-              Settings
-            </NavLink>
-          </li> */}
+          {displayName === "SUPER ADMIN" && (
+            <li>
+              <NavLink
+                className="w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm  rounded-lg hover:bg-base-100 text-base-content dark:focus:outline-none"
+                to="/Settings"
+              >
+                <Icon icon="ci:settings" className="w-7 h-7" />
+                User Settings
+              </NavLink>
+            </li>
+          )}
         </ul>
         <div className="flex flex-col">
+          <li className="flex flex-col pb-5">Hello, {displayName}</li>
           <li className="flex flex-col pb-5">
             <a
               className="w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm bg-base-200 text-base-content rounded-lg hover:bg-error hover:text-base-content dark:focus:outline-none"
