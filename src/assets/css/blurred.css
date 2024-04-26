@@ -1,0 +1,6 @@
+/* Inside your CSS file or style block */
+.blurred-background {
+    filter: blur(5px); /* Adjust the blur intensity as needed */
+    pointer-events: none; /* Allow events to pass through the blurred background */
+  }
+  

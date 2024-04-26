@@ -21,6 +21,7 @@ import {
   onSnapshot,
   deleteDoc,
   getDocs,
+  where,
 } from "firebase/firestore"; // Import getFirestore, doc, setDoc
 import {
   MRT_ColumnDef,
@@ -30,6 +31,7 @@ import {
 import { deleteUser } from "firebase/auth";
 import { IonContent, IonPage } from "@ionic/react";
 import Modal from "react-modal";
+import "../../../assets/css/blurred.css";
 
 interface ContainerProps {
   name: string;
@@ -51,7 +53,7 @@ const AdminSettings: React.FC<ContainerProps> = ({ name }) => {
   const [showPin, setShowPin] = useState(false); // State variable to toggle showing or hiding the PIN
   const [admins, setAdmins] = useState<Admin[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [deleteUid, setDeleteUid] = useState(""); // State to hold the UID to delete
+
   const [showAlert, setShowAlert] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
@@ -76,28 +78,85 @@ const AdminSettings: React.FC<ContainerProps> = ({ name }) => {
     // Fetch PIN value from Firestore when the component mounts
     const fetchPin = async () => {
       try {
-        const docRef = doc(db, "users", "tvz1rEcGmIQjsuhRymKvRM7UACa2");
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          if (data && data.pin) {
-            setPin(data.pin);
+        const user = auth.currentUser; // Get the currently authenticated user
+        if (user) {
+          const uid = user.uid; // Get the UID of the current user
+          const docRef = doc(db, "users", uid); // Reference to the document using the UID
+          const docSnap = await getDoc(docRef); // Fetch the document
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            if (data && data.pin) {
+              setPin(data.pin); // Set the PIN from the document data
+            }
           }
         }
       } catch (error) {
         console.error("Error fetching PIN from Firestore:", error);
+      } finally {
+        setLoading(false); // Set loading to false after fetching
       }
     };
 
     fetchPin();
   }, []);
 
-  const updatePinInFirestore = async () => {
+  const updatePinInFirestore = async (newPin: string) => {
     try {
-      const docRef = doc(db, "users", "tvz1rEcGmIQjsuhRymKvRM7UACa2");
-      await setDoc(docRef, { pin: pin }, { merge: true });
-      console.log("PIN saved successfully in Firestore.");
-      alert("PIN saved successfully in Firestore.");
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        // User not authenticated
+        alert("User not authenticated.");
+        return;
+      }
+
+      // Add blurred background class to body
+      document.body.classList.add("blurred-background");
+
+      // Fetch current user's role and PIN
+      const currentUserDocRef = doc(db, "users", currentUser.uid);
+      const currentUserDocSnapshot = await getDoc(currentUserDocRef);
+      if (!currentUserDocSnapshot.exists()) {
+        // Current user data not found
+        alert("User data not found.");
+        return;
+      }
+      const currentUserData = currentUserDocSnapshot.data();
+      const currentUserRole = currentUserData.role;
+      const currentUserPin = currentUserData.pin;
+
+      // Check if current user is admin or superAdmin
+      if (currentUserRole === "admin" || currentUserRole === "superAdmin") {
+        // Prompt user for PIN
+        const pinInput = prompt("Enter your PIN:");
+        if (pinInput === null) {
+          document.body.classList.remove("blurred-background");
+          return;
+        }
+
+        // Verify PIN
+        if (pinInput !== currentUserPin) {
+          alert("Incorrect PIN. Export action canceled.");
+          document.body.classList.remove("blurred-background");
+          return;
+        }
+      }
+      const user = auth.currentUser; // Get the currently authenticated user
+      if (user) {
+        // Validate PIN length
+        if (pin.length < 6 || pin.length > 8) {
+          // If PIN length is invalid, show an alert or perform any other validation handling
+          alert("PIN must be between 6 and 8 characters.");
+          document.body.classList.remove("blurred-background");
+          return; // Exit the function early if validation fails
+        }
+
+        const uid = user.uid; // Get the UID of the current user
+        const docRef = doc(db, "users", uid); // Reference to the document using the UID
+        await setDoc(docRef, { pin: newPin }, { merge: true }); // Update the PIN in Firestore
+        console.log("PIN saved successfully in Firestore.");
+        document.body.classList.remove("blurred-background");
+        alert("PIN saved successfully in Firestore.");
+      }
     } catch (error) {
       console.error("Error saving PIN in Firestore:", error);
     }
@@ -105,50 +164,124 @@ const AdminSettings: React.FC<ContainerProps> = ({ name }) => {
 
   const handleResetPassword = async () => {
     try {
-      await sendPasswordResetEmail(auth, email);
-      setShowAlert(true);
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        // User not authenticated
+        alert("User not authenticated.");
+        return;
+      }
+
+      // Add blurred background class to body
+      document.body.classList.add("blurred-background");
+
+      // Fetch current user's role and PIN
+      const currentUserDocRef = doc(db, "users", currentUser.uid);
+      const currentUserDocSnapshot = await getDoc(currentUserDocRef);
+      if (!currentUserDocSnapshot.exists()) {
+        // Current user data not found
+        alert("User data not found.");
+        return;
+      }
+      const currentUserData = currentUserDocSnapshot.data();
+      const currentUserRole = currentUserData.role;
+      const currentUserPin = currentUserData.pin;
+
+      // Check if current user is admin or superAdmin
+      if (currentUserRole === "admin" || currentUserRole === "superAdmin") {
+        // Prompt user for PIN
+        const pinInput = prompt("Enter your PIN:");
+        if (pinInput === null) {
+          document.body.classList.remove("blurred-background");
+          return;
+        }
+
+        // Verify PIN
+        if (pinInput !== currentUserPin) {
+          alert("Incorrect PIN. Export action canceled.");
+          document.body.classList.remove("blurred-background");
+          return;
+        }
+
+        await sendPasswordResetEmail(auth, email);
+        setShowAlert(true);
+      } else {
+        alert("User does not have permission to reset password.");
+        document.body.classList.remove("blurred-background");
+      }
     } catch (error) {
       console.error("Error sending reset email:", error);
+      document.body.classList.remove("blurred-background");
     }
-  };
-
-  const handleSavePin = () => {
-    // Validate PIN length
-    if (pin.length < 6 || pin.length > 8) {
-      // If PIN length is invalid, show an alert or perform any other validation handling
-      alert("PIN must be between 6 and 8 characters.");
-      return; // Exit the function early if validation fails
-    }
-    // Call the function to save PIN in Firestore
-    updatePinInFirestore();
-    // You can add further handling if needed
   };
 
   const createAdminUser = async () => {
     try {
-      const { user } = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        "password"
-      ); // Replace "password" with the desired default password
-      if (user) {
-        const now = serverTimestamp();
-        // Update user profile with role as superAdmin
-        await updateProfile(user, { displayName: "Admin Personnel" });
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        // User not authenticated
+        alert("User not authenticated.");
+        return;
+      }
 
-        // Add user to Firestore with role "admin"
-        await setDoc(doc(db, "users", user.uid), {
-          email: user.email,
-          role: "admin",
-          displayName: "Admin Personnel",
-          createdAt: now,
-          status: "active",
-        });
-        console.log("Admin user created successfully.");
-        alert("Admin user created successfully.");
+      // Add blurred background class to body
+      document.body.classList.add("blurred-background");
+
+      // Fetch current user's role and PIN
+      const currentUserDocRef = doc(db, "users", currentUser.uid);
+      const currentUserDocSnapshot = await getDoc(currentUserDocRef);
+      if (!currentUserDocSnapshot.exists()) {
+        // Current user data not found
+        alert("User data not found.");
+        return;
+      }
+      const currentUserData = currentUserDocSnapshot.data();
+      const currentUserRole = currentUserData.role;
+      const currentUserPin = currentUserData.pin;
+
+      // Check if current user is admin or superAdmin
+      if (currentUserRole === "admin" || currentUserRole === "superAdmin") {
+        // Prompt user for PIN
+        const pinInput = prompt("Enter your PIN:");
+        if (pinInput === null) {
+          document.body.classList.remove("blurred-background");
+          return;
+        }
+
+        // Verify PIN
+        if (pinInput !== currentUserPin) {
+          alert("Incorrect PIN. Export action canceled.");
+          document.body.classList.remove("blurred-background");
+          return;
+        }
+
+        const { user } = await createUserWithEmailAndPassword(
+          auth,
+          email,
+          "password"
+        ); // Replace "password" with the desired default password
+        if (user) {
+          const now = serverTimestamp();
+          // Update user profile with role as superAdmin
+          await updateProfile(user, { displayName: "Admin Personnel" });
+
+          // Add user to Firestore with role "admin"
+          await setDoc(doc(db, "users", user.uid), {
+            email: user.email,
+            role: "admin",
+            displayName: "Admin Personnel",
+            createdAt: now,
+            status: "active",
+          });
+          console.log("Admin user created successfully.");
+          alert("Admin user created successfully.");
+        }
+      } else {
+        alert("User does not have permission to create user.");
+        document.body.classList.remove("blurred-background");
       }
     } catch (error) {
-      console.error("Error creating admin user:", error);
+      console.error("Error creating user:", error);
+      document.body.classList.remove("blurred-background");
     }
   };
 
@@ -241,13 +374,13 @@ const AdminSettings: React.FC<ContainerProps> = ({ name }) => {
         Cell: ({ row }) => (
           <div className="flex space-x-2">
             <button
-              onClick={() => updateUser(row.original.id)}
+              onClick={() => handleEdit(row.original.id)}
               className="btn btn-primary"
             >
               Edit
             </button>
             <button
-              onClick={() => openDeleteConfirmation(row.original.id)}
+              onClick={() => handleDelete(row.original.id)}
               className="btn btn-danger"
             >
               Delete
@@ -279,7 +412,140 @@ const AdminSettings: React.FC<ContainerProps> = ({ name }) => {
   const table = useMaterialReactTable({
     columns,
     data: admins,
+    enableColumnActions: false,
+    enableColumnFilters: false,
+    enablePagination: false,
+    enableSorting: false,
+    muiTableBodyRowProps: { hover: false },
   });
+
+  const handleEdit = async (userId: string) => {
+    try {
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        // User not authenticated
+        alert("User not authenticated.");
+        return;
+      }
+
+      // Fetch current user's role and PIN
+      const currentUserDocRef = doc(db, "users", currentUser.uid);
+      const currentUserDocSnapshot = await getDoc(currentUserDocRef);
+      if (!currentUserDocSnapshot.exists()) {
+        // Current user data not found
+        alert("User data not found.");
+        return;
+      }
+      const currentUserData = currentUserDocSnapshot.data();
+      const currentUserRole = currentUserData.role;
+      const currentUserPin = currentUserData.pin;
+
+      // Fetch user data of the user being edited
+      const userDocRef = doc(db, "users", userId);
+      const userDocSnapshot = await getDoc(userDocRef);
+      if (!userDocSnapshot.exists()) {
+        // User being edited not found
+        alert("User being edited not found.");
+        return;
+      }
+      const userData = userDocSnapshot.data();
+      const userRole = userData.role;
+      const userPin = userData.pin;
+
+      // Check if current user is admin and user being edited is superAdmin
+      if (currentUserRole === "admin" && userRole === "superAdmin") {
+        // Prompt admin for superAdmin PIN
+        const superAdminPinInput = prompt("Enter superAdmin PIN:");
+        if (superAdminPinInput === null) return; // User canceled the prompt
+
+        // Verify superAdmin PIN
+        if (superAdminPinInput !== userPin) {
+          alert("Incorrect superAdmin PIN. Edit action canceled.");
+          return;
+        }
+      }
+
+      // Prompt user for their own PIN
+      const userPinInput = prompt("Enter your PIN:");
+      if (userPinInput === null) return; // User canceled the prompt
+
+      // Verify user PIN
+      if (userPinInput !== currentUserPin) {
+        alert("Incorrect PIN. Edit action canceled.");
+        return;
+      }
+
+      // Proceed with edit action
+      updateUser(userId);
+    } catch (error) {
+      console.error("Error:", error);
+      alert("An error occurred. Please try again.");
+    }
+  };
+
+  const handleDelete = async (userId: string) => {
+    try {
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        // User not authenticated
+        alert("User not authenticated.");
+        return;
+      }
+
+      // Fetch current user's role and PIN
+      const currentUserDocRef = doc(db, "users", currentUser.uid);
+      const currentUserDocSnapshot = await getDoc(currentUserDocRef);
+      if (!currentUserDocSnapshot.exists()) {
+        // Current user data not found
+        alert("User data not found.");
+        return;
+      }
+      const currentUserData = currentUserDocSnapshot.data();
+      const currentUserRole = currentUserData.role;
+      const currentUserPin = currentUserData.pin;
+
+      // Fetch user data of the user being edited
+      const userDocRef = doc(db, "users", userId);
+      const userDocSnapshot = await getDoc(userDocRef);
+      if (!userDocSnapshot.exists()) {
+        // User being edited not found
+        alert("User being edited not found.");
+        return;
+      }
+      const userData = userDocSnapshot.data();
+      const userRole = userData.role;
+      const userPin = userData.pin;
+
+      // Check if current user is admin and user being edited is superAdmin
+      if (currentUserRole === "admin" && userRole === "superAdmin") {
+        // Prompt admin for superAdmin PIN
+        const superAdminPinInput = prompt("Enter superAdmin PIN:");
+        if (superAdminPinInput === null) return; // User canceled the prompt
+
+        // Verify superAdmin PIN
+        if (superAdminPinInput !== userPin) {
+          alert("Incorrect superAdmin PIN. Edit action canceled.");
+          return;
+        }
+      }
+
+      // Prompt user for their own PIN
+      const userPinInput = prompt("Enter your PIN:");
+      if (userPinInput === null) return; // User canceled the prompt
+
+      // Verify user PIN
+      if (userPinInput !== currentUserPin) {
+        alert("Incorrect PIN. Edit action canceled.");
+        return;
+      }
+
+      // Proceed with edit action
+      openDeleteConfirmation(userId);
+    } catch (error) {
+      console.error("Error:", error);
+      alert("An error occurred. Please try again.");
+    }
+  };
 
   return (
     <>
@@ -302,12 +568,6 @@ const AdminSettings: React.FC<ContainerProps> = ({ name }) => {
                   placeholder="Type here"
                   className="input input-bordered w-full max-w-xs"
                 />
-                <span>
-                  {" "}
-                  <i>
-                    This is for resetting password or creating new admin user.
-                  </i>
-                </span>
               </div>
               <br />
               <button onClick={handleResetPassword} className="btn btn-danger">
@@ -318,6 +578,7 @@ const AdminSettings: React.FC<ContainerProps> = ({ name }) => {
               </button>
               {showAlert && (
                 <div>
+                  <br />
                   <p>Password Reset Email Sent</p>
                   <p>
                     A password reset email has been sent to {email}. Please
@@ -337,9 +598,6 @@ const AdminSettings: React.FC<ContainerProps> = ({ name }) => {
                   placeholder="Type here"
                   className="input input-bordered w-full max-w-xs"
                 />
-                <span>
-                  <i> This will be use for confirmation.</i>
-                </span>
               </div>
               <br />
               {/* Call handleSavePin on button click */}
@@ -350,12 +608,15 @@ const AdminSettings: React.FC<ContainerProps> = ({ name }) => {
                 {showPin ? "Hide PIN" : "Show PIN"}
                 {/* Toggle button to show or hide PIN */}
               </button>{" "}
-              <button onClick={handleSavePin} className="btn btn-danger">
+              <button
+                onClick={() => updatePinInFirestore(pin)}
+                className="btn btn-danger"
+              >
                 Update PIN
               </button>
               <br />
               <br />
-              <div>
+              {/* <div>
                 <div>
                   <label htmlFor="deleteUid">User UID to delete: </label>{" "}
                   <input
@@ -373,7 +634,7 @@ const AdminSettings: React.FC<ContainerProps> = ({ name }) => {
                 </div>
                 <br />
                 <button className="btn btn-danger">Delete User</button>
-              </div>
+              </div> */}
               <br />
               <br />
               {loading ? (
@@ -402,7 +663,10 @@ const AdminSettings: React.FC<ContainerProps> = ({ name }) => {
                   </div>
                 </>
               ) : (
-                <MaterialReactTable table={table} />
+                <>
+                  <h1>User Account</h1>
+                  <MaterialReactTable table={table} />
+                </>
               )}
             </div>
           </div>

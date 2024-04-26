@@ -1,14 +1,14 @@
 import { Icon } from "@iconify/react";
 import { useHistory } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { onAuthStateChanged, signOut } from "firebase/auth";
+import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 // import { useEffect } from "react";
 import { auth, db } from "../../utils/firebase";
 import logo from "../../../assets/imgs/logo/qculogo.png";
 import { NavLink } from "react-router-dom";
 import React, { useEffect, useState } from "react";
-import { collection, doc, getDoc, onSnapshot, query } from "firebase/firestore";
-import { uid } from "chart.js/dist/helpers/helpers.core";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
+import "../../../assets/css/blurred.css";
 
 interface ContainerProps {
   name: string;
@@ -18,10 +18,32 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
   const { t } = useTranslation();
   const history = useHistory();
   const [displayName, setDisplayName] = useState("");
+  // Define state for superAdmin role
+  const [hasSuperAdminRole, setHasSuperAdminRole] = useState(false);
 
-  const handleLogout = () => {
-    // Clear user information from local storage
-    localStorage.removeItem("currentUser");
+  const handleLogout = async () => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    // If the user is logged in and their email is verified
+    if (user && user.emailVerified) {
+      try {
+        // Update the emailVerified status in Firestore
+        const userDocRef = doc(db, "users", user.uid);
+        await updateDoc(userDocRef, {
+          emailVerified: false,
+        });
+
+        console.log(
+          "Email verification status updated successfully in Firestore"
+        );
+      } catch (error) {
+        console.error(
+          "Error updating email verification status in Firestore:",
+          error
+        );
+      }
+    }
 
     // Sign out the user
     signOut(auth)
@@ -36,19 +58,277 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
       });
   };
 
-  const Archive = () => {
-    history.replace("/Archive");
+  const Buildings = async () => {
+    try {
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        // User not authenticated
+        alert("User not authenticated.");
+        return;
+      }
+
+      // Add blurred background class to body
+      document.body.classList.add("blurred-background");
+
+      // Fetch current user's role and PIN
+      const currentUserDocRef = doc(db, "users", currentUser.uid);
+      const currentUserDocSnapshot = await getDoc(currentUserDocRef);
+      if (!currentUserDocSnapshot.exists()) {
+        // Current user data not found
+        alert("User data not found.");
+        return;
+      }
+      const currentUserData = currentUserDocSnapshot.data();
+      const currentUserRole = currentUserData.role;
+      const currentUserPin = currentUserData.pin;
+
+      // Check if current user is admin or superAdmin
+      if (currentUserRole === "admin" || currentUserRole === "superAdmin") {
+        // Prompt user for PIN
+        const pinInput = prompt("Enter your PIN:");
+        if (pinInput === null) {
+          document.body.classList.remove("blurred-background");
+          return;
+        }
+
+        // Verify PIN
+        if (pinInput !== currentUserPin) {
+          alert("Incorrect PIN. Export action canceled.");
+          document.body.classList.remove("blurred-background");
+          return;
+        }
+
+        if (pinInput === currentUserPin) {
+          history.replace("/Building");
+          document.body.classList.remove("blurred-background");
+        }
+      } else {
+        alert("User does not have permission to create user.");
+        document.body.classList.remove("blurred-background");
+      }
+    } catch (error) {
+      console.error("Error creating user:", error);
+      document.body.classList.remove("blurred-background");
+    }
   };
 
-  const Events = () => {
-    history.replace("/Events");
+  const Rooms = async () => {
+    try {
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        // User not authenticated
+        alert("User not authenticated.");
+        return;
+      }
+
+      // Add blurred background class to body
+      document.body.classList.add("blurred-background");
+
+      // Fetch current user's role and PIN
+      const currentUserDocRef = doc(db, "users", currentUser.uid);
+      const currentUserDocSnapshot = await getDoc(currentUserDocRef);
+      if (!currentUserDocSnapshot.exists()) {
+        // Current user data not found
+        alert("User data not found.");
+        return;
+      }
+      const currentUserData = currentUserDocSnapshot.data();
+      const currentUserRole = currentUserData.role;
+      const currentUserPin = currentUserData.pin;
+
+      // Check if current user is admin or superAdmin
+      if (currentUserRole === "admin" || currentUserRole === "superAdmin") {
+        // Prompt user for PIN
+        const pinInput = prompt("Enter your PIN:");
+        if (pinInput === null) {
+          document.body.classList.remove("blurred-background");
+          return;
+        }
+
+        // Verify PIN
+        if (pinInput !== currentUserPin) {
+          alert("Incorrect PIN. Export action canceled.");
+          document.body.classList.remove("blurred-background");
+          return;
+        }
+
+        if (pinInput === currentUserPin) {
+          history.replace("/Rooms");
+          document.body.classList.remove("blurred-background");
+        }
+      } else {
+        alert("User does not have permission to create user.");
+        document.body.classList.remove("blurred-background");
+      }
+    } catch (error) {
+      console.error("Error creating user:", error);
+      document.body.classList.remove("blurred-background");
+    }
   };
 
-  const Announcements = () => {
-    history.replace("/Announcements");
+  const Dashboard = async () => {
+    try {
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        // User not authenticated
+        alert("User not authenticated.");
+        return;
+      }
+
+      // Add blurred background class to body
+      document.body.classList.add("blurred-background");
+
+      // Fetch current user's role and PIN
+      const currentUserDocRef = doc(db, "users", currentUser.uid);
+      const currentUserDocSnapshot = await getDoc(currentUserDocRef);
+      if (!currentUserDocSnapshot.exists()) {
+        // Current user data not found
+        alert("User data not found.");
+        return;
+      }
+      const currentUserData = currentUserDocSnapshot.data();
+      const currentUserRole = currentUserData.role;
+      const currentUserPin = currentUserData.pin;
+
+      // Check if current user is admin or superAdmin
+      if (currentUserRole === "admin" || currentUserRole === "superAdmin") {
+        // Prompt user for PIN
+        const pinInput = prompt("Enter your PIN:");
+        if (pinInput === null) {
+          document.body.classList.remove("blurred-background");
+          return;
+        }
+
+        // Verify PIN
+        if (pinInput !== currentUserPin) {
+          alert("Incorrect PIN. Export action canceled.");
+          document.body.classList.remove("blurred-background");
+          return;
+        }
+
+        if (pinInput === currentUserPin) {
+          history.replace("/Dashboard");
+          document.body.classList.remove("blurred-background");
+        }
+      } else {
+        alert("User does not have permission to create user.");
+        document.body.classList.remove("blurred-background");
+      }
+    } catch (error) {
+      console.error("Error creating user:", error);
+      document.body.classList.remove("blurred-background");
+    }
   };
 
-  const Manual = () => {
+  const Announcement = async () => {
+    try {
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        // User not authenticated
+        alert("User not authenticated.");
+        return;
+      }
+
+      // Add blurred background class to body
+      document.body.classList.add("blurred-background");
+
+      // Fetch current user's role and PIN
+      const currentUserDocRef = doc(db, "users", currentUser.uid);
+      const currentUserDocSnapshot = await getDoc(currentUserDocRef);
+      if (!currentUserDocSnapshot.exists()) {
+        // Current user data not found
+        alert("User data not found.");
+        return;
+      }
+      const currentUserData = currentUserDocSnapshot.data();
+      const currentUserRole = currentUserData.role;
+      const currentUserPin = currentUserData.pin;
+
+      // Check if current user is admin or superAdmin
+      if (currentUserRole === "admin" || currentUserRole === "superAdmin") {
+        // Prompt user for PIN
+        const pinInput = prompt("Enter your PIN:");
+        if (pinInput === null) {
+          document.body.classList.remove("blurred-background");
+          return;
+        }
+
+        // Verify PIN
+        if (pinInput !== currentUserPin) {
+          alert("Incorrect PIN. Export action canceled.");
+          document.body.classList.remove("blurred-background");
+          return;
+        }
+
+        if (pinInput === currentUserPin) {
+          history.replace("/Announcements");
+          document.body.classList.remove("blurred-background");
+        }
+      } else {
+        alert("User does not have permission to create user.");
+        document.body.classList.remove("blurred-background");
+      }
+    } catch (error) {
+      console.error("Error creating user:", error);
+      document.body.classList.remove("blurred-background");
+    }
+  };
+
+  const Archive = async () => {
+    try {
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        // User not authenticated
+        alert("User not authenticated.");
+        return;
+      }
+
+      // Add blurred background class to body
+      document.body.classList.add("blurred-background");
+
+      // Fetch current user's role and PIN
+      const currentUserDocRef = doc(db, "users", currentUser.uid);
+      const currentUserDocSnapshot = await getDoc(currentUserDocRef);
+      if (!currentUserDocSnapshot.exists()) {
+        // Current user data not found
+        alert("User data not found.");
+        return;
+      }
+      const currentUserData = currentUserDocSnapshot.data();
+      const currentUserRole = currentUserData.role;
+      const currentUserPin = currentUserData.pin;
+
+      // Check if current user is admin or superAdmin
+      if (currentUserRole === "admin" || currentUserRole === "superAdmin") {
+        // Prompt user for PIN
+        const pinInput = prompt("Enter your PIN:");
+        if (pinInput === null) {
+          document.body.classList.remove("blurred-background");
+          return;
+        }
+
+        // Verify PIN
+        if (pinInput !== currentUserPin) {
+          alert("Incorrect PIN. Export action canceled.");
+          document.body.classList.remove("blurred-background");
+          return;
+        }
+
+        if (pinInput === currentUserPin) {
+          history.replace("/Archive");
+          document.body.classList.remove("blurred-background");
+        }
+      } else {
+        alert("User does not have permission to create user.");
+        document.body.classList.remove("blurred-background");
+      }
+    } catch (error) {
+      console.error("Error creating user:", error);
+      document.body.classList.remove("blurred-background");
+    }
+  };
+
+  const Manual = async () => {
     history.replace("/Mike");
   };
 
@@ -67,6 +347,12 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
               if (userData) {
                 // Set the displayName in state
                 setDisplayName(userData.displayName);
+
+                // Check if user has superAdmin role
+                if (userData.role === "superAdmin") {
+                  // Display the settings link
+                  setHasSuperAdminRole(true);
+                }
               }
             } else {
               console.log("No such document!");
@@ -104,13 +390,13 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
       >
         <ul className="space-y-1.5 flex flex-col flex-grow">
           <li>
-            <NavLink
+            <button
               className="flex items-center gap-x-3.5 py-2 px-2.5 text-sm rounded-lg text-base-content hover:bg-base-100 dark:focus:outline-none"
-              to="/Dashboard"
+              onClick={Dashboard}
             >
               <Icon icon="lucide:layout-dashboard" className="h-7 w-7" />
               Dashboard
-            </NavLink>
+            </button>
           </li>
           {/* <li>
             <NavLink
@@ -139,26 +425,26 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
           </li> */}
 
           <li>
-            <NavLink
+            <button
+              onClick={Buildings}
               className="w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm  rounded-lg hover:bg-base-100 text-base-content dark:focus:outline-none"
-              to="/Building"
             >
               <Icon icon="bi:building-gear" className="w-7 h-7" />
               Buildings
-            </NavLink>
+            </button>
           </li>
 
           <li>
-            <NavLink
+            <button
               className="w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm  rounded-lg hover:bg-base-100 text-base-content dark:focus:outline-none"
-              to="/Rooms"
+              onClick={Rooms}
             >
               <Icon
                 icon="material-symbols:room-preferences-outline-rounded"
                 className="w-7 h-7"
               />
               Rooms
-            </NavLink>
+            </button>
           </li>
 
           {/* <li>
@@ -173,29 +459,26 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
           </li> */}
 
           <li>
-            <NavLink
+            <button
               className="w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm  rounded-lg hover:bg-base-100 text-base-content dark:focus:outline-none"
-              to="/Announcements"
-              onClick={Announcements}
+              onClick={Announcement}
             >
               <Icon icon="mingcute:announcement-line" className="w-7 h-7" />
               Announcements
-            </NavLink>
+            </button>
           </li>
           <li>
-            <NavLink
+            <button
               className="w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm  rounded-lg hover:bg-base-100 text-base-content dark:focus:outline-none"
-              to="/Mike"
               onClick={Manual}
             >
               <Icon icon="tabler:hexagon-letter-m" className="w-7 h-7" />
               M.I.K.E
-            </NavLink>
+            </button>
           </li>
           <li>
-            <NavLink
+            <button
               className="w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm  rounded-lg hover:bg-base-100 text-base-content dark:focus:outline-none"
-              to="/Archive"
               onClick={Archive}
             >
               <Icon
@@ -203,13 +486,13 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
                 className="w-7 h-7"
               />
               Archives
-            </NavLink>
+            </button>
           </li>
 
-          {displayName === "SUPER ADMIN" && (
+          {hasSuperAdminRole && (
             <li>
               <NavLink
-                className="w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm  rounded-lg hover:bg-base-100 text-base-content dark:focus:outline-none"
+                className="w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm rounded-lg hover:bg-base-100 text-base-content dark:focus:outline-none"
                 to="/Settings"
               >
                 <Icon icon="ci:settings" className="w-7 h-7" />

@@ -44,34 +44,44 @@ const Login: React.FC<ContainerProps> = ({ name }) => {
         const user = userCredential.user;
 
         if (user) {
-          // Fetch user status from Firestore
-          const userDoc = await db.collection("users").doc(user.uid).get();
-          const userData = userDoc.data();
-          if (userData && userData.status === "inactive") {
+          // Fetch user data from Firestore
+          const userDocRef = db.collection("users").doc(user.uid);
+          const userDocSnap = await userDocRef.get();
+          const userData = userDocSnap.data();
+
+          if (!userData) {
+            alert("User data not found. Cannot proceed to login.");
+            return;
+          }
+
+          // Check if email is verified in Firestore
+          let emailVerifiedFirestore = userData.emailVerified;
+
+          // Check if email is verified in the authentication user profile
+          const emailVerifiedAuth = user.emailVerified;
+
+          // If email is verified in the authentication user profile but not in Firestore, update Firestore
+          if (emailVerifiedAuth && !emailVerifiedFirestore) {
+            await userDocRef.update({ emailVerified: true });
+            emailVerifiedFirestore = true; // Update local variable
+          }
+
+          // If email is not verified, send verification email
+          if (!emailVerifiedFirestore) {
+            alert("Please verify your email before logging in.");
+            await sendEmailVerification(user); // Send verification email
+            return;
+          }
+
+          // Check if user account is inactive
+          if (userData.status === "inactive") {
             alert(
               "Your account is inactive or deleted. Please contact support."
             );
             return;
           }
 
-          if (user && !user.emailVerified) {
-            alert("Please verify your email before logging in.");
-            await sendEmailVerification(user);
-            return;
-          }
-
-          // Check Firestore for user data
-          const firestore = getFirestore();
-          const userDocRef = doc(firestore, "users", user.uid);
-          const userDocSnap = await getDoc(userDocRef);
-
-          if (!userDocSnap.exists()) {
-            alert(
-              "User data not found. It may be inactive or deleted. Cannot proceed to login."
-            );
-            return;
-          }
-
+          // Proceed with login
           history.push("/Dashboard");
           console.log(user);
           alert("Login successful!");
@@ -166,7 +176,7 @@ const Login: React.FC<ContainerProps> = ({ name }) => {
                     </div>
                     <div className="text-center">
                       <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                        Don't have an account yet? &nbsp;
+                        {/* Don't have an account yet? &nbsp;
                         <button
                           onClick={handleReload}
                           className="font-medium text-blue-600 decoration-2 hover:underline dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
@@ -175,7 +185,7 @@ const Login: React.FC<ContainerProps> = ({ name }) => {
                         </button>
                         <br />
                         <br />
-                        <br />
+                        <br /> */}
                         <NavLink to="/SanBartolome">
                           Go Back to QC-IOSK Map
                         </NavLink>
