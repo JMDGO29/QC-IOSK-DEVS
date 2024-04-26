@@ -12,6 +12,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Timestamp,
   collection,
+  doc,
+  getDoc,
   getDocs,
   onSnapshot,
   orderBy,
@@ -98,6 +100,42 @@ const Dashboard: React.FC<ContainerProps> = ({ name }) => {
   const [buildingData, setBuildingData] = useState<{ [key: string]: number }>(
     {}
   );
+
+  const [inactiveTimer, setInactiveTimer] = useState<NodeJS.Timeout | null>(
+    null
+  ); // State variable to track the inactive timer
+
+  // useEffect to handle user activity
+  useEffect(() => {
+    const handleUserActivity = () => {
+      if (inactiveTimer) {
+        clearTimeout(inactiveTimer);
+      }
+      setInactiveTimer(
+        setTimeout(() => {
+          // Perform logout and redirect to login page
+          signOut(auth)
+            .then(() => {
+              history.push("/Login");
+            })
+            .catch((error) => {
+              console.error("Error signing out:", error);
+            });
+        }, 60000) // 60000 milliseconds = 1 minute
+      );
+    };
+
+    window.addEventListener("mousemove", handleUserActivity);
+    window.addEventListener("keypress", handleUserActivity);
+
+    return () => {
+      if (inactiveTimer) {
+        clearTimeout(inactiveTimer);
+      }
+      window.removeEventListener("mousemove", handleUserActivity);
+      window.removeEventListener("keypress", handleUserActivity);
+    };
+  }, [inactiveTimer, history]);
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
@@ -478,85 +516,125 @@ const Dashboard: React.FC<ContainerProps> = ({ name }) => {
     fetchAnnouncements();
   }, []);
 
-  const exportToPDF = () => {
-    // Create new jsPDF instance
-    const doc = new jsPDF();
+  const exportToPDF = async () => {
+    try {
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        // User not authenticated
+        alert("User not authenticated.");
+        return;
+      }
 
-    // Set header font size and style
-    doc.setFontSize(16);
-    doc.setFont("helvetica", "bold");
+      // Fetch current user's role and PIN
+      const currentUserDocRef = doc(db, "users", currentUser.uid);
+      const currentUserDocSnapshot = await getDoc(currentUserDocRef);
+      if (!currentUserDocSnapshot.exists()) {
+        // Current user data not found
+        alert("User data not found.");
+        return;
+      }
+      const currentUserData = currentUserDocSnapshot.data();
+      const currentUserRole = currentUserData.role;
+      const currentUserPin = currentUserData.pin;
 
-    // Set header text
-    doc.text("Dashboard Report", 20, 10);
+      // Check if current user is admin or superAdmin
+      if (currentUserRole === "admin" || currentUserRole === "superAdmin") {
+        // Prompt user for PIN
+        const pinInput = prompt("Enter your PIN:");
+        if (pinInput === null) return; // User canceled the prompt
 
-    // Set content font size and style
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(12);
+        // Verify PIN
+        if (pinInput !== currentUserPin) {
+          alert("Incorrect PIN. Export action canceled.");
+          return;
+        }
 
-    // Set content text
-    doc.text(`Total Search: ${totalVisitors}`, 20, 20);
+        // Create new jsPDF instance
+        const doc = new jsPDF();
 
-    if (
-      startDate &&
-      endDate &&
-      startDate.toDateString() === endDate.toDateString()
-    ) {
-      // Set content font size and style
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(12);
+        // Set header font size and style
+        doc.setFontSize(16);
+        doc.setFont("helvetica", "bold");
 
-      doc.text(`Date: ${startDate?.toLocaleDateString()}`, 20, 30);
-    } else {
-      // Set content font size and style
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(12);
+        // Set header text
+        doc.text("Dashboard Report", 20, 10);
 
-      doc.text(`From: ${startDate?.toLocaleDateString()}`, 20, 30);
+        // Set content font size and style
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(12);
 
-      // Set content font size and style
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(12);
+        // Set content text
+        doc.text(`Total Search: ${totalVisitors}`, 20, 20);
 
-      doc.text(`To: ${endDate?.toLocaleDateString()}`, 20, 40);
-      // Add more text or data as needed
+        if (
+          startDate &&
+          endDate &&
+          startDate.toDateString() === endDate.toDateString()
+        ) {
+          // Set content font size and style
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(12);
+
+          doc.text(`Date: ${startDate?.toLocaleDateString()}`, 20, 30);
+        } else {
+          // Set content font size and style
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(12);
+
+          doc.text(`From: ${startDate?.toLocaleDateString()}`, 20, 30);
+
+          // Set content font size and style
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(12);
+
+          doc.text(`To: ${endDate?.toLocaleDateString()}`, 20, 40);
+          // Add more text or data as needed
+        }
+
+        // Generate table data
+        const tableData = filteredVisitors.map((visitor) => {
+          return [
+            visitor.id,
+            visitor.selectedBuilding,
+            visitor.selectedFloor,
+            visitor.roomCode,
+            visitor.selectedRoomName,
+            visitor.createdAt.toDate().toLocaleDateString(),
+            visitor.createdAtTime.toDate().toLocaleTimeString(),
+            // Add more fields if needed
+          ];
+        });
+
+        // Add table to PDF
+        autoTable(doc, {
+          head: [
+            [
+              "ID",
+              "Building Name",
+              "Floor Level",
+              "Room Code",
+              "Room Name",
+              "Date",
+              "Time",
+            ],
+          ],
+          body: tableData,
+          startY: doc.internal.pageSize.height + 10,
+          styles: {
+            fontSize: 6, // Set font size to 10
+          },
+        });
+
+        // Save PDF
+        doc.save("summary_report.pdf");
+        console.log("Exporting to PDF...");
+      } else {
+        alert("User does not have permission to export.");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      alert("An error occurred. Please try again.");
     }
-
-    // Generate table data
-    const tableData = filteredVisitors.map((visitor) => {
-      return [
-        visitor.id,
-        visitor.selectedBuilding,
-        visitor.selectedFloor,
-        visitor.roomCode,
-        visitor.selectedRoomName,
-        visitor.createdAt.toDate().toLocaleDateString(),
-        visitor.createdAtTime.toDate().toLocaleTimeString(),
-        // Add more fields if needed
-      ];
-    });
-
-    // Add table to PDF
-    autoTable(doc, {
-      head: [
-        [
-          "ID",
-          "Building Name",
-          "Floor Level",
-          "Room Code",
-          "Room Name",
-          "Date",
-          "Time",
-        ],
-      ],
-      body: tableData,
-      startY: doc.internal.pageSize.height + 10,
-      styles: {
-        fontSize: 6, // Set font size to 10
-      },
-    });
-
-    // Save PDF
-    doc.save("summary_report.pdf");
   };
 
   const columns = useMemo<MRT_ColumnDef<Visitor>[]>(

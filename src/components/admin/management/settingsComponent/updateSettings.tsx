@@ -15,6 +15,7 @@ interface ContainerProps {
 
 interface Admin {
   id: string;
+  pin: string;
   email: string;
   displayName: string;
   role: string;
@@ -25,6 +26,7 @@ const UpdateSettings: React.FC<ContainerProps> = ({ name }) => {
   const history = useHistory();
   const { userId } = useParams<{ userId: string }>();
   const [admins, setAdmins] = useState<Admin | null>(null);
+  const [pin, setPin] = useState("");
   const [email, setEmail] = useState("");
   const [displayName, setDisplayName] = useState("");
 
@@ -48,6 +50,7 @@ const UpdateSettings: React.FC<ContainerProps> = ({ name }) => {
           const announcementData = announcementDoc.data() as Admin;
           setAdmins(announcementData);
 
+          setPin(announcementData.pin);
           setEmail(announcementData.email);
           setDisplayName(announcementData.displayName);
           setRole(announcementData.role);
@@ -70,6 +73,7 @@ const UpdateSettings: React.FC<ContainerProps> = ({ name }) => {
 
       const announcementRef = doc(db, "users", userId);
       await updateDoc(announcementRef, {
+        pin,
         email,
         displayName,
         role: selectedRole || role,
@@ -172,7 +176,16 @@ const UpdateSettings: React.FC<ContainerProps> = ({ name }) => {
                       </td>
                     </tr>
                     <tr>
-                      <td colSpan={2}></td>
+                      <th>Pin:</th>
+                      <td>
+                        <input
+                          type="text"
+                          placeholder="Pin"
+                          value={pin}
+                          onChange={(e) => setPin(e.target.value)}
+                          className="w-full max-w-xs input input-bordered"
+                        />
+                      </td>
                     </tr>
                   </tbody>
                 </table>

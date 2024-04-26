@@ -38,7 +38,7 @@ const AdminLayout: React.FC<ContainerProps> = ({ name }) => {
             .catch((error) => {
               console.error("Error signing out:", error);
             });
-        }, 60000 * 5) // 60000 milliseconds = 1 minute
+        }, 60000) // 60000 milliseconds = 1 minute
       );
     };
 
@@ -54,23 +54,22 @@ const AdminLayout: React.FC<ContainerProps> = ({ name }) => {
     };
   }, [inactiveTimer, history]);
 
-  // useEffect(() => {
-  //   onAuthStateChanged(auth, (user) => {
-  //     if (user) {
-  //       // User is signed in, see docs for a list of available properties
-  //       // https://firebase.google.com/docs/reference/js/firebase.User
-  //       const uid = user.uid;
-  //       // ...
-  //       console.log("uid", uid);
-  //       history.push("/Dashboard");
-  //     } else {
-  //       // User is signed out
-  //       // ...
-  //       console.log("user is logged out");
-  //       history.push("/SanBartolome");
-  //     }
-  //   });
-  // }, []);
+  useEffect(() => {
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // User is signed in, see docs for a list of available properties
+        // https://firebase.google.com/docs/reference/js/firebase.User
+        const uid = user.uid;
+        // ...
+        console.log("uid", uid);
+      } else {
+        // User is signed out
+        // ...
+        console.log("user is logged out");
+        history.push("/Login");
+      }
+    });
+  }, []);
 
   // const handleLogout = () => {
   //   signOut(auth)
