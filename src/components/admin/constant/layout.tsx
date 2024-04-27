@@ -18,41 +18,43 @@ interface ContainerProps {
 
 const AdminLayout: React.FC<ContainerProps> = ({ name }) => {
   const history = useHistory();
-  const [inactiveTimer, setInactiveTimer] = useState<NodeJS.Timeout | null>(
-    null
-  ); // State variable to track the inactive timer
 
-  // useEffect to handle user activity
-  useEffect(() => {
-    const handleUserActivity = () => {
-      if (inactiveTimer) {
-        clearTimeout(inactiveTimer);
-      }
-      setInactiveTimer(
-        setTimeout(() => {
-          // Perform logout and redirect to login page
-          signOut(auth)
-            .then(() => {
-              history.push("/Login");
-            })
-            .catch((error) => {
-              console.error("Error signing out:", error);
-            });
-        }, 60000) // 60000 milliseconds = 1 minute
-      );
-    };
+  // const [inactiveTimer, setInactiveTimer] = useState<NodeJS.Timeout | null>(
+  //   null
+  // ); // State variable to track the inactive timer
 
-    window.addEventListener("mousemove", handleUserActivity);
-    window.addEventListener("keypress", handleUserActivity);
+  // // useEffect to handle user activity
+  // useEffect(() => {
+  //   const handleUserActivity = () => {
+  //     if (inactiveTimer) {
+  //       clearTimeout(inactiveTimer);
+  //     }
+  //     setInactiveTimer(
+  //       setTimeout(() => {
+  //         // Perform logout and redirect to login page
+  //         signOut(auth)
+  //           .then(() => {
+  //             history.push("/Login");
+  //           })
+  //           .catch((error) => {
+  //             console.error("Error signing out:", error);
+  //           });
+  //       }, 30000) // 60000 milliseconds = 1 minute
+  //     );
+  //   };
 
-    return () => {
-      if (inactiveTimer) {
-        clearTimeout(inactiveTimer);
-      }
-      window.removeEventListener("mousemove", handleUserActivity);
-      window.removeEventListener("keypress", handleUserActivity);
-    };
-  }, [inactiveTimer, history]);
+  //   window.addEventListener("mousemove", handleUserActivity);
+  //   window.addEventListener("keypress", handleUserActivity);
+
+  //   return () => {
+  //     if (inactiveTimer) {
+  //       clearTimeout(inactiveTimer);
+  //     }
+  //     window.removeEventListener("mousemove", handleUserActivity);
+  //     window.removeEventListener("keypress", handleUserActivity);
+  //   };
+  // }, [inactiveTimer, history]);
+
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {

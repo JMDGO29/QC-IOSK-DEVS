@@ -8,7 +8,26 @@ import { auth, db } from "../../utils/firebase";
 import { useHistory } from "react-router";
 import { NavLink } from "react-router-dom";
 import "../../../assets/css/search.css";
-import { doc, getDoc, getFirestore } from "firebase/firestore";
+import nodemailer from "nodemailer";
+import Modal from "react-modal";
+import { Icon } from "@iconify/react";
+
+const customStyles = {
+  content: {
+    width: '500px',
+    borderRadius: "20px",
+    backgroundColor: "#09223A",
+    top: '50%',
+    left: '50%',
+    right: 'auto',
+    bottom: 'auto',
+    marginRight: '-50%',
+    transform: 'translate(-50%, -50%)',
+  },
+};
+
+// This line is required for the modal accessibility
+Modal.setAppElement("#root");
 
 interface ContainerProps {
   name: string;
@@ -19,7 +38,76 @@ const Login: React.FC<ContainerProps> = ({ name }) => {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [otp, setOtp] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const openModal = () => {
+    setIsModalOpen(true);
+  };
+  
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleEmailChange = (e:any) => {
+    const newEmail = e.target.value;
+    setEmail(newEmail);
+  };
+  
+
+  const sendEmail = async () => {
+    try {
+      const response = await fetch("https://us-central1-qc-iosk-a8f26.cloudfunctions.net/sendEmail", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ recipientEmail: email }), // Replace with the recipient's email
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to send email");
+      }
+  
+      console.log("Email sent successfully");
+      openModal(); // Open the OTP modal
+    } catch (error) {
+      console.error("Error sending email:", error);
+    }
+  };
+
+  const verifyOTP = () => {
+    // Check if OTP is empty
+    if (!otp.trim()) {
+      alert("Please enter OTP.");
+      return;
+    }
+  
+    // Make API call to verify OTP
+    fetch("https://us-central1-qc-iosk-a8f26.cloudfunctions.net/verifyOTP", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ otp: otp, recipientEmail: email }), // Send OTP to server for verification
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to verify OTP");
+        }
+        // OTP verified successfully, proceed to dashboard
+        alert("Login successful");
+        history.push("/Dashboard");
+       
+        setEmail("");
+        setPassword("");
+      })
+      .catch((error) => {
+        console.error("Error verifying OTP:", error);
+        alert("Failed to verify OTP. Please try again.");
+      });
+  };
+  
   const onLogin = (e: { preventDefault: () => void }) => {
     e.preventDefault();
 
@@ -54,25 +142,6 @@ const Login: React.FC<ContainerProps> = ({ name }) => {
             return;
           }
 
-          // Check if email is verified in Firestore
-          let emailVerifiedFirestore = userData.emailVerified;
-
-          // Check if email is verified in the authentication user profile
-          const emailVerifiedAuth = user.emailVerified;
-
-          // If email is verified in the authentication user profile but not in Firestore, update Firestore
-          if (emailVerifiedAuth && !emailVerifiedFirestore) {
-            await userDocRef.update({ emailVerified: true });
-            emailVerifiedFirestore = true; // Update local variable
-          }
-
-          // If email is not verified, send verification email
-          if (!emailVerifiedFirestore) {
-            alert("Please verify your email before logging in.");
-            await sendEmailVerification(user); // Send verification email
-            return;
-          }
-
           // Check if user account is inactive
           if (userData.status === "inactive") {
             alert(
@@ -81,13 +150,8 @@ const Login: React.FC<ContainerProps> = ({ name }) => {
             return;
           }
 
-          // Proceed with login
-          history.push("/Dashboard");
-          console.log(user);
-          alert("Login successful!");
-
-          setEmail("");
-          setPassword("");
+          sendEmail();
+        
         }
       })
       .catch((error) => {
@@ -98,9 +162,9 @@ const Login: React.FC<ContainerProps> = ({ name }) => {
       });
   };
 
-  const handleReload = () => {
-    window.location.replace("/Signup");
-  };
+  // const handleReload = () => {
+  //   window.location.replace("/Signup");
+  // };
 
   return (
     <IonPage>
@@ -133,7 +197,8 @@ const Login: React.FC<ContainerProps> = ({ name }) => {
                       <div className="relative">
                         <input
                           autoComplete="off"
-                          onChange={(e) => setEmail(e.target.value)}
+                          value={email}
+                          onChange={handleEmailChange}
                           type="email"
                           id="email"
                           name="email"
@@ -197,6 +262,43 @@ const Login: React.FC<ContainerProps> = ({ name }) => {
             </div>
           </div>
         </main>
+        <Modal
+        isOpen={isModalOpen}
+        onRequestClose={closeModal}
+        contentLabel="OTP Modal"
+        style={customStyles}
+      >
+        <h2 className="flex-grow text-white">We have sent an OTP on your email. Please enter the OTP before logging in.</h2>
+        <br/>
+        <input
+          autoComplete="off"
+          value={email}
+          onChange={handleEmailChange}
+          type="email"
+          id="email"
+          name="email"
+          className="input input-bordered w-full max-w-xs"
+          required
+          aria-describedby="email-error"
+          hidden
+        />
+        <input
+          type="text"
+          value={otp}
+          onChange={(e) => setOtp(e.target.value)}
+          className="input input-bordered w-full max-w-xs"
+          placeholder="Type here the OTP..."
+        />
+        <br/>
+        <br/>
+        <br/>
+        <div className="mb-5">  
+          <button onClick={verifyOTP} className="btn btn-secondary">Verify OTP</button>{" "}
+          <button onClick={closeModal} className="btn">
+          Close
+          </button>
+        </div>
+      </Modal>
       </IonContent>
     </IonPage>
   );

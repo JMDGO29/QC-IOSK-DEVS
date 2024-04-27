@@ -23,28 +23,6 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
 
   const handleLogout = async () => {
     const auth = getAuth();
-    const user = auth.currentUser;
-
-    // If the user is logged in and their email is verified
-    if (user && user.emailVerified) {
-      try {
-        // Update the emailVerified status in Firestore
-        const userDocRef = doc(db, "users", user.uid);
-        await updateDoc(userDocRef, {
-          emailVerified: false,
-        });
-
-        console.log(
-          "Email verification status updated successfully in Firestore"
-        );
-      } catch (error) {
-        console.error(
-          "Error updating email verification status in Firestore:",
-          error
-        );
-      }
-    }
-
     // Sign out the user
     signOut(auth)
       .then(() => {
