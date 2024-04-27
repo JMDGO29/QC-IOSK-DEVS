@@ -1,6 +1,6 @@
 /*Imported Dependencies */
 
-import { Redirect, Route } from 'react-router-dom';
+import { Redirect, Route } from "react-router-dom";
 
 import { IonReactRouter } from "@ionic/react-router";
 /* Map*/
@@ -14,7 +14,6 @@ import { IonReactRouter } from "@ionic/react-router";
 import Maps from "./pages/maps";
 import Home from "./pages/layout";
 import SearchTab from "./pages/Search";
-
 
 /** Admin Routing */
 import Login from "./components/sidebar/auth/unlogin";
@@ -64,11 +63,14 @@ import Loading from "../src/pages/loading";
 import SBMapScene from "./components/admin/management/manageSBMap";
 import Create3DModel from "../src/components/admin/management/3DMapComponent/create3DModel";
 import Update3DModel from "./components/admin/management/3DMapComponent/update3DMode";
-import Batasan from './components/campus/batasan/Batasan';
-import SanFrancisco from './components/campus/sanFrancisco/SanFrancisco';
-import SanBartolome from './components/campus/sanBartolome/SanBartolome';
-import Layout from './pages/layout';
-import ScreenSaver from './pages/screenSaver';
+import Batasan from "./components/campus/batasan/Batasan";
+import SanFrancisco from "./components/campus/sanFrancisco/SanFrancisco";
+import SanBartolome from "./components/campus/sanBartolome/SanBartolome";
+import Layout from "./pages/layout";
+import ScreenSaver from "./pages/screenSaver";
+import RegistrarOffice from "./components/qr_code/RegistrarOffice";
+import Confirmation from "./components/sidebar/auth/confirmation";
+import UpdateSettings from "./components/admin/management/settingsComponent/updateSettings";
 
 setupIonicReact();
 interface ContainerProps {
@@ -89,8 +91,13 @@ const App: React.FC<ContainerProps> = ({ name }) => (
           <Home name={"Home"} />
         </Route> */}
         <Route exact path="/SanBartolome">
-          <Layout name={"SanBartolome"} buildingName={''} />
+          <Layout name={"SanBartolome"} buildingName={""} />
         </Route>
+
+        <Route exact path="/SanBartolome/Registrar">
+          <RegistrarOffice name={""} />
+        </Route>
+
         <Route exact path="/SanFrancisco">
           <SanFrancisco name={"SanFrancisco"} />
         </Route>
@@ -109,6 +116,10 @@ const App: React.FC<ContainerProps> = ({ name }) => (
 
         <Route path="/Signup">
           <Signup name={"Signup"} />
+        </Route>
+
+        <Route path="/Confirmation">
+          <Confirmation name={"Confirmation"} />
         </Route>
 
         {/* ADMIN ROUTES */}
@@ -130,7 +141,7 @@ const App: React.FC<ContainerProps> = ({ name }) => (
         </Route>
 
         <Route path="/updateRoom/:roomId">
-          <UpdateRoom name={''} />
+          <UpdateRoom name={""} />
         </Route>
 
         <Route exact path="/Building">
@@ -161,17 +172,21 @@ const App: React.FC<ContainerProps> = ({ name }) => (
           <AdminSettings name={"Settings"} />
         </Route>
 
-        <Route path="/Events">
+        <Route exact path="/Settings/:userId">
+          <UpdateSettings name={" Update Settings"} />
+        </Route>
+
+        {/* <Route path="/Events">
           <EventManagement name={"Event Management"} />
-        </Route>
+        </Route> */}
 
-        <Route path="/createEvent">
+        {/* <Route path="/createEvent">
           <CreateEvent name={"Create Events"} />
-        </Route>
+        </Route> */}
 
-        <Route path="/updateEvent/:eventId">
+        {/* <Route path="/updateEvent/:eventId">
           <UpdateEvent name={"Update Events"} />
-        </Route>
+        </Route> */}
 
         <Route path="/createAnnouncement">
           <CreateAnnouncement name={"Create Announcements"} />

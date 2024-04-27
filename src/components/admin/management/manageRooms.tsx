@@ -250,21 +250,21 @@ const RoomManagement: React.FC<ContainerProps> = ({ name }) => {
         },
         size: 150,
       },
-      {
-        accessorKey: "squareMeter",
-        header: "SQ M",
-        size: 150,
-      },
-      {
-        accessorKey: "distance",
-        header: "Distance",
-        size: 150,
-      },
-      {
-        accessorKey: "eta",
-        header: "ETA",
-        size: 150,
-      },
+      // {
+      //   accessorKey: "squareMeter",
+      //   header: "SQ M",
+      //   size: 150,
+      // },
+      // {
+      //   accessorKey: "distance",
+      //   header: "Distance",
+      //   size: 150,
+      // },
+      // {
+      //   accessorKey: "eta",
+      //   header: "ETA",
+      //   size: 150,
+      // },
     ],
     []
   );

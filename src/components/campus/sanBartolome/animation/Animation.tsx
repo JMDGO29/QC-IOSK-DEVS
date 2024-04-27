@@ -9,7 +9,7 @@ import { useHistory } from "react-router";
 import ModelViewer from "../ModelViewer";
 import { collection, getDocs, query } from "firebase/firestore";
 import { db } from "../../../utils/firebase";
-import textGuide from '../../../../data/textGuide';
+import textGuide from "../../../../data/textGuide";
 import Modal from "react-modal";
 import feedback from "../../../../assets/imgs/feedback.png";
 interface ContainerProps {
@@ -44,8 +44,6 @@ interface otherModel {
 const AnimatedModelViewer = ({ modelPath, mixer }: any) => {
   const { scene, animations, cameras } = useGLTF(modelPath) as unknown as GLTF;
 
-
-
   useEffect(() => {
     if (animations && mixer) {
       animations.forEach((clip: THREE.AnimationClip) => {
@@ -55,8 +53,6 @@ const AnimatedModelViewer = ({ modelPath, mixer }: any) => {
       });
     }
   }, [animations, mixer]);
-
-
 
   useFrame((state, delta) => {
     if (mixer) {
@@ -120,16 +116,15 @@ const Animation: React.FC<ContainerProps> = ({
 
   const clickHome = () => {
     window.location.reload();
-  }
-
+  };
 
   const clickQr = () => {
     setQrModal(true);
-  }
+  };
 
   const closeModal = () => {
     setQrModal(false);
-  }
+  };
 
   useEffect(() => {
     let timeoutId: any;
@@ -209,8 +204,12 @@ const Animation: React.FC<ContainerProps> = ({
             <div className="relative flex flex-col justify-between h-full p-3 space-y-3 bg-transparent gap-">
               <div className="flex flex-col w-full h-24 space-y-5 min-h-10">
                 <div className="h-auto p-6 bg-base-300 rounded-3xl ">
-                  <p className="text-xs font-bold text-base-content align-super">Room {selectedRoom}</p>
-                  <p className="text-3xl font-bold text-base-content">{roomName}</p>
+                  <p className="text-xs font-bold text-base-content align-super">
+                    {selectedRoom}
+                  </p>
+                  <p className="text-3xl font-bold text-base-content">
+                    {roomName}
+                  </p>
                 </div>
                 <div className="w-full h-auto max-h-[810px] p-3 bg-base-300 rounded-3xl">
                   <div className="h-auto max-h-full p-6 overflow-y-auto bg-base-300 rounded-3xl ">
@@ -231,8 +230,6 @@ const Animation: React.FC<ContainerProps> = ({
                           <li className="step">Receive Product</li>
                           <li className="step">Receive Product</li>
                           <li className="step">Receive Product</li> */}
-
-
                         </ul>
                       )}
                     </p>
@@ -278,14 +275,11 @@ const Animation: React.FC<ContainerProps> = ({
                       className="w-10 h-10 text-base-content"
                     />
                   </button>
-
-
                 </div>
               </div>
             </div>
             <p className="text-xl font-bold">Room: {roomName}</p>
           </div>
-
         </div>
       </div>
       <Canvas
@@ -301,7 +295,6 @@ const Animation: React.FC<ContainerProps> = ({
           camera={cameras[1]}
         />
         <ambientLight intensity={2} />
-        <Clouds />
         <AnimatedModelViewer
           key={resetScene ? "reset" : "default"}
           modelPath={modelPath}
@@ -331,26 +324,23 @@ const Animation: React.FC<ContainerProps> = ({
         ))}
       </Canvas>
       <audio ref={audioRef} src={voice} />
-    
-        <Modal
-          className="flex items-center justify-center w-screen h-screen transition-all duration-150 ease-in-out bg-black/60"
-          isOpen={qrModal}
-          onRequestClose={() => setQrModal(false)}
-          contentLabel="Alert"
-        >
-          <div className="p-6 shadow-xl h-96 bg-base-100 rounded-2xl w-96">
-            <img src={feedback}/>
-            <div className="flex justify-center space-x-3 mt-14">
-              <button onClick={closeModal} className="btn bg-base-300">
-                <Icon icon="line-md:close-small" className="w-10 h-10" />
-                Close
-              </button>
-            </div>
+
+      <Modal
+        className="flex items-center justify-center w-screen h-screen transition-all duration-150 ease-in-out bg-black/60"
+        isOpen={qrModal}
+        onRequestClose={() => setQrModal(false)}
+        contentLabel="Alert"
+      >
+        <div className="p-6 shadow-xl h-96 bg-base-100 rounded-2xl w-96">
+          <img src={feedback} />
+          <div className="flex justify-center space-x-3 mt-14">
+            <button onClick={closeModal} className="btn bg-base-300">
+              <Icon icon="line-md:close-small" className="w-10 h-10" />
+              Close
+            </button>
           </div>
-        </Modal>
-
-
-
+        </div>
+      </Modal>
     </>
   );
 };

@@ -19,7 +19,8 @@ const CreateAnnouncement: React.FC<ContainerProps> = ({ name }) => {
   const [announcementSource, setAnnouncementSource] = useState<string>("");
   const [announcementDesc, setAnnouncementDesc] = useState<string>("");
   const [startDate, setStartDate] = useState<string>("");
-  const [startTime, setStartTime] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
+  const [status, setStatus] = useState<string>("available");
 
   const AnnouncementManagement = () => {
     history.push("/Announcements");
@@ -34,7 +35,8 @@ const CreateAnnouncement: React.FC<ContainerProps> = ({ name }) => {
         announcementSource,
         announcementDesc,
         startDate,
-        startTime,
+        endDate,
+        status: status,
         createdAt: now,
         updatedAt: now,
       });
@@ -43,7 +45,8 @@ const CreateAnnouncement: React.FC<ContainerProps> = ({ name }) => {
       setAnnouncementSource("");
       setAnnouncementDesc("");
       setStartDate("");
-      setStartTime("");
+      setEndDate("");
+      setStatus("");
 
       console.log("Announcement added successfully!");
       toast.success("Announcement added successfully!");
@@ -115,7 +118,7 @@ const CreateAnnouncement: React.FC<ContainerProps> = ({ name }) => {
                       <th>Start Date:</th>
                       <td>
                         <input
-                          type="date"
+                          type="datetime-local"
                           value={startDate}
                           onChange={(e) => setStartDate(e.target.value)}
                           className="w-full max-w-xs input input-bordered"
@@ -123,12 +126,12 @@ const CreateAnnouncement: React.FC<ContainerProps> = ({ name }) => {
                       </td>
                     </tr>
                     <tr>
-                      <th>Time:</th>
+                      <th>End Date:</th>
                       <td>
                         <input
-                          type="time"
-                          value={startTime}
-                          onChange={(e) => setStartTime(e.target.value)}
+                          type="datetime-local"
+                          value={endDate}
+                          onChange={(e) => setEndDate(e.target.value)}
                           className="w-full max-w-xs input input-bordered"
                         />
                       </td>

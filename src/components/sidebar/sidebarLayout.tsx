@@ -8,7 +8,7 @@ import Reload from "./Reload";
 import { useTranslation } from "react-i18next";
 import Settings from "./auth/adminLogin";
 import Events from "./events";
-import Announcements from './annoucements';
+import Announcements from "./annoucements";
 import Themes from "./themes";
 import About from "./about";
 import { useHistory } from "react-router-dom";
@@ -81,7 +81,6 @@ const SideBar = () => {
     };
   }, []);
 
-
   return (
     <div
       // ref={sidebarRef}
@@ -107,9 +106,7 @@ const SideBar = () => {
               text={t("Search")}
               onClick={ClickSearch}
             />
-            
           </div>
-
 
           <div className="absolute z-10 bottom-5">
             <SideBarIcon
@@ -123,11 +120,11 @@ const SideBar = () => {
               text={t("Announcements")}
               onClick={() => handleContentChange("Announcements")}
             />
-            <SideBarIcon
+            {/* <SideBarIcon
               icon="mdi:events"
               text={t("Events")}
               onClick={() => handleContentChange("Events")}
-            />
+            /> */}
             <Divider />
             <AudioBG name="Minecraft" volume={0} />
             <Reload name={"Refresh"} />
@@ -147,17 +144,16 @@ const SideBar = () => {
                 <Icon icon="uiw:appstore-o" className="w-6 h-6" />
               </div>
               <div className="collapse-content">
-
                 <SideBarIcon
                   icon="fontisto:info"
                   text={t("About")}
                   onClick={() => handleContentChange("About")}
                 />
-                <SideBarIcon
+                {/* <SideBarIcon
                   icon="mdi:administrator"
                   text={t("Admin")}
                   onClick={() => handleContentChange("Settings")}
-                />
+                /> */}
                 {/* <FpsViewer /> */}
               </div>
             </div>
@@ -166,10 +162,11 @@ const SideBar = () => {
       </div>
       <div className="fixed top-0 left-0 z-40 flex w-16 h-full p-2 shadow-lg bg-base-100 backdrop-blur-lg"></div>
       <div
-        className={`transition-all duration-150 ease-in-out w-96  overflow-auto h-screen -left-96 -z-50 ${selectedContent
-          ? "active fixed translate-x-10 left-6 top-0 ease-linear -z-50  bg-base-100"
-          : " -translate-x-3 fixed top-0 -left-16 -z-50 ease-in-out duration-150"
-          }`}
+        className={`transition-all duration-150 ease-in-out w-96  overflow-auto h-screen -left-96 -z-50 ${
+          selectedContent
+            ? "active fixed translate-x-10 left-6 top-0 ease-linear -z-50  bg-base-100"
+            : " -translate-x-3 fixed top-0 -left-16 -z-50 ease-in-out duration-150"
+        }`}
       >
         {/* Contents of Sidebar Items that is Clickable */}
         <div className={`-z-50 duration-500   ${selectedContent}`}>
@@ -180,7 +177,6 @@ const SideBar = () => {
           {selectedContent === "KioskManual" && <KioskManual name={""} />}
           {selectedContent === "About" && <About />}
           {selectedContent === "Themes" && <Themes />}
-
         </div>
       </div>
     </div>

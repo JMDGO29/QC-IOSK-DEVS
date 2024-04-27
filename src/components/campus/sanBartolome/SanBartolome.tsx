@@ -1,7 +1,19 @@
-import React, { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  Suspense,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import ModelViewer from "./ModelViewer";
-import { Billboard, OrbitControls, Stage, Stars, Text } from "@react-three/drei";
+import {
+  Billboard,
+  OrbitControls,
+  Stage,
+  Stars,
+  Text,
+} from "@react-three/drei";
 import Modal from "react-modal";
 import { Icon } from "@iconify/react";
 import {
@@ -17,15 +29,19 @@ import firebaseConfig, { db } from "../../utils/firebase";
 import { initializeApp } from "firebase/app";
 import Animation from "./animation/Animation";
 import { useTranslation } from "react-i18next";
-import { Mesh, BufferGeometry, NormalBufferAttributes, Material, Object3DEventMap } from "three";
-// import UareHere from '/src/assets/models/others/clocation.glb';
+import {
+  Mesh,
+  BufferGeometry,
+  NormalBufferAttributes,
+  Material,
+  Object3DEventMap,
+} from "three";
+import UareHere from "/src/assets/models/others/clocation.glb";
 import yellowQR from "../../../assets/imgs/qr/yellowQR.png";
 import bautistaQR from "../../../assets/imgs/qr/bautistaQR.png";
 import academicQR from "../../../assets/imgs/qr/academicQR.png";
 import belmonteQR from "../../../assets/imgs/qr/belmonteQR.png";
 import pathfinderQR from "../../../assets/imgs/qr/pathfinder.png";
-
-
 
 interface ContainerProps {
   name: string;
@@ -68,7 +84,7 @@ interface Room {
 const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
   const firestore = getFirestore(initializeApp(firebaseConfig));
 
-  const [isNight, setIsNight] = useState(false);
+  // const [isNight, setIsNight] = useState(false);
   const [buildings, setBuildings] = useState<Building[]>([]);
   const [otherModel, setOtherModel] = useState<otherModel[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -90,13 +106,12 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
   );
 
   const qrCodes: { [key: string]: string } = {
-    'Academic Building': academicQR,
-    'veH3FuqACvWr5Rys3ddm': yellowQR,
-    'Bautista Building': bautistaQR,
-    'Belmonte Building': belmonteQR,
+    "Academic Building": academicQR,
+    veH3FuqACvWr5Rys3ddm: yellowQR,
+    "Bautista Building": bautistaQR,
+    "Belmonte Building": belmonteQR,
     // Add more mappings as needed
   };
-
 
   const uniqueFloorLevels = [
     ...new Set(
@@ -135,13 +150,12 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
   const lineNavClick = () => {
     setShowModal(true);
     setDualSelection(false);
-  }
+  };
 
   const arNavClick = () => {
     setArQrModal(true);
     setDualSelection(false);
-  }
-
+  };
 
   const clickFloor = useCallback((floor: string, floorLevel: string) => {
     console.log("Selected floor:", floorLevel);
@@ -221,24 +235,22 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
     fetchRooms();
   }, []);
 
-  useEffect(() => {
-    const checkTime = () => {
-      const currentTime = new Date();
-      const currentHour = currentTime.getHours();
+  // useEffect(() => {
+  //   const checkTime = () => {
+  //     const currentTime = new Date();
+  //     const currentHour = currentTime.getHours();
 
-      const isNightTime = currentHour >= 18 || currentHour < 6;
+  //     const isNightTime = currentHour >= 18 || currentHour < 6;
 
-      setIsNight(isNightTime);
-    };
+  //     setIsNight(isNightTime);
+  //   };
 
-    checkTime();
+  //   checkTime();
 
-    const intervalId = setInterval(checkTime, 1000);
+  //   const intervalId = setInterval(checkTime, 1000);
 
-    return () => clearInterval(intervalId);
-  }, []);
-
-
+  //   return () => clearInterval(intervalId);
+  // }, []);
 
   const handleModelClick = useCallback((buildingName: string) => {
     setSelectedBuilding(buildingName);
@@ -247,11 +259,9 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
     console.log(`Clicked on ${buildingName}`);
   }, []);
   const handleModel2Click = () => {
-
     setDualSelection(true);
     setShowModal(false);
   };
-
 
   const clickAnimation = async (roomCode: string) => {
     try {
@@ -295,6 +305,7 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
   };
 
   const { t } = useTranslation();
+
   const RotatingMesh = () => {
     const meshRef =
       useRef<
@@ -309,17 +320,33 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
       if (meshRef.current) {
         meshRef.current.rotation.y += 0.05;
 
-        meshRef.current.position.y = Math.sin(state.clock.elapsedTime) * 0.8 + 5;
+        meshRef.current.position.y =
+          Math.sin(state.clock.elapsedTime) * 0.8 + 5;
       }
     });
 
     return (
       <>
-
+        <mesh ref={meshRef} position={[35, 0, 46]}>
+          <ModelViewer
+            position={[0, 2, 0]}
+            modelPath={UareHere}
+            mesh={meshRef.current}
+          />
+        </mesh>
+        <Billboard follow position={[35, 11, 46]}>
+          <Text
+            fontSize={1}
+            outlineColor="#000000"
+            outlineOpacity={1}
+            outlineWidth="20%"
+          >
+            {t("You are here.")}
+          </Text>
+        </Billboard>
       </>
     );
   };
-
 
   return (
     <>
@@ -340,13 +367,11 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
         <>
           <Canvas
             camera={{
-              fov: 50,
-              position: [80, 40, 80],
+              fov: 40,
+              position: [-50, 40, 10],
             }}
             className={
-              isNight
-                ? "bg-gradient-to-tr from-stone-950 to-cyan-950"
-                : "bg-gradient-to-tr from-sky-900 to-sky-400"
+              "bg-gradient-to-tr from-sky-900 to-sky-400" //   isNight ? "bg-gradient-to-tr from-stone-950 to-cyan-950" :
             }
             style={{ position: "absolute" }}
           >
@@ -362,12 +387,15 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
               maxDistance={100}
             />
 
-            <Stage shadows environment={isNight ? "night" : "city"}>
-              {isNight ? (
+            <Stage
+              shadows
+              environment={"city"} // isNight ? "night" :
+            >
+              {/* {isNight ? (
                 <>
                   <Stars radius={50} depth={30} count={100} factor={3} />
                 </>
-              ) : null}
+              ) : null} */}
               {otherModel.map((model) => (
                 <ModelViewer
                   key={model.id}
@@ -390,10 +418,8 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                     onClick={() => handleModelClick(building.id)}
                   />
                 ))}
-
-
             </Stage>
-            {/* <RotatingMesh /> */}
+            <RotatingMesh />
           </Canvas>
           <Modal
             className="flex items-center justify-center w-screen h-screen bg-black/60 text-base-content"
@@ -410,10 +436,11 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                         <>
                           <button
                             onClick={handleFloorsClick}
-                            className={`h-10 btn  hover:bg-base-content hover:text-base-300 ${!showOverview
-                              ? "bg-transparent btn-block shadow-none text-lg text-base-content"
-                              : ""
-                              }`}
+                            className={`h-10 btn  hover:bg-base-content hover:text-base-300 ${
+                              !showOverview
+                                ? "bg-transparent btn-block shadow-none text-lg text-base-content"
+                                : ""
+                            }`}
                           >
                             Floors
                           </button>
@@ -435,19 +462,20 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                               .map((floorLevel, index) => (
                                 <button
                                   key={floorLevel}
-                                  className={`w-full h-10 btn ${selectedBuilding === "Bautista Building" &&
+                                  className={`w-full h-10 btn ${
+                                    selectedBuilding === "Bautista Building" &&
                                     ((index === 0 && selectedFloor === "LG") ||
                                       (index === 1 && selectedFloor === "G") ||
                                       (index >= 2 &&
                                         index <= 8 &&
                                         selectedFloor === `F${index}`))
-                                    ? "bg-base-content text-base-100"
-                                    : selectedBuilding !==
-                                      "Bautista Building" &&
-                                      selectedFloor === `F${index + 1}`
+                                      ? "bg-base-content text-base-100"
+                                      : selectedBuilding !==
+                                          "Bautista Building" &&
+                                        selectedFloor === `F${index + 1}`
                                       ? "bg-base-content text-base-100"
                                       : "hover:bg-base-200"
-                                    }`}
+                                  }`}
                                   onClick={() =>
                                     clickFloor(
                                       selectedBuilding,
@@ -455,35 +483,34 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                                         "Bautista Building" && index === 0
                                         ? "LG"
                                         : selectedBuilding ===
-                                          "Bautista Building" && index === 1
-                                          ? "G"
-                                          : selectedBuilding ===
+                                            "Bautista Building" && index === 1
+                                        ? "G"
+                                        : selectedBuilding ===
                                             "Bautista Building" &&
-                                            index >= 2 &&
-                                            index <= 8
-                                            ? `F${index}`
-                                            : `F${index + 1}`
+                                          index >= 2 &&
+                                          index <= 8
+                                        ? `F${index}`
+                                        : `F${index + 1}`
                                     )
                                   }
                                 >
                                   {selectedBuilding === "Bautista Building" &&
-                                    index === 0
+                                  index === 0
                                     ? "LG"
                                     : selectedBuilding ===
-                                      "Bautista Building" && index === 1
-                                      ? "G"
-                                      : selectedBuilding ===
+                                        "Bautista Building" && index === 1
+                                    ? "G"
+                                    : selectedBuilding ===
                                         "Bautista Building" &&
-                                        index >= 2 &&
-                                        index <= 8
-                                        ? `F${index}`
-                                        : `F${index + 1}`}
+                                      index >= 2 &&
+                                      index <= 8
+                                    ? `F${index}`
+                                    : `F${index + 1}`}
                                 </button>
                               ))}
                           </div>
                         </div>
                       )}
-
                     </div>
                   )}
                 </div>
@@ -497,10 +524,11 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                               ? handleFloorsClick
                               : handleOverviewClick
                           }
-                          className={` btn   w-full bg-transparent btn-square shadow-none ${!showOverview
-                            ? "bg-transparent btn-square shadow-none font-semibold text-base-content"
-                            : ""
-                            }`}
+                          className={` btn   w-full bg-transparent btn-square shadow-none ${
+                            !showOverview
+                              ? "bg-transparent btn-square shadow-none font-semibold text-base-content"
+                              : ""
+                          }`}
                         >
                           {showOverview ? (
                             // Render back icon here
@@ -525,10 +553,11 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                         {buildings.map((building, index) => (
                           <button
                             key={index}
-                            className={`h-10 z-50 bg-base-100 btn btn-block rounded-2xl text-sm ${selectedBuilding === building.buildingName
-                              ? "bg-base-content text-base-100"
-                              : "hover:bg-base-200"
-                              }`}
+                            className={`h-10 z-50 bg-base-100 btn btn-block rounded-2xl text-sm ${
+                              selectedBuilding === building.buildingName
+                                ? "bg-base-content text-base-100"
+                                : "hover:bg-base-200"
+                            }`}
                             onClick={() =>
                               handleModelClick(building.buildingName)
                             }
@@ -548,19 +577,20 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                               .map((floorLevel, index) => (
                                 <button
                                   key={floorLevel}
-                                  className={`w-full h-10 btn ${selectedBuilding === "Bautista Building" &&
+                                  className={`w-full h-10 btn ${
+                                    selectedBuilding === "Bautista Building" &&
                                     ((index === 0 && selectedFloor === "LG") ||
                                       (index === 1 && selectedFloor === "G") ||
                                       (index >= 2 &&
                                         index <= 8 &&
                                         selectedFloor === `F${index}`))
-                                    ? "bg-base-content text-base-100"
-                                    : selectedBuilding !==
-                                      "Bautista Building" &&
-                                      selectedFloor === `F${index + 1}`
+                                      ? "bg-base-content text-base-100"
+                                      : selectedBuilding !==
+                                          "Bautista Building" &&
+                                        selectedFloor === `F${index + 1}`
                                       ? "bg-base-content text-base-100"
                                       : "hover:bg-base-200"
-                                    }`}
+                                  }`}
                                   onClick={() =>
                                     clickFloor(
                                       selectedBuilding,
@@ -568,35 +598,34 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                                         "Bautista Building" && index === 0
                                         ? "LG"
                                         : selectedBuilding ===
-                                          "Bautista Building" && index === 1
-                                          ? "G"
-                                          : selectedBuilding ===
+                                            "Bautista Building" && index === 1
+                                        ? "G"
+                                        : selectedBuilding ===
                                             "Bautista Building" &&
-                                            index >= 2 &&
-                                            index <= 8
-                                            ? `F${index}`
-                                            : `F${index + 1}`
+                                          index >= 2 &&
+                                          index <= 8
+                                        ? `F${index}`
+                                        : `F${index + 1}`
                                     )
                                   }
                                 >
                                   {selectedBuilding === "Bautista Building" &&
-                                    index === 0
+                                  index === 0
                                     ? "Lower Ground Floor"
                                     : selectedBuilding ===
-                                      "Bautista Building" && index === 1
-                                      ? "Ground Floor"
-                                      : selectedBuilding ===
+                                        "Bautista Building" && index === 1
+                                    ? "Ground Floor"
+                                    : selectedBuilding ===
                                         "Bautista Building" &&
-                                        index >= 2 &&
-                                        index <= 8
-                                        ? `F${index}`
-                                        : `F${index + 1}`}
+                                      index >= 2 &&
+                                      index <= 8
+                                    ? `F${index}`
+                                    : `F${index + 1}`}
                                 </button>
                               ))}
                           </div>
                         </div>
                       )}
-
                     </div>
                   )}
                 </div>
@@ -606,10 +635,11 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                     {" "}
                     <button
                       onClick={handleOverviewClick}
-                      className={` rounded-xl text-3xl p-2 font-bold mx-2 mt-4 h-14 hover:bg-base-300 ${showOverview
-                        ? "hover:bg-transparent  text-base-content w-auto mt-4 h-14 mx-4"
-                        : ""
-                        }`}
+                      className={` rounded-xl text-3xl p-2 font-bold mx-2 mt-4 h-14 hover:bg-base-300 ${
+                        showOverview
+                          ? "hover:bg-transparent  text-base-content w-auto mt-4 h-14 mx-4"
+                          : ""
+                      }`}
                     >
                       {selectedBuilding}
                     </button>
@@ -686,9 +716,7 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                         <div className="flex items-center p-6 pt-0 pl-0">
                           <div className="w-full p-6 shadow-inner bg-base-200 h-96 rounded-2xl">
                             <div className="flex w-full h-full ">
-                              <div className="flex flex-col space-y-3 overflow-x-auto">
-
-                              </div>
+                              <div className="flex flex-col space-y-3 overflow-x-auto"></div>
                               <div className="relative flex flex-col items-center justify-center w-full h-5 rounded-2xl ">
                                 <h1 className="text-3xl font-semibold text-base-content">
                                   Details
@@ -703,7 +731,6 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                                       ) {
                                         return (
                                           <div key={building.id}>
-
                                             <p className="text-2xl font-normal">
                                               Building Name:{" "}
                                               <span className="text-2xl font-bold">
@@ -725,7 +752,8 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                                             <p className="text-2xl font-normal">
                                               Estimated Time of Arrival:{" "}
                                               <span className="text-2xl font-bold">
-                                                Average of 4 minutes and 6 seconds
+                                                Average of 4 minutes and 6
+                                                seconds
                                               </span>
                                             </p>
                                             {/* Add more building properties here if needed */}
@@ -746,7 +774,6 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                         <div className="flex flex-col items-center p-0">
                           <div className="w-full p-6 shadow-inner bg-base-200 h-[360px] rounded-3xl">
                             <div className="relative flex flex-col w-full h-full space-y-3">
-
                               <div className="relative text-base-content">
                                 {selectedBuilding &&
                                   selectedFloor &&
@@ -757,21 +784,22 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                                           <h1 className="-mt-2 text-3xl font-bold text-center mb-">
                                             Details
                                           </h1>
-                                          <li>Room Code:
+                                          <li>
+                                            Room Code:
                                             <b> {selectedRoom.roomCode}</b>
                                           </li>
-                                          <li>Room Name:
+                                          <li>
+                                            Room Name:
                                             <b> {selectedRoom.roomName}</b>
                                           </li>
-                                          <li>Floor: {" "}
-                                            <b>
-                                              {selectedRoom.floorLevel}
-                                            </b>
+                                          <li>
+                                            Floor:{" "}
+                                            <b>{selectedRoom.floorLevel}</b>
                                           </li>
-                                          <li>Estimated Time of Arrival:
+                                          {/* <li>Estimated Time of Arrival:
                                             <b> {selectedRoom.eta} N/A</b>
-                                          </li>
-                                          <div className="flex justify-between space-x-3">
+                                          </li> */}
+                                          {/* <div className="flex justify-between space-x-3">
                                             <li> Distance:
                                               <b>
                                                 {selectedRoom.distance}
@@ -782,23 +810,22 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                                                 {selectedRoom.squareMeter}
                                               </b>
                                             </li>
-                                          </div>
-                                          <div className="flex justify-between space-x-3">
+                                          </div> */}
+                                          {/* <div className="flex justify-between space-x-3">
                                             <li>
                                               Status: <b> {selectedRoom.status}</b>
                                             </li>
-                                          </div>
-
-
+                                          </div> */}
                                         </ul>
-
                                       </div>
                                       <div className="absolute w-full mt-4 rounded-2xl">
                                         <button
                                           className=" btn bg-base-content text-base-100 btn-block"
-                                          onClick={() => clickAnimation(
-                                            selectedRoom.roomCode
-                                          )}
+                                          onClick={() =>
+                                            clickAnimation(
+                                              selectedRoom.roomCode
+                                            )
+                                          }
                                         >
                                           Get Direction {selectedRoom.roomCode}
                                         </button>
@@ -840,17 +867,28 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
           >
             <div className="w-auto h-auto p-6 shadow-xl bg-base-100 rounded-2xl">
               <div className="flex items-center justify-between space-x-10">
-              <p className="text-3xl font-semibold text-center">Select Navigation Method</p>
-              <button onClick={closeModal} className="btn btn-square bg-base-300">
+                <p className="text-3xl font-semibold text-center">
+                  Select Navigation Method
+                </p>
+                <button
+                  onClick={closeModal}
+                  className="btn btn-square bg-base-300"
+                >
                   <Icon icon="line-md:close-small" className="w-10 h-10" />
                 </button>
               </div>
               <div className="flex justify-around mt-10">
-                <button onClick={lineNavClick} className="flex flex-col w-40 h-40 rounded-2xl btn bg-base-300">
+                <button
+                  onClick={lineNavClick}
+                  className="flex flex-col w-40 h-40 rounded-2xl btn bg-base-300"
+                >
                   <Icon icon="mingcute:navigation-line" className="w-20 h-20" />
                   <p className="">Line Navigation</p>
                 </button>
-                <button onClick={arNavClick} className="flex flex-col w-40 h-40 btn rounded-2xl bg-base-300">
+                <button
+                  onClick={arNavClick}
+                  className="flex flex-col w-40 h-40 btn rounded-2xl bg-base-300"
+                >
                   <Icon icon="mynaui:ar" className="w-20 h-20" />
                   <p className="">Augmented Reality Navigation</p>
                 </button>
@@ -865,41 +903,58 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
           >
             <div className="flex w-auto h-auto p-6 shadow-xl bg-base-100 rounded-2xl">
               <section className="py-6 pt-0">
-             <div className="flex items-center justify-between">
-             <p className="text-3xl font-bold text-center text-primary drop-shadow-md">Augmented Reality Navigation</p>
-              <div className="flex justify-center space-x-3">
-                <button onClick={closeModal} className="btn btn-square bg-base-300">
-                  <Icon icon="line-md:close-small" className="w-10 h-10" />
-                </button>
-              </div>
-             </div>
+                <div className="flex items-center justify-between">
+                  <p className="text-3xl font-bold text-center text-primary drop-shadow-md">
+                    Augmented Reality Navigation
+                  </p>
+                  <div className="flex justify-center space-x-3">
+                    <button
+                      onClick={closeModal}
+                      className="btn btn-square bg-base-300"
+                    >
+                      <Icon icon="line-md:close-small" className="w-10 h-10" />
+                    </button>
+                  </div>
+                </div>
                 <div className="container flex flex-col justify-around p-4 mx-auto text-center md:p-10 lg:flex-row">
-                  
                   <div className="flex flex-col justify-center lg:text-left">
-                    
-                    <p className="text-sm font-medium tracking-widest uppercase text-base-content"><span className="font-bold text-primary">first,</span><br /> make sure you have already<br/> installed this app</p>
-                    <h1 className="text-3xl font-medium title-font">Google Services for AR</h1>
+                    <p className="text-sm font-medium tracking-widest uppercase text-base-content">
+                      <span className="font-bold text-primary">first,</span>
+                      <br /> make sure you have already
+                      <br /> installed this app
+                    </p>
+                    <h1 className="text-3xl font-medium title-font">
+                      Google Services for AR
+                    </h1>
                   </div>
                   <div className="flex flex-col items-center justify-center flex-shrink-0 mt-6 space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4 lg:ml-4 lg:mt-0 lg:justify-end">
                     <button className="inline-flex items-center px-6 py-3 rounded-lg pointer-events-none disabled bg-primary">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="fill-current w-7 h-7">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        className="fill-current w-7 h-7"
+                      >
                         <path d="M 5.4160156 2.328125 L 12.935547 10.158203 C 13.132547 10.363203 13.45925 10.363203 13.65625 10.158203 L 15.179688 8.5742188 C 15.405688 8.3392188 15.354312 7.956875 15.070312 7.796875 C 11.137313 5.571875 6.2620156 2.811125 5.4160156 2.328125 z M 3.140625 2.8476562 C 3.055625 3.0456562 3 3.2629063 3 3.5039062 L 3 20.591797 C 3 20.788797 3.044375 20.970625 3.109375 21.140625 L 11.576172 12.324219 C 11.762172 12.131219 11.762172 11.826813 11.576172 11.632812 L 3.140625 2.8476562 z M 17.443359 9.2578125 C 17.335484 9.2729375 17.233297 9.32375 17.154297 9.40625 L 15.015625 11.632812 C 14.829625 11.825812 14.829625 12.130219 15.015625 12.324219 L 17.134766 14.529297 C 17.292766 14.694297 17.546141 14.729188 17.744141 14.617188 C 19.227141 13.777188 20.226563 13.212891 20.226562 13.212891 C 20.725562 12.909891 21.007 12.443547 21 11.935547 C 20.992 11.439547 20.702609 10.981938 20.224609 10.710938 C 20.163609 10.676937 19.187672 10.124359 17.763672 9.3183594 C 17.664172 9.2623594 17.551234 9.2426875 17.443359 9.2578125 z M 13.296875 13.644531 C 13.165875 13.644531 13.034047 13.696328 12.935547 13.798828 L 5.4746094 21.566406 C 6.7566094 20.837406 11.328781 18.249578 15.050781 16.142578 C 15.334781 15.981578 15.386156 15.599281 15.160156 15.363281 L 13.65625 13.798828 C 13.55775 13.696328 13.427875 13.644531 13.296875 13.644531 z"></path>
                       </svg>
                       <span className="flex flex-col items-start ml-4 leading-none">
                         <span className="mb-1 text-xs">Download it on</span>
-                        <span className="font-semibold title-font">Google Play Store</span>
+                        <span className="font-semibold title-font">
+                          Google Play Store
+                        </span>
                       </span>
                     </button>
-
-
                   </div>
-
                 </div>
                 <div>
                   <div className="flex items-center justify-center px-6">
                     <div className="flex flex-col justify-center p-14 lg:text-left">
-                      <p className="mb-1 text-sm font-medium tracking-widest uppercase text-base-content"><span className="font-bold text-primary">Second,</span> <br /> Download the Pathfinder App by</p>
-                      <h1 className="py-2 text-3xl font-medium leading-tight title-font">Scanning the QR Code </h1>
+                      <p className="mb-1 text-sm font-medium tracking-widest uppercase text-base-content">
+                        <span className="font-bold text-primary">Second,</span>{" "}
+                        <br /> Download the Pathfinder App by
+                      </p>
+                      <h1 className="py-2 text-3xl font-medium leading-tight title-font">
+                        Scanning the QR Code{" "}
+                      </h1>
                     </div>
                     <div>
                       <img src={pathfinderQR} className="h-72 w-72" />
@@ -907,23 +962,34 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                   </div>
                   <div className="flex items-center justify-between p-10">
                     <div className="flex flex-col justify-between space-x-10 lg:text-left">
-                      <p className="mb-1 text-sm font-medium tracking-widest uppercase text-base-content"><span className="font-bold text-primary">Third,</span><br /> Open the PathFinder App and</p>
-                      <h1 className="py-2 text-3xl font-medium leading-tight title-font">Scan the QR Code <br/>and start Navigating. </h1>
+                      <p className="mb-1 text-sm font-medium tracking-widest uppercase text-base-content">
+                        <span className="font-bold text-primary">Third,</span>
+                        <br /> Open the PathFinder App and
+                      </p>
+                      <h1 className="py-2 text-3xl font-medium leading-tight title-font">
+                        Scan the QR Code <br />
+                        and start Navigating.{" "}
+                      </h1>
                     </div>
                     <div>
                       {selectedBuilding && qrCodes[selectedBuilding] ? (
-                        <img src={qrCodes[selectedBuilding]} alt={`QR Code for ${selectedBuilding}`} />
+                        <img
+                          src={qrCodes[selectedBuilding]}
+                          alt={`QR Code for ${selectedBuilding}`}
+                        />
                       ) : (
                         <div className="flex flex-col items-center justify-center space-y-2">
-                           <Icon icon="ph:cloud-warning" className="w-40 h-40" />
-                          <p>No QR code available for <br/>the selected building</p>
-                          </div>
+                          <Icon icon="ph:cloud-warning" className="w-40 h-40" />
+                          <p>
+                            No QR code available for <br />
+                            the selected building
+                          </p>
+                        </div>
                       )}
                     </div>
                   </div>
                 </div>
               </section>
-             
             </div>
           </Modal>
           {/* Modal for General Building Information */}

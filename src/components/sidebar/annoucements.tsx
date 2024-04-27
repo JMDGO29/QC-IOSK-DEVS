@@ -1,7 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { themeChange } from "theme-change";
 import { useHistory } from "react-router-dom";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  query,
+  orderBy,
+  onSnapshot,
+} from "firebase/firestore";
 import { db } from "../utils/firebase";
 import { useTranslation } from "react-i18next";
 import Modal from "react-modal";
@@ -19,7 +25,8 @@ interface Announcement {
   announcementSource: string;
   announcementDesc: string;
   startDate: string;
-  startTime: string;
+  endDate: string;
+  status: string;
 }
 
 const Announcements: React.FC<ContainerProps> = ({ name }) => {
@@ -50,20 +57,37 @@ const Announcements: React.FC<ContainerProps> = ({ name }) => {
   });
 
   useEffect(() => {
+    let unsubscribeAnnouncements: () => void;
+
     const fetchAnnouncements = async () => {
       try {
         const announcementsCollection = collection(db, "announcements");
-        const queryAnnouncement = query(
-          announcementsCollection,
-          orderBy("createdAt", "desc")
+        const queryAnnouncement = query(announcementsCollection);
+
+        unsubscribeAnnouncements = onSnapshot(
+          queryAnnouncement,
+          (querySnapshot) => {
+            const announcementData = querySnapshot.docs
+              .map((doc) => {
+                const data = doc.data();
+                const announcement: Announcement = {
+                  id: doc.id,
+                  name: data.name,
+                  announcementSource: data.announcementSource,
+                  announcementDesc: data.announcementDesc,
+                  startDate: data.startDate,
+                  endDate: data.endDate,
+                  status: data.status,
+                };
+                return announcement;
+              })
+              .filter(
+                (announcement) => announcement.status !== "not available"
+              );
+            setAnnouncements(announcementData);
+            setLoading(false);
+          }
         );
-        const announcementsSnapshot = await getDocs(queryAnnouncement);
-        const announcementsData = announcementsSnapshot.docs.map((doc) => {
-          const announcementsData = doc.data() as Announcement;
-          return { ...announcementsData, id: doc.id } as Announcement;
-        });
-        setAnnouncements(announcementsData);
-        setLoading(false);
       } catch (error) {
         console.error("Error fetching announcements: ", error);
         setLoading(false);
@@ -71,7 +95,28 @@ const Announcements: React.FC<ContainerProps> = ({ name }) => {
     };
 
     fetchAnnouncements();
+
+    return () => {
+      if (unsubscribeAnnouncements) {
+        unsubscribeAnnouncements();
+      }
+    };
   }, []);
+
+  function formatDate(dateTimeString: any) {
+    const date = new Date(dateTimeString);
+    const formattedDate = `${date.getFullYear()}-${padZero(
+      date.getMonth() + 1
+    )}-${padZero(date.getDate())}`;
+    const formattedTime = `${padZero(date.getHours())}:${padZero(
+      date.getMinutes()
+    )}`;
+    return `${formattedDate} - Time: ${formattedTime}`;
+  }
+
+  function padZero(num: any) {
+    return num.toString().padStart(2, "0");
+  }
 
   return (
     <>
@@ -85,7 +130,6 @@ const Announcements: React.FC<ContainerProps> = ({ name }) => {
         {loading ? (
           <>
             <div className="h-20 px-3 pt-10 pr-6  w-96 rounded-2xl">
-
               <div className="flex flex-col gap-4">
                 <div className="w-full skeleton h-28 rounded-2xl"></div>
                 <div className="w-full skeleton h-28 rounded-2xl"></div>
@@ -101,15 +145,25 @@ const Announcements: React.FC<ContainerProps> = ({ name }) => {
           <div>
             {announcements.length === 0 ? (
               <div className="px-3 mt-10 space-y-4">
-                <div role="alert" className="flex justify-center shadow-inner alert rounded-2xl h-28">
-                <Icon icon="uil:comment-info-alt" className="w-8 h-8" />
-                  <span className="text-xl">{t("No announcements found.")}</span>
+                <div
+                  role="alert"
+                  className="flex justify-center shadow-inner alert rounded-2xl h-28"
+                >
+                  <Icon icon="uil:comment-info-alt" className="w-8 h-8" />
+                  <span className="text-xl">
+                    {t("No announcements found.")}
+                  </span>
                 </div>
               </div>
             ) : (
               <div className="px-3 mt-10 space-y-4">
                 {announcements.map((announcement, index) => (
-                  <div role="alert" className="shadow-lg cursor-pointer alert rounded-2xl" key={index} onClick={() => openModal(announcement)}>
+                  <div
+                    role="alert"
+                    className="shadow-lg cursor-pointer alert rounded-2xl"
+                    key={index}
+                    onClick={() => openModal(announcement)}
+                  >
                     <Icon icon="uil:comment-info-alt" className="w-8 h-8" />
                     <div>
                       <h3 className="font-bold">{announcement.name}</h3>
@@ -150,8 +204,7 @@ const Announcements: React.FC<ContainerProps> = ({ name }) => {
                   <p>{selectedAnnouncement.announcementSource}</p>
                   <p>{selectedAnnouncement.announcementDesc}</p>
                   <div className="absolute bottom-0 flex justify-between space-x-6">
-                    <p>Date: {selectedAnnouncement.startDate}</p>
-                    <p>Time: {selectedAnnouncement.startTime}</p>
+                    <p>Date: {formatDate(selectedAnnouncement.startDate)}</p>
                   </div>
                 </div>
                 <button
