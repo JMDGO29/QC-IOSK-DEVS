@@ -3,7 +3,7 @@ import AdminSideBar from "../../constant/adminSidebar";
 import AdminHeader from "../../constant/adminHeader";
 import { useHistory, useParams } from "react-router";
 import { useEffect, useState } from "react";
-import { doc, getDoc, serverTimestamp, updateDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, query, serverTimestamp, updateDoc, where } from "firebase/firestore";
 import { db } from "../../../utils/firebase";
 import { toast } from "react-toastify";
 import { Icon } from "@iconify/react";
@@ -21,6 +21,8 @@ interface Announcement {
   startDate: string;
   endDate: string;
   status: string;
+  roomName: string;
+  eventName: string;
 }
 
 const UpdateAnnouncement: React.FC<ContainerProps> = ({ name }) => {
@@ -34,6 +36,8 @@ const UpdateAnnouncement: React.FC<ContainerProps> = ({ name }) => {
   const [endDate, setEndDate] = useState<string>("");
   const [status, setStatus] = useState<string>("");
   const [selectedStatus, setSelectedStatus] = useState<string>("");
+  const [roomName, setRoomName] = useState<string>("");
+  const [eventName, setEventName] = useState<string>("");
 
   const AnnouncementManagement = () => {
     history.push("/Announcements");
@@ -55,6 +59,8 @@ const UpdateAnnouncement: React.FC<ContainerProps> = ({ name }) => {
           setStartDate(announcementData.startDate);
           setEndDate(announcementData.endDate);
           setStatus(announcementData.status);
+          setRoomName(announcementData.roomName);
+          setEventName(announcementData.eventName);
         } else {
           console.error("Announcement not found");
           history.push("/Announcements");
@@ -80,16 +86,90 @@ const UpdateAnnouncement: React.FC<ContainerProps> = ({ name }) => {
         endDate,
         status: selectedStatus || status,
         updatedAt: now,
+        roomName,
+        eventName,
       });
 
       console.log("Announcement updated successfully!");
       toast.success("Announcement updated successfully!");
+
+      // If the selected status is "ONGOING EVENT", update roomData
+      if ((selectedStatus || status) === "Ongoing event") {
+        const roomDataQuery = query(
+          collection(db, "roomData"),
+          where("roomCode", "==", roomName)
+        );
+        const roomDataSnapshot = await getDocs(roomDataQuery);
+        roomDataSnapshot.forEach(async (doc) => {
+          try {
+            await updateDoc(doc.ref, {
+              status: "Ongoing event",
+              // You can add more fields to update here if needed
+            });
+            console.log(
+              `Room data for room '${roomName}' updated successfully.`
+            );
+          } catch (error) {
+            console.error(
+              `Error updating room data for room '${roomName}': `,
+              error
+            );
+          }
+        });
+      } else if ((selectedStatus || status) === "available") {
+        const roomDataQuery = query(
+          collection(db, "roomData"),
+          where("roomCode", "==", roomName)
+        );
+        const roomDataSnapshot = await getDocs(roomDataQuery);
+        roomDataSnapshot.forEach(async (doc) => {
+          try {
+            await updateDoc(doc.ref, {
+              status: "available",
+              // You can add more fields to update here if needed
+            });
+            console.log(
+              `Room data for room '${roomName}' updated to 'Available' successfully.`
+            );
+          } catch (error) {
+            console.error(
+              `Error updating room data for room '${roomName}': `,
+              error
+            );
+          }
+        });
+      } else {
+        // If the status is not "Ongoing event" or "Available", update the status to "Not available"
+        const roomDataQuery = query(
+          collection(db, "roomData"),
+          where("roomCode", "==", roomName)
+        );
+        const roomDataSnapshot = await getDocs(roomDataQuery);
+        roomDataSnapshot.forEach(async (doc) => {
+          try {
+            await updateDoc(doc.ref, {
+              status: "not available",
+              // You can add more fields to update here if needed
+            });
+            console.log(
+              `Room data for room '${roomName}' updated to 'Not available' successfully.`
+            );
+          } catch (error) {
+            console.error(
+              `Error updating room data for room '${roomName}': `,
+              error
+            );
+          }
+        });
+      }
+
       history.push("/Announcements");
     } catch (error) {
       console.error("Error updating announcement: ", error);
       alert("Error on updating announcement.");
     }
   };
+  
 
   const handleStatutsChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selected = event.target.value;
@@ -185,8 +265,33 @@ const UpdateAnnouncement: React.FC<ContainerProps> = ({ name }) => {
                           onChange={handleStatutsChange}
                         >
                           <option value="available">Available</option>
+                          <option value="Ongoing event">Ongoing Event</option>
                           <option value="not available">Not Available</option>
                         </select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>Room Name:</th>
+                      <td>
+                        <input
+                          type="text"
+                          placeholder="Room Name"
+                          value={roomName}
+                          onChange={(e) => setRoomName(e.target.value)}
+                          className="w-full max-w-xs input input-bordered"
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>Event Name:</th>
+                      <td>
+                        <input
+                          type="text"
+                          placeholder="Room Name"
+                          value={eventName}
+                          onChange={(e) => setEventName(e.target.value)}
+                          className="w-full max-w-xs input input-bordered"
+                        />
                       </td>
                     </tr>
                     <tr>

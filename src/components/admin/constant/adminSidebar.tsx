@@ -62,6 +62,12 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
 
       // Check if current user is admin or superAdmin
       if (currentUserRole === "admin" || currentUserRole === "superAdmin") {
+          // Check if the current route is already the dashboard
+          if (window.location.pathname === "/Building") {
+          document.body.classList.remove("blurred-background");
+          return;
+        }
+
         // Prompt user for PIN
         const pinInput = prompt("Enter your PIN:");
         if (pinInput === null) {
@@ -81,11 +87,11 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
           document.body.classList.remove("blurred-background");
         }
       } else {
-        alert("User does not have permission to create user.");
+        alert("User does not have permission.");
         document.body.classList.remove("blurred-background");
       }
     } catch (error) {
-      console.error("Error creating user:", error);
+      console.error("Error on permission:", error);
       document.body.classList.remove("blurred-background");
     }
   };
@@ -116,6 +122,11 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
 
       // Check if current user is admin or superAdmin
       if (currentUserRole === "admin" || currentUserRole === "superAdmin") {
+          // Check if the current route is already the dashboard
+          if (window.location.pathname === "/Rooms") {
+          document.body.classList.remove("blurred-background");
+          return;
+        }
         // Prompt user for PIN
         const pinInput = prompt("Enter your PIN:");
         if (pinInput === null) {
@@ -135,11 +146,11 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
           document.body.classList.remove("blurred-background");
         }
       } else {
-        alert("User does not have permission to create user.");
+        alert("User does not have permission.");
         document.body.classList.remove("blurred-background");
       }
     } catch (error) {
-      console.error("Error creating user:", error);
+      console.error("Error on permission:", error);
       document.body.classList.remove("blurred-background");
     }
   };
@@ -170,6 +181,12 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
 
       // Check if current user is admin or superAdmin
       if (currentUserRole === "admin" || currentUserRole === "superAdmin") {
+         // Check if the current route is already the dashboard
+        if (window.location.pathname === "/Dashboard") {
+          document.body.classList.remove("blurred-background");
+          return;
+        }
+
         // Prompt user for PIN
         const pinInput = prompt("Enter your PIN:");
         if (pinInput === null) {
@@ -189,11 +206,11 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
           document.body.classList.remove("blurred-background");
         }
       } else {
-        alert("User does not have permission to create user.");
+        alert("User does not have permission.");
         document.body.classList.remove("blurred-background");
       }
     } catch (error) {
-      console.error("Error creating user:", error);
+      console.error("Error on permission:", error);
       document.body.classList.remove("blurred-background");
     }
   };
@@ -224,6 +241,11 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
 
       // Check if current user is admin or superAdmin
       if (currentUserRole === "admin" || currentUserRole === "superAdmin") {
+          // Check if the current route is already the dashboard
+          if (window.location.pathname === "/Announcements") {
+          document.body.classList.remove("blurred-background");
+          return;
+        }
         // Prompt user for PIN
         const pinInput = prompt("Enter your PIN:");
         if (pinInput === null) {
@@ -243,11 +265,11 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
           document.body.classList.remove("blurred-background");
         }
       } else {
-        alert("User does not have permission to create user.");
+        alert("User does not have permission.");
         document.body.classList.remove("blurred-background");
       }
     } catch (error) {
-      console.error("Error creating user:", error);
+      console.error("Error on permission:", error);
       document.body.classList.remove("blurred-background");
     }
   };
@@ -278,6 +300,11 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
 
       // Check if current user is admin or superAdmin
       if (currentUserRole === "admin" || currentUserRole === "superAdmin") {
+          // Check if the current route is already the dashboard
+          if (window.location.pathname === "/Archive") {
+          document.body.classList.remove("blurred-background");
+          return;
+        }
         // Prompt user for PIN
         const pinInput = prompt("Enter your PIN:");
         if (pinInput === null) {
@@ -297,11 +324,70 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
           document.body.classList.remove("blurred-background");
         }
       } else {
-        alert("User does not have permission to create user.");
+        alert("User does not have permission.");
         document.body.classList.remove("blurred-background");
       }
     } catch (error) {
-      console.error("Error creating user:", error);
+      console.error("Error on permission:", error);
+      document.body.classList.remove("blurred-background");
+    }
+  };
+
+  const User = async () => {
+    try {
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        // User not authenticated
+        alert("User not authenticated.");
+        return;
+      }
+
+      // Add blurred background class to body
+      document.body.classList.add("blurred-background");
+
+      // Fetch current user's role and PIN
+      const currentUserDocRef = doc(db, "users", currentUser.uid);
+      const currentUserDocSnapshot = await getDoc(currentUserDocRef);
+      if (!currentUserDocSnapshot.exists()) {
+        // Current user data not found
+        alert("User data not found.");
+        return;
+      }
+      const currentUserData = currentUserDocSnapshot.data();
+      const currentUserRole = currentUserData.role;
+      const currentUserPin = currentUserData.pin;
+
+      // Check if current user is admin or superAdmin
+      if (currentUserRole === "admin" || currentUserRole === "superAdmin") {
+          // Check if the current route is already the dashboard
+          if (window.location.pathname === "/Settings") {
+          document.body.classList.remove("blurred-background");
+          return;
+        }
+        // Prompt user for PIN
+        const pinInput = prompt("Enter your PIN:");
+        if (pinInput === null) {
+          document.body.classList.remove("blurred-background");
+          return;
+        }
+
+        // Verify PIN
+        if (pinInput !== currentUserPin) {
+          alert("Incorrect PIN. Export action canceled.");
+          document.body.classList.remove("blurred-background");
+          return;
+        }
+
+        if (pinInput === currentUserPin) {
+          history.replace("/Settings");
+          document.body.classList.remove("blurred-background");
+        }
+      } else {
+        alert("User does not have permission.");
+        document.body.classList.remove("blurred-background");
+      }
+    } catch (error) {
+      console.error("Error on permission:", error);
       document.body.classList.remove("blurred-background");
     }
   };
@@ -367,15 +453,17 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
         data-hs-accordion-always-open
       >
         <ul className="space-y-1.5 flex flex-col flex-grow">
-          <li>
-            <button
-              className="flex items-center gap-x-3.5 py-2 px-2.5 text-sm rounded-lg text-base-content hover:bg-base-100 dark:focus:outline-none"
-              onClick={Dashboard}
-            >
-              <Icon icon="lucide:layout-dashboard" className="h-7 w-7" />
-              Dashboard
-            </button>
-          </li>
+          {hasSuperAdminRole && (
+            <li>
+              <button
+                className="flex items-center gap-x-3.5 py-2 px-2.5 text-sm rounded-lg text-base-content hover:bg-base-100 dark:focus:outline-none"
+                onClick={Dashboard}
+              >
+                <Icon icon="lucide:layout-dashboard" className="h-7 w-7" />
+                Dashboard
+              </button>
+            </li>
+          )}
           {/* <li>
             <NavLink
               className="w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm  rounded-lg hover:bg-base-100 text-base-content dark:focus:outline-none"
@@ -454,28 +542,31 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
               M.I.K.E
             </button>
           </li>
-          <li>
-            <button
-              className="w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm  rounded-lg hover:bg-base-100 text-base-content dark:focus:outline-none"
-              onClick={Archive}
-            >
-              <Icon
-                icon="material-symbols:archive-outline"
-                className="w-7 h-7"
-              />
-              Archives
-            </button>
-          </li>
 
           {hasSuperAdminRole && (
             <li>
-              <NavLink
+              <button
+                className="w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm  rounded-lg hover:bg-base-100 text-base-content dark:focus:outline-none"
+                onClick={Archive}
+              >
+                <Icon
+                  icon="material-symbols:archive-outline"
+                  className="w-7 h-7"
+                />
+                Archives
+              </button>
+            </li>
+          )}
+
+          {hasSuperAdminRole && (
+            <li>
+              <button
                 className="w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm rounded-lg hover:bg-base-100 text-base-content dark:focus:outline-none"
-                to="/Settings"
+                onClick={User}
               >
                 <Icon icon="ci:settings" className="w-7 h-7" />
                 User Settings
-              </NavLink>
+              </button>
             </li>
           )}
         </ul>

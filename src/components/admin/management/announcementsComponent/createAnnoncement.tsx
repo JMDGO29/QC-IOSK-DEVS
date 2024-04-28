@@ -21,6 +21,8 @@ const CreateAnnouncement: React.FC<ContainerProps> = ({ name }) => {
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
   const [status, setStatus] = useState<string>("available");
+  const [roomName, setRoomName] = useState<string>("");
+  const [eventName, setEventName] = useState<string>("");
 
   const AnnouncementManagement = () => {
     history.push("/Announcements");
@@ -37,6 +39,8 @@ const CreateAnnouncement: React.FC<ContainerProps> = ({ name }) => {
         startDate,
         endDate,
         status: status,
+        roomName,
+        eventName,
         createdAt: now,
         updatedAt: now,
       });
@@ -47,6 +51,8 @@ const CreateAnnouncement: React.FC<ContainerProps> = ({ name }) => {
       setStartDate("");
       setEndDate("");
       setStatus("");
+      setRoomName("");
+      setEventName("");
 
       console.log("Announcement added successfully!");
       toast.success("Announcement added successfully!");
@@ -132,6 +138,30 @@ const CreateAnnouncement: React.FC<ContainerProps> = ({ name }) => {
                           type="datetime-local"
                           value={endDate}
                           onChange={(e) => setEndDate(e.target.value)}
+                          className="w-full max-w-xs input input-bordered"
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>Room Name:</th>
+                      <td>
+                        <input
+                          type="text"
+                          value={roomName}
+                          placeholder="Room Name"
+                          onChange={(e) => setRoomName(e.target.value)}
+                          className="w-full max-w-xs input input-bordered"
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>Event Name:</th>
+                      <td>
+                        <input
+                          type="text"
+                          value={eventName}
+                          placeholder="Event Name"
+                          onChange={(e) => setEventName(e.target.value)}
                           className="w-full max-w-xs input input-bordered"
                         />
                       </td>

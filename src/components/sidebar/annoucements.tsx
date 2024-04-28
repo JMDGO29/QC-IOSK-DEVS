@@ -27,6 +27,8 @@ interface Announcement {
   startDate: string;
   endDate: string;
   status: string;
+  roomName: string;
+  eventName: string;
 }
 
 const Announcements: React.FC<ContainerProps> = ({ name }) => {
@@ -78,6 +80,8 @@ const Announcements: React.FC<ContainerProps> = ({ name }) => {
                   startDate: data.startDate,
                   endDate: data.endDate,
                   status: data.status,
+                  roomName: data.roomName,
+                  eventName: data.eventName
                 };
                 return announcement;
               })
@@ -105,18 +109,49 @@ const Announcements: React.FC<ContainerProps> = ({ name }) => {
 
   function formatDate(dateTimeString: any) {
     const date = new Date(dateTimeString);
-    const formattedDate = `${date.getFullYear()}-${padZero(
-      date.getMonth() + 1
-    )}-${padZero(date.getDate())}`;
-    const formattedTime = `${padZero(date.getHours())}:${padZero(
-      date.getMinutes()
-    )}`;
+    const month = padZero(date.getMonth() + 1);
+    const day = padZero(date.getDate());
+    const year = date.getFullYear();
+    const formattedDate = `${month} ${day} ${year}`;
+
+    let hours = date.getHours();
+    const period = hours < 12 ? "AM" : "PM";
+    if (hours === 0) {
+      hours = 12;
+    } else if (hours > 12) {
+      hours -= 12;
+    }
+
+    const minutes = padZero(date.getMinutes());
+    const formattedTime = `${padZero(hours)}:${minutes} ${period}`;
+
     return `${formattedDate} - Time: ${formattedTime}`;
+  }
+
+  function formatTime(timeString: any) {
+    const date = new Date(timeString);
+    const month = padZero(date.getMonth() + 1);
+    const day = padZero(date.getDate());
+    const year = date.getFullYear();
+
+    let hours = date.getHours();
+    const period = hours < 12 ? "AM" : "PM";
+    if (hours === 0) {
+      hours = 12;
+    } else if (hours > 12) {
+      hours -= 12;
+    }
+
+    const minutes = padZero(date.getMinutes());
+    const formattedTime = `${padZero(hours)}:${minutes} ${period}`;
+
+    return `${formattedTime}`;
   }
 
   function padZero(num: any) {
     return num.toString().padStart(2, "0");
   }
+
 
   return (
     <>
@@ -195,21 +230,37 @@ const Announcements: React.FC<ContainerProps> = ({ name }) => {
           ariaHideApp={false}
         >
           {selectedAnnouncement && (
-            <div className="items-center justify-center h-auto p-6 duration-150 ease-in-out shadow-md  bg-base-100 rounded-3xl w-7/9">
+            <div className="items-center justify-center h-auto p-6 duration-150 ease-in-out shadow-md bg-base-100 rounded-3xl w-7/9">
               <div className="flex space-x-4">
-                <div className="relative p-6 shadow-inner bg-base-200 rounded-2xl w-96 min-h-80">
+                <div className="relative p-6 shadow-inner bg-base-200 rounded-2xl w-100 h-120">
                   <h1 className="text-4xl font-semibold capitalize">
-                    {selectedAnnouncement.name}
+                    {selectedAnnouncement.name} -{" "}
+                    {selectedAnnouncement.announcementSource}
                   </h1>
-                  <p>{selectedAnnouncement.announcementSource}</p>
+                  <p>Description:</p>
                   <p>{selectedAnnouncement.announcementDesc}</p>
-                  <div className="absolute bottom-0 flex justify-between space-x-6">
-                    <p>Date: {formatDate(selectedAnnouncement.startDate)}</p>
-                  </div>
+                  <br />
+                  <p>
+                    Event: {selectedAnnouncement.eventName} on{" "}
+                    {selectedAnnouncement.roomName}
+                  </p>
+                  <p>{selectedAnnouncement.status}</p>
+                  <br />
+                  {selectedAnnouncement.status === "available" ? (
+                    <p>
+                      Time: {formatTime(selectedAnnouncement.startDate)} -{" "}
+                      {formatTime(selectedAnnouncement.endDate)}
+                    </p>
+                  ) : (
+                    <p>
+                      From: {formatDate(selectedAnnouncement.startDate)} -
+                      Until: {formatDate(selectedAnnouncement.endDate)}
+                    </p>
+                  )}
                 </div>
                 <button
                   onClick={closeModal}
-                  className="w-12 shadow-inner btn bg-base-200 btn-square "
+                  className="w-12 shadow-inner btn bg-base-200 btn-square"
                 >
                   <Icon icon="line-md:close-small" className="w-10 h-10" />
                 </button>

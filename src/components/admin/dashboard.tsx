@@ -40,6 +40,11 @@ interface ContainerProps {
 
 interface Visitor {
   id: string;
+  personName: string;
+  personDetail: string;
+  purpose: string;
+  personToMeet: string;
+  status: string;
   selectedBuilding: string;
   selectedFloor: string;
   roomCode: string;
@@ -100,6 +105,12 @@ const Dashboard: React.FC<ContainerProps> = ({ name }) => {
   const [buildingData, setBuildingData] = useState<{ [key: string]: number }>(
     {}
   );
+  const [selectedStatus, setSelectedStatus] = useState<string>("");
+
+  const handleStatutsChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const selected = event.target.value;
+    setSelectedStatus(selected);
+  };
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
@@ -162,6 +173,11 @@ const Dashboard: React.FC<ContainerProps> = ({ name }) => {
         const data = doc.data();
         const visitor: Visitor = {
           id: doc.id,
+          personName: data.personName,
+          personDetail: data.personDetail,
+          purpose: data.purpose,
+          personToMeet: data.personToMeet,
+          status: data.status,
           selectedBuilding: data.selectedBuilding,
           selectedFloor: data.selectedFloor,
           roomCode: data.roomCode,
@@ -226,6 +242,11 @@ const Dashboard: React.FC<ContainerProps> = ({ name }) => {
             const data = doc.data();
             const visitor: Visitor = {
               id: doc.id,
+              personName: data.personName,
+              personDetail: data.personDetail,
+              purpose: data.purpose,
+              personToMeet: data.personToMeet,
+              status: data.status,
               selectedBuilding: data.selectedBuilding,
               selectedFloor: data.selectedFloor,
               roomCode: data.roomCode,
@@ -358,6 +379,9 @@ const Dashboard: React.FC<ContainerProps> = ({ name }) => {
   }, [chartData]);
 
   useEffect(() => {
+    // Initialize an unsubscribe function
+    let unsubscribe: (() => void) | undefined;
+
     const fetchVisitorsToday = async () => {
       try {
         const today = new Date(); // Get current date
@@ -371,25 +395,42 @@ const Dashboard: React.FC<ContainerProps> = ({ name }) => {
           where("createdAt", "<=", endOfToday)
         );
 
-        const querySnapshot = await getDocs(visitorsQuery);
-        const totalVisitors = querySnapshot.size; // Count of documents
-
-        setTotalVisitorsToday(totalVisitors);
+        // Subscribe to real-time updates
+        unsubscribe = onSnapshot(visitorsQuery, (querySnapshot) => {
+          const totalVisitors = querySnapshot.size; // Count of documents
+          setTotalVisitorsToday(totalVisitors);
+        });
       } catch (error) {
         console.error("Error fetching visitors: ", error);
       }
     };
 
     fetchVisitorsToday();
+
+    // Return the cleanup function to unsubscribe when component unmounts
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, []);
 
   useEffect(() => {
+    // Initialize an unsubscribe function
+    let unsubscribe: (() => void) | undefined;
+
     const fetchVisitors = async () => {
       try {
         const visitorsCollection = collection(db, "visitorData2");
         let visitorsQuery = query(visitorsCollection);
 
+        // Apply date range filter
         if (startDate && endDate) {
+          // Set the start date to the beginning of the selected day (12 AM)
+          const startOfDayTimestamp = new Date(startDate);
+          startOfDayTimestamp.setHours(0, 0, 0, 0); // Set to 00:00:00:000 of the selected day
+          const startOfSelectedDay = Timestamp.fromDate(startOfDayTimestamp);
+
           // Set the end date to the end of the selected day
           const endOfDayTimestamp = new Date(endDate);
           endOfDayTimestamp.setHours(23, 59, 59, 999); // Set to 23:59:59:999 of the selected day
@@ -397,63 +438,94 @@ const Dashboard: React.FC<ContainerProps> = ({ name }) => {
 
           visitorsQuery = query(
             visitorsCollection,
-            where("createdAt", ">=", startDate),
+            where("createdAt", ">=", startOfSelectedDay),
             where("createdAt", "<=", endOfSelectedDay)
           );
         }
 
-        const querySnapshot = await getDocs(visitorsQuery);
-        const visitorsData = querySnapshot.docs.map((doc) => {
-          const data = doc.data();
-          const visitor: Visitor = {
-            id: doc.id,
-            selectedBuilding: data.selectedBuilding,
-            selectedFloor: data.selectedFloor,
-            roomCode: data.roomCode,
-            selectedRoomName: data.selectedRoomName,
-            roomAnimation: data.roomAnimation,
-            selectedTextGuide: data.selectedTextGuide,
-            selectedVoiceGuide: data.selectedVoiceGuide,
-            createdAt: data.createdAt,
-            createdAtTime: data.createdAt,
-          };
-          return visitor;
-        });
+        // Apply status filter if selectedStatus is not empty
+        if (selectedStatus !== "") {
+          visitorsQuery = query(
+            visitorsCollection,
+            where("status", "==", selectedStatus)
+          );
+        }
 
-        setFilteredVisitors(visitorsData);
-        setTotalVisitors(visitorsData.length);
+        // Subscribe to real-time updates
+        unsubscribe = onSnapshot(visitorsQuery, (querySnapshot) => {
+          const visitorsData = querySnapshot.docs.map((doc) => {
+            const data = doc.data();
+            const visitor: Visitor = {
+              id: doc.id,
+              personName: data.personName,
+              personDetail: data.personDetail,
+              purpose: data.purpose,
+              personToMeet: data.personToMeet,
+              status: data.status,
+              selectedBuilding: data.selectedBuilding,
+              selectedFloor: data.selectedFloor,
+              roomCode: data.roomCode,
+              selectedRoomName: data.selectedRoomName,
+              roomAnimation: data.roomAnimation,
+              selectedTextGuide: data.selectedTextGuide,
+              selectedVoiceGuide: data.selectedVoiceGuide,
+              createdAt: data.createdAt,
+              createdAtTime: data.createdAt,
+            };
+            return visitor;
+          });
+
+           // Sort visitorsData from newest to oldest
+          // Sort visitorsData from newest to oldest
+          visitorsData.sort((a, b) => {
+            // Cast createdAt to Date and perform the comparison
+            const dateA = a.createdAt.toDate();
+            const dateB = b.createdAt.toDate();
+            return dateB.getTime() - dateA.getTime();
+          });
+
+
+          setFilteredVisitors(visitorsData);
+          setTotalVisitors(visitorsData.length);
+        });
       } catch (error) {
         console.error("Error fetching visitors: ", error);
       }
     };
 
     fetchVisitors();
-  }, [startDate, endDate]);
-
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const eventsCollection = collection(db, "events");
-        const queryEvent = query(
-          eventsCollection,
-          orderBy("createdAt", "desc")
-        );
-        const eventsSnapshot = await getDocs(queryEvent);
-        const eventsData = eventsSnapshot.docs.map((doc) => {
-          const eventData = doc.data() as Event;
-          return { ...eventData, id: doc.id } as Event;
-        });
-        setEvents(eventsData);
-        setTotalEvents(eventsData.length);
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching events: ", error);
-        setLoading(false);
+    // Return the cleanup function to unsubscribe when component unmounts or when dependencies change
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
       }
     };
+  }, [startDate, endDate, selectedStatus]); // Include selectedStatus in the dependency array to trigger useEffect when it changes
 
-    fetchEvents();
-  }, []);
+  // useEffect(() => {
+  //   const fetchEvents = async () => {
+  //     try {
+  //       const eventsCollection = collection(db, "events");
+  //       const queryEvent = query(
+  //         eventsCollection,
+  //         orderBy("createdAt", "desc")
+  //       );
+  //       const eventsSnapshot = await getDocs(queryEvent);
+  //       const eventsData = eventsSnapshot.docs.map((doc) => {
+  //         const eventData = doc.data() as Event;
+  //         return { ...eventData, id: doc.id } as Event;
+  //       });
+  //       setEvents(eventsData);
+  //       setTotalEvents(eventsData.length);
+  //       setLoading(false);
+  //     } catch (error) {
+  //       console.error("Error fetching events: ", error);
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   fetchEvents();
+  // }, []);
 
   useEffect(() => {
     const fetchAnnouncements = async () => {
@@ -513,52 +585,136 @@ const Dashboard: React.FC<ContainerProps> = ({ name }) => {
           return;
         }
 
+        let filteredData = filteredVisitors;
+
+        // Apply status filter if selectedStatus is not empty
+        if (selectedStatus !== "") {
+          filteredData = filteredData.filter((visitor) => {
+            // Assuming visitor.status contains the status of each visitor
+            return visitor.status === selectedStatus; // selectedStatus should be the status you want to filter by
+          });
+        }
+
+        // Calculate total count based on selected status
+        let totalCount = 0;
+        let studentCount = 0;
+        let employeeCount = 0;
+        let visitorCount = 0;
+
+        // When selectedStatus is empty, fetch all data and calculate counts
+        if (selectedStatus === "") {
+          totalCount = filteredData.length;
+          studentCount = filteredData.filter(
+            (visitor) => visitor.status === "Student"
+          ).length;
+          employeeCount = filteredData.filter(
+            (visitor) => visitor.status === "Employee"
+          ).length;
+          visitorCount = filteredData.filter(
+            (visitor) => visitor.status === "Visitor"
+          ).length;
+        } else {
+          // When selectedStatus is not empty, only calculate total count
+          totalCount = filteredData.length;
+        }
+
         // Create new jsPDF instance
         const doc = new jsPDF();
 
         // Set header font size and style
-        doc.setFontSize(16);
-        doc.setFont("helvetica", "bold");
+        // doc.setFontSize(16);
+        // doc.setFont("helvetica", "bold");
 
         // Set header text
-        doc.text("Dashboard Report", 20, 10);
+        // doc.text("Dashboard Report", 20, 10);
 
         // Set content font size and style
         doc.setFont("helvetica", "normal");
         doc.setFontSize(12);
 
-        // Set content text
-        doc.text(`Total Search: ${totalVisitors}`, 20, 20);
+        doc.text(`Dear Admin,`, 20, 30);
 
-        if (
-          startDate &&
-          endDate &&
-          startDate.toDateString() === endDate.toDateString()
-        ) {
-          // Set content font size and style
-          doc.setFont("helvetica", "normal");
-          doc.setFontSize(12);
+        doc.text(``, 20, 40);
 
-          doc.text(`Date: ${startDate?.toLocaleDateString()}`, 20, 30);
+        doc.text(
+          `Attached is a concise summary table detailing the search information based on the `,
+          20,
+          50
+        );
+        doc.text(
+          `total search count, categorized by type and date, for your reference. This report aims`,
+          20,
+          55
+        );
+        doc.text(
+          `to provide a quick overview of the search activities within the specified timeframe`,
+          20,
+          60
+        );
+        doc.text(`using the QC-IOSK system.`, 20, 65);
+
+        if (selectedStatus === "") {
+          doc.text(`• Total Search: ${totalCount}`, 30, 75);
+          doc.text(`• Total Count (Student): ${studentCount}`, 30, 80);
+          doc.text(`• Total Count (Employee): ${employeeCount}`, 30, 85);
+          doc.text(`• Total Count (Visitor): ${visitorCount}`, 30, 90);
+          if (
+            startDate &&
+            endDate &&
+            startDate.toDateString() === endDate.toDateString()
+          ) {
+            // Set content font size and style
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(12);
+
+            doc.text(`• Date: ${startDate?.toLocaleDateString()}`, 30, 95);
+          } else {
+            // Set content font size and style
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(12);
+
+            doc.text(`• From: ${startDate?.toLocaleDateString()} to: ${endDate?.toLocaleDateString()}`, 30, 95);
+          }     
+          doc.text(`This summary report will serve as a valuable reference for your specific purposes,`, 20, 105);
+          doc.text(`providing essential insights into search activities and their outcomes.`, 20, 110);
+          doc.text(`Should you require any further assistance or customization to better meet your`, 20, 120);
+          doc.text(`requirements, please feel free to reach out via email (qciosk.devs@gmail.com)`, 20, 125);
+          doc.text(`or using contact number (09123456789). Thank you.`, 20, 130);
         } else {
-          // Set content font size and style
-          doc.setFont("helvetica", "normal");
-          doc.setFontSize(12);
+          doc.text(`• Total Count on ${selectedStatus}: ${totalCount}`, 30, 75);
+          if (
+            startDate &&
+            endDate &&
+            startDate.toDateString() === endDate.toDateString()
+          ) {
+            // Set content font size and style
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(12);
 
-          doc.text(`From: ${startDate?.toLocaleDateString()}`, 20, 30);
+            doc.text(`• Date: ${startDate?.toLocaleDateString()}`, 30, 80);
+          } else {
+            // Set content font size and style
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(12);
 
-          // Set content font size and style
-          doc.setFont("helvetica", "normal");
-          doc.setFontSize(12);
-
-          doc.text(`To: ${endDate?.toLocaleDateString()}`, 20, 40);
-          // Add more text or data as needed
+            doc.text(`• From: ${startDate?.toLocaleDateString()} to: ${endDate?.toLocaleDateString()}`, 30, 80);
+          }
+          doc.text(`This summary report will serve as a valuable reference for your specific purposes,`, 20, 90);
+          doc.text(`providing essential insights into search activities and their outcomes.`, 20, 95);
+          doc.text(`Should you require any further assistance or customization to better meet your`, 20, 105);
+          doc.text(`requirements, please feel free to reach out via email (qciosk.devs@gmail.com)`, 20, 110);
+          doc.text(`or using contact number (09123456789). Thank you.`, 20, 115);
         }
 
+      
         // Generate table data
-        const tableData = filteredVisitors.map((visitor) => {
+        const tableData = filteredData.map((visitor) => {
           return [
-            visitor.id,
+            visitor.status,
+            visitor.personName,
+            visitor.personDetail,
+            visitor.purpose,
+            visitor.personToMeet,
             visitor.selectedBuilding,
             visitor.selectedFloor,
             visitor.roomCode,
@@ -573,7 +729,11 @@ const Dashboard: React.FC<ContainerProps> = ({ name }) => {
         autoTable(doc, {
           head: [
             [
-              "ID",
+              "Category",
+              "Name",
+              "Detail",
+              "Purpose",
+              "Contact",
               "Building Name",
               "Floor Level",
               "Room Code",
@@ -590,7 +750,7 @@ const Dashboard: React.FC<ContainerProps> = ({ name }) => {
         });
 
         // Save PDF
-        doc.save("summary_report.pdf");
+        doc.save("qciosk_summary_report.pdf");
         console.log("Exporting to PDF...");
       } else {
         alert("User does not have permission to export.");
@@ -606,6 +766,31 @@ const Dashboard: React.FC<ContainerProps> = ({ name }) => {
       {
         accessorKey: "id",
         header: "ID",
+        size: 150,
+      },
+      {
+        accessorKey: "status",
+        header: "Category",
+        size: 150,
+      },
+      {
+        accessorKey: "personName",
+        header: "Name",
+        size: 150,
+      },
+      {
+        accessorKey: "personDetail",
+        header: "Detail",
+        size: 150,
+      },
+      {
+        accessorKey: "purpose",
+        header: "Purpose",
+        size: 150,
+      },
+      {
+        accessorKey: "personToMeet",
+        header: "Contact",
         size: 150,
       },
       {
@@ -854,6 +1039,16 @@ const Dashboard: React.FC<ContainerProps> = ({ name }) => {
                       }
                       className="w-96 h-16"
                     />
+                    <select
+                      className="max-w-xs input input-bordered w-96 h-16"
+                      value={selectedStatus}
+                      onChange={handleStatutsChange}
+                    >
+                      <option value="">All</option>
+                      <option value="Student">QCU student</option>
+                      <option value="Employee">QCU Employee</option>
+                      <option value="Visitor">Visitor</option>
+                    </select>
                     <button
                       onClick={exportToPDF}
                       className="px-4 py-2 bg-blue-500 text-white rounded"

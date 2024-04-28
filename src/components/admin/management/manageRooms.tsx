@@ -196,11 +196,11 @@ const RoomManagement: React.FC<ContainerProps> = ({ name }) => {
         header: "Room Name",
         size: 150,
       },
-      // {
-      //   accessorKey: "status",
-      //   header: "Status",
-      //   size: 150,
-      // },
+      {
+        accessorKey: "status",
+        header: "Status",
+        size: 150,
+      },
       {
         accessorKey: "roomAnimation",
         header: "Animation",

@@ -24,6 +24,7 @@ import {
   where,
   addDoc,
   serverTimestamp,
+  onSnapshot,
 } from "firebase/firestore";
 import firebaseConfig, { db } from "../../utils/firebase";
 import { initializeApp } from "firebase/app";
@@ -104,7 +105,7 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
   const [modalContent, setModalContent] = useState(
     "Selected room data not found."
   );
-
+  
   const qrCodes: { [key: string]: string } = {
     "Academic Building": academicQR,
     veH3FuqACvWr5Rys3ddm: yellowQR,
@@ -216,23 +217,35 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
   }, []);
 
   useEffect(() => {
+    // Initialize an unsubscribe function
+    let unsubscribe: (() => void) | undefined;
+
     const fetchRooms = async () => {
       try {
         const roomsCollection = collection(db, "roomData");
         const queryRoom = query(roomsCollection);
-        const roomsSnapshot = await getDocs(queryRoom);
-        const roomsData = roomsSnapshot.docs.map((doc) => {
-          const roomData = doc.data() as Room;
-          return { ...roomData, id: doc.id } as Room;
-        });
 
-        setRooms(roomsData);
+        // Subscribe to real-time updates
+        unsubscribe = onSnapshot(queryRoom, (snapshot) => {
+          const roomsData = snapshot.docs.map((doc) => {
+            const roomData = doc.data() as Room;
+            return { ...roomData, id: doc.id } as Room;
+          });
+          setRooms(roomsData);
+        });
       } catch (error) {
         console.error("Error fetching rooms: ", error);
       }
     };
 
     fetchRooms();
+
+    // Return the cleanup function to unsubscribe when component unmounts
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, []);
 
   // useEffect(() => {
@@ -811,11 +824,11 @@ const SanBartolome: React.FC<ContainerProps> = ({ name }) => {
                                               </b>
                                             </li>
                                           </div> */}
-                                          {/* <div className="flex justify-between space-x-3">
+                                          <div className="flex justify-between space-x-3">
                                             <li>
                                               Status: <b> {selectedRoom.status}</b>
                                             </li>
-                                          </div> */}
+                                          </div>
                                         </ul>
                                       </div>
                                       <div className="absolute w-full mt-4 rounded-2xl">
