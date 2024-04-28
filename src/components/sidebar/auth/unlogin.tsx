@@ -16,7 +16,7 @@ const customStyles = {
   content: {
     width: '500px',
     borderRadius: "20px",
-    backgroundColor: "#09223A",
+    backgroundColor: "bg-base-300",
     top: '50%',
     left: '50%',
     right: 'auto',
@@ -170,15 +170,15 @@ const Login: React.FC<ContainerProps> = ({ name }) => {
     <IonPage>
       <IonContent fullscreen className="bg-sc">
         <main className="w-full h-auto max-w-md mx-auto text-base-content rounded-3xl">
-          <div className="bg-white border border-gray-200 shadow-sm my-28 rounded-3xl dark:bg-gray-800 dark:border-gray-700">
+          <div className="bg-base-100 border border-gray-200 shadow-sm my-52 rounded-3xl ">
             <div className="p-4 sm:p-7">
               <div className="text-center">
-                <h1 className="block text-2xl font-bold text-gray-800 dark:text-white">
+                <h1 className="block text-3xl font-bold text-base-content">
                   QC-IOSK ADMIN SYSTEM
                 </h1>
-                <h1 className="block text-2xl font-bold text-gray-800 dark:text-white">
+                {/* <h1 className="block text-2xl font-bold text-base-content">
                   Login
-                </h1>
+                </h1> */}
                 <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
                   Login as an admin to access admin controls
                 </p>
@@ -190,7 +190,7 @@ const Login: React.FC<ContainerProps> = ({ name }) => {
                     <div>
                       <label
                         htmlFor="email"
-                        className="block mb-2 text-sm dark:text-white"
+                        className="block mb-2 text-sm text-base-content"
                       >
                         Email address
                       </label>
@@ -202,7 +202,7 @@ const Login: React.FC<ContainerProps> = ({ name }) => {
                           type="email"
                           id="email"
                           name="email"
-                          className="block w-full px-4 py-3 text-sm border-gray-200 rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
+                          className="block w-full px-4 py-6 text-sm border-gray-200 rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900  dark:text-gray-400 dark:focus:ring-gray-600"
                           required
                           aria-describedby="email-error"
                         />
@@ -212,7 +212,7 @@ const Login: React.FC<ContainerProps> = ({ name }) => {
                     <div>
                       <label
                         htmlFor="password"
-                        className="block mb-2 text-sm dark:text-white"
+                        className="block mb-2 text-sm text-base-content"
                       >
                         Password
                       </label>
@@ -223,7 +223,7 @@ const Login: React.FC<ContainerProps> = ({ name }) => {
                           type="password"
                           id="password"
                           name="password"
-                          className="block w-full px-4 py-3 text-sm border-gray-200 rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
+                          className="block w-full px-4 py-6 text-sm border-gray-200 rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900  dark:text-gray-400 dark:focus:ring-gray-600"
                           required
                           aria-describedby="password-error"
                         />
@@ -232,7 +232,7 @@ const Login: React.FC<ContainerProps> = ({ name }) => {
 
                     <button
                       onClick={onLogin}
-                      className="inline-flex items-center justify-center w-full px-4 py-3 text-sm font-semibold text-white bg-blue-600 border border-transparent gap-x-2 rounded-2xl hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+                      className="inline-flex btn items-center justify-center w-full px-4 py-3 text-sm font-semibold text-white bg-primary border border-transparent gap-x-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
                     >
                       Sign in
                     </button>
@@ -240,7 +240,7 @@ const Login: React.FC<ContainerProps> = ({ name }) => {
                       Or
                     </div>
                     <div className="text-center">
-                      <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
                         {/* Don't have an account yet? &nbsp;
                         <button
                           onClick={handleReload}
@@ -252,7 +252,7 @@ const Login: React.FC<ContainerProps> = ({ name }) => {
                         <br />
                         <br /> */}
                         <NavLink to="/SanBartolome">
-                          Go Back to QC-IOSK Map
+                          <button className="btn btn-block">Go Back to QC-IOSK MAPS</button>
                         </NavLink>
                       </p>
                     </div>
@@ -267,8 +267,12 @@ const Login: React.FC<ContainerProps> = ({ name }) => {
         onRequestClose={closeModal}
         contentLabel="OTP Modal"
         style={customStyles}
+       
+        
       >
-        <h2 className="flex-grow text-white">We have sent an OTP on your email. Please enter the OTP before logging in.</h2>
+        <div className="w-full h-full bg-white">
+          <div className="flex flex-col w-full bg-white">
+          <h2 className="flex-grow text-base-content text-center">We have sent an OTP on your email. Please enter the OTP before logging in.</h2>
         <br/>
         <input
           autoComplete="off"
@@ -286,17 +290,19 @@ const Login: React.FC<ContainerProps> = ({ name }) => {
           type="text"
           value={otp}
           onChange={(e) => setOtp(e.target.value)}
-          className="input input-bordered w-full max-w-xs"
+          className="input input-bordered w-full bg-base-200 placeholder-base-content"
           placeholder="Type here the OTP..."
         />
         <br/>
         <br/>
         <br/>
-        <div className="mb-5">  
-          <button onClick={verifyOTP} className="btn btn-secondary">Verify OTP</button>{" "}
+        <div className="mb-5 flex justify-center space-x-3 items-center ">  
+          <button onClick={verifyOTP} className="btn btn-primary text-base-content">Verify OTP</button>{" "}
           <button onClick={closeModal} className="btn">
           Close
           </button>
+        </div>
+          </div>
         </div>
       </Modal>
       </IonContent>
