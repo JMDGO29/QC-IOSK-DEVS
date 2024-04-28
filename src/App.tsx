@@ -71,10 +71,10 @@ import ScreenSaver from "./pages/screenSaver";
 import RegistrarOffice from "./components/qr_code/RegistrarOffice";
 import Confirmation from "./components/sidebar/auth/confirmation";
 import UpdateSettings from "./components/admin/management/settingsComponent/updateSettings";
-import Nstp from "./components/qr_code/NSTP";
+import Nstp from "./components/qr_code/Nstp";
 import Library from "./components/qr_code/Library";
 import ItFaculty from "./components/qr_code/ItFaculty";
-import Lesit from "./components/qr_code/LESIT";
+import Lesit from "./components/qr_code/Lesit";
 
 setupIonicReact();
 interface ContainerProps {
