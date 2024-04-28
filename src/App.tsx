@@ -71,6 +71,10 @@ import ScreenSaver from "./pages/screenSaver";
 import RegistrarOffice from "./components/qr_code/RegistrarOffice";
 import Confirmation from "./components/sidebar/auth/confirmation";
 import UpdateSettings from "./components/admin/management/settingsComponent/updateSettings";
+import Nstp from "./components/qr_code/NSTP";
+import Library from "./components/qr_code/Library";
+import ItFaculty from "./components/qr_code/ItFaculty";
+import Lesit from "./components/qr_code/LESIT";
 
 setupIonicReact();
 interface ContainerProps {
@@ -96,6 +100,22 @@ const App: React.FC<ContainerProps> = ({ name }) => (
 
         <Route exact path="/SanBartolome/Registrar">
           <RegistrarOffice name={""} />
+        </Route>
+
+        <Route exact path="/SanBartolome/Nstp">
+          <Nstp name={""} />
+        </Route>
+
+        <Route exact path="/SanBartolome/Library">
+          <Library name={""} />
+        </Route>
+
+        <Route exact path="/SanBartolome/ItFaculty">
+          <ItFaculty name={""} />
+        </Route>
+
+        <Route exact path="/SanBartolome/Lesit">
+          <Lesit name={""} />
         </Route>
 
         <Route exact path="/SanFrancisco">

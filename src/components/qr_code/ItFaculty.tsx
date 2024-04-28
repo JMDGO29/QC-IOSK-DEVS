@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import adminPic from "./vertical/admin.png";
+import bautista from "./vertical/bautista.png";
 import { IonContent, IonPage } from "@ionic/react";
 
 interface ContainerProps {
   name: string;
 }
-const RegistrarOffice: React.FC<ContainerProps> = ({ name }) => {
+const ItFaculty: React.FC<ContainerProps> = ({ name }) => {
   const [language, setLanguage] = useState("english");
 
 
@@ -17,7 +17,7 @@ const RegistrarOffice: React.FC<ContainerProps> = ({ name }) => {
   return (
     <IonPage>
       <IonContent fullscreen>
-        <h2 className = "font-serif font-bold text-center text-black"> How to navigate to the Registrar's Office inside QCU San Bartolome Campus</h2>
+        <h2 className = "font-serif font-bold text-center text-black"> How to navigate to the College of Computer Studies Faculty inside QCU San Bartolome Campus</h2>
         <h4 className = "flex flex-col items-center justify-between h-20 p-3 shadow-md bg-base-300 rounded-2xl font-serif font-bold  text-black m-5"> Estimated Time Arrival: <span> 3 minutes (Walking) </span></h4>
     
       
@@ -36,10 +36,10 @@ const RegistrarOffice: React.FC<ContainerProps> = ({ name }) => {
           </>
         )}
         <br />
-        <img src={adminPic}  alt="admin" className="rounded-md content-center" />
+        <img src={bautista}  alt="admin" className="rounded-md content-center" />
       </IonContent>
     </IonPage>
   );
 };
 
-export default RegistrarOffice;
+export default ItFaculty;
