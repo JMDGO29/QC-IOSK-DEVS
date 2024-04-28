@@ -12,7 +12,11 @@ import { db } from "../../../utils/firebase";
 import textGuide from "../../../../data/textGuide";
 import Modal from "react-modal";
 import feedback from "../../../../assets/imgs/feedback.png";
-import registrarQR from "../../../qr_code/qrCodes/registrar.png";
+import registrarQR from "../../../qr_code/qrCodes/registrarQR.png";
+import ccsQR from "../../../qr_code/qrCodes/ccsQR.png";
+import lesitQR from "../../../qr_code/qrCodes/lesitQR.png";
+import libraryQR from "../../../qr_code/qrCodes/libraryQR.png";
+import nstpQR from "../../../qr_code/qrCodes/nstpQR.png";
 
 import academicPic from "../../../qr_code/images/academic.png";
 import adminPic from "../../../qr_code/images/admin.png";
@@ -366,7 +370,7 @@ const Animation: React.FC<ContainerProps> = ({
                   The provided information will help you to locate NSTP.
                 </p>
                 <div className="flex justify-center space-x-3">
-                  <img src={registrarQR} />
+                  <img src={nstpQR} />
                 </div>
                 <p className="text-center">
                   If you do not have internet connection, please click the link
@@ -487,7 +491,7 @@ const Animation: React.FC<ContainerProps> = ({
                   Z Office.
                 </p>
                 <div className="flex justify-center space-x-3">
-                  <img src={registrarQR} />
+                  <img src={lesitQR} />
                 </div>
                 <p className="text-center">
                   If you do not have internet connection, please click the link
@@ -547,7 +551,7 @@ const Animation: React.FC<ContainerProps> = ({
                   The provided information will help you to locate College of Computer Studies (CCS).
                 </p>
                 <div className="flex justify-center space-x-3">
-                  <img src={registrarQR} />
+                  <img src={ccsQR} />
                 </div>
                 <p className="text-center">
                   If you do not have internet connection, please click the link
@@ -607,7 +611,7 @@ const Animation: React.FC<ContainerProps> = ({
                   The provided information will help you to locate the Library.
                 </p>
                 <div className="flex justify-center space-x-3">
-                  <img src={registrarQR} />
+                  <img src={libraryQR} />
                 </div>
                 <p className="text-center">
                   If you do not have internet connection, please click the link
