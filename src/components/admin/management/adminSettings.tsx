@@ -556,7 +556,7 @@ const AdminSettings: React.FC<ContainerProps> = ({ name }) => {
           <div className="items-center justify-center text-base-content bg-base-300 lg:ps-64 ">
             <div className="w-full min-h-screen p-10 bg-base-100 rounded-tl-3xl">
               <div className="flex items-center justify-between">
-                <h1 className="font-bold text-4xl">User Settings</h1>
+                <h1 className="font-bold text-4xl">Admin Settings</h1>
               </div>
               <div>
                 <label htmlFor="email">Email: </label>
@@ -664,7 +664,7 @@ const AdminSettings: React.FC<ContainerProps> = ({ name }) => {
                 </>
               ) : (
                 <>
-                  <h1>User Account</h1>
+                  <h1>Admin Account</h1>
                   <MaterialReactTable table={table} />
                 </>
               )}
