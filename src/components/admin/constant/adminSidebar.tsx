@@ -539,7 +539,7 @@ const AdminSideBar: React.FC<ContainerProps> = ({ name }) => {
               onClick={Manual}
             >
               <Icon icon="tabler:hexagon-letter-m" className="w-7 h-7" />
-              M.I.K.E
+              Manual
             </button>
           </li>
 
