@@ -580,7 +580,7 @@ const Layout: React.FC<ContainerProps> = ({ name }) => {
                 >
                   <option value="">Please select category</option>
                   <option value="Student">QCU student</option>
-                  <option value="Employee">QCU Employee</option>
+                  <option value="Staff">Staff</option>
                   <option value="Visitor">Visitor</option>
                 </select>
                 <br />
@@ -609,7 +609,7 @@ const Layout: React.FC<ContainerProps> = ({ name }) => {
                       <br/>
                     </>
                   )}
-                {selectedStatus === "Employee" && (
+                {selectedStatus === "Staff" && (
                   <>
                     <p>Work</p>
                     <input
