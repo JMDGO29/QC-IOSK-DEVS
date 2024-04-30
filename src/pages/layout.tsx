@@ -63,7 +63,8 @@ const modalStyle = {
     padding: '20px', // Adjust the padding as needed
     top: '50%', // Center vertically
     left: '50%', // Center horizontally
-    transform: 'translate(-50%, -50%)' // Translate back to center
+    transform: 'translate(-50%, -50%)',
+     // Translate back to center
   }
 };
 
@@ -317,7 +318,7 @@ const Layout: React.FC<ContainerProps> = ({ name }) => {
         ) : (
           <>
             <div className="marquee-container">
-              <div className="marquee absolute z-50 top-8 left-28">
+              <div className="absolute z-50 marquee top-8 left-28">
                 <span>
                   {announcements
                     .filter((announcement) => {
@@ -566,6 +567,7 @@ const Layout: React.FC<ContainerProps> = ({ name }) => {
               isOpen={modalIsOpen}
               onRequestClose={() => setModalIsOpen(false)}
               style={modalStyle}
+              
             >
               <div className="ml-5">
                 {/* Modal content */}
@@ -590,7 +592,7 @@ const Layout: React.FC<ContainerProps> = ({ name }) => {
                   type="text"
                   value={personName}
                   onChange={(e) => setPersonName(e.target.value)}
-                  className="input input-bordered w-full max-w-xs"
+                  className="w-full max-w-xs input input-bordered"
                   placeholder="What is your name?"                
                 />
                 <br />
@@ -602,7 +604,7 @@ const Layout: React.FC<ContainerProps> = ({ name }) => {
                         type="text"
                         value={personDetail}
                         onChange={(e) => setPersonDetail(e.target.value)}
-                        className="input input-bordered w-full max-w-xs"
+                        className="w-full max-w-xs input input-bordered"
                         placeholder="Type your Student ID here"
                       />
                       <br/>
@@ -616,7 +618,7 @@ const Layout: React.FC<ContainerProps> = ({ name }) => {
                       type="text"
                       value={personDetail}
                       onChange={(e) => setPersonDetail(e.target.value)}
-                      className="input input-bordered w-full max-w-xs"
+                      className="w-full max-w-xs input input-bordered"
                       placeholder="Type your work here"                    
                     />
                     <br/>
@@ -628,7 +630,7 @@ const Layout: React.FC<ContainerProps> = ({ name }) => {
                   type="text"
                   value={purpose}
                   onChange={(e) => setPurpose(e.target.value)}
-                  className="input input-bordered w-full max-w-xs"
+                  className="w-full max-w-xs input input-bordered"
                   placeholder="What is your purpose here?"
                 />
                 <br />
@@ -638,7 +640,7 @@ const Layout: React.FC<ContainerProps> = ({ name }) => {
                   type="text"
                   value={personToMeet}
                   onChange={(e) => setPersonToMeet(e.target.value)}
-                  className="input input-bordered w-full max-w-xs"
+                  className="w-full max-w-xs input input-bordered"
                   placeholder="Leave blank if not applicable"
                 />
                 <br />
@@ -646,7 +648,7 @@ const Layout: React.FC<ContainerProps> = ({ name }) => {
                 <p>Destination:</p>
                 <input
                   type="text"
-                  className="input input-bordered w-full max-w-xs"
+                  className="w-full max-w-xs input input-bordered"
                   placeholder="Where do you want to go from here?"
                   value={searchValue}
                   onChange={(e) => setSearchValue(e.target.value)}
