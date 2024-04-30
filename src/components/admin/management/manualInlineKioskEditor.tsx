@@ -221,7 +221,7 @@ const MikeGester: React.FC<ContainerProps> = ({ name }) => {
             <div className="w-full min-h-screen p-10 bg-base-100 rounded-tl-3xl">
               <div className="flex items-center justify-between">
                 <h1 className="text-4xl font-bold">
-                  Manual Inline Kiosk Editor (MIKE)
+                  Manual Management
                 </h1>
                 <div className="flex items-center mr-5 space-x-3">
                   <button

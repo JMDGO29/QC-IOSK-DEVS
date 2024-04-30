@@ -608,7 +608,7 @@ const Dashboard: React.FC<ContainerProps> = ({ name }) => {
             (visitor) => visitor.status === "Student"
           ).length;
           employeeCount = filteredData.filter(
-            (visitor) => visitor.status === "Employee"
+            (visitor) => visitor.status === "Staff"
           ).length;
           visitorCount = filteredData.filter(
             (visitor) => visitor.status === "Visitor"
@@ -656,7 +656,7 @@ const Dashboard: React.FC<ContainerProps> = ({ name }) => {
         if (selectedStatus === "") {
           doc.text(`• Total Search: ${totalCount}`, 30, 75);
           doc.text(`• Total Count (Student): ${studentCount}`, 30, 80);
-          doc.text(`• Total Count (Employee): ${employeeCount}`, 30, 85);
+          doc.text(`• Total Count (Staff): ${employeeCount}`, 30, 85);
           doc.text(`• Total Count (Visitor): ${visitorCount}`, 30, 90);
           if (
             startDate &&
@@ -1046,7 +1046,7 @@ const Dashboard: React.FC<ContainerProps> = ({ name }) => {
                     >
                       <option value="">All</option>
                       <option value="Student">QCU student</option>
-                      <option value="Employee">QCU Employee</option>
+                      <option value="Staff">Staff</option>
                       <option value="Visitor">Visitor</option>
                     </select>
                     <button
