@@ -1,4 +1,10 @@
-import React, { useState, useEffect, Suspense } from "react";
+import React, {
+  useState,
+  useEffect,
+  Suspense,
+  ChangeEvent,
+  useRef,
+} from "react";
 import { IonContent, IonPage } from "@ionic/react";
 import { Switch, Route } from "react-router-dom";
 import { themeChange } from "theme-change";
@@ -15,9 +21,17 @@ import SanFrancisco from "../components/campus/sanFrancisco/SanFrancisco";
 import qcuLogo from "../assets/imgs/logo/qculogo.png";
 import bg from "../assets/imgs/sc-bg.png";
 import "../assets/css/marquee.css";
-import { addDoc, collection, getDocs, onSnapshot, query, serverTimestamp, where } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  getDocs,
+  onSnapshot,
+  query,
+  serverTimestamp,
+  where,
+} from "firebase/firestore";
 import { db } from "../components/utils/firebase";
-import Modal from 'react-modal';
+import Modal from "react-modal";
 import Animation from "../components/campus/sanBartolome/animation/Animation";
 
 // Import your other components here
@@ -25,6 +39,11 @@ import Animation from "../components/campus/sanBartolome/animation/Animation";
 interface ContainerProps {
   name: string;
   buildingName: string;
+}
+
+export interface KeyboardRef {
+  setSearchValue: (input: string) => void;
+  // Add other methods if needed
 }
 
 interface Announcement {
@@ -54,18 +73,17 @@ interface Room {
 
 const modalStyle = {
   overlay: {
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent black color
-    zIndex: '1000' // Ensure overlay is above other content
+    backgroundColor: "rgba(0, 0, 0, 0)", // Semi-transparent black color
   },
   content: {
-    width: '20%', // Adjust the width as needed
-    height: '85%', // Adjust the height as needed
-    padding: '20px', // Adjust the padding as needed
-    top: '50%', // Center vertically
-    left: '50%', // Center horizontally
-    transform: 'translate(-50%, -50%)',
-     // Translate back to center
-  }
+    width: "30%", // Adjust the width as needed
+    height: "85%", // Adjust the height as needed
+    padding: "20px", // Adjust the padding as needed
+    top: "50%", // Center vertically
+    left: "50%", // Center horizontally
+    transform: "translate(-50%, -50%)",
+    // Translate back to center
+  },
 };
 
 const Layout: React.FC<ContainerProps> = ({ name }) => {
@@ -77,7 +95,7 @@ const Layout: React.FC<ContainerProps> = ({ name }) => {
   const [selectedAnnouncement, setSelectedAnnouncement] =
     useState<Announcement | null>(null);
 
-  const [searchValue, setSearchValue] = useState(""); 
+  const [searchValue, setSearchValue] = useState("");
   const [searchResult, setSearchResult] = useState([] as Room[]);
   const [displayButton, setDisplayButton] = useState(false);
   const [isAnimationVisible, setIsAnimationVisible] = useState(false);
@@ -97,7 +115,9 @@ const Layout: React.FC<ContainerProps> = ({ name }) => {
   const [floorLevel, setFloorLevel] = useState("");
   const [roomCode, setRoomCode] = useState("");
 
-
+  const [input, setInput] = useState("");
+  const [filteredRooms, setFilteredRooms] = useState<Room[]>([]);
+  const keyboard = useRef<KeyboardRef | undefined>(undefined);
 
   useEffect(() => {
     setModalIsOpen(true);
@@ -119,51 +139,34 @@ const Layout: React.FC<ContainerProps> = ({ name }) => {
 
   const handleButtonClick = async () => {
     try {
-       // Check if personName is empty
-        if (!personName.trim()) {
-          alert("Before that. Please complete the form, thank you.");
-          return;
-        }
+      const now = serverTimestamp();
+      // Save the search result data to the "visitorData2" collection
+      const visitorDataRef = collection(db, "visitorData2");
+      await addDoc(visitorDataRef, {
+        personName: personName,
+        personDetail: personDetail,
+        purpose: purpose,
+        personToMeet: personToMeet,
+        status: selectedStatus,
+        selectedRoomName: roomName,
+        roomAnimation: roomAnimation,
+        selectedVoiceGuide: voiceGuide,
+        selectedTextGuide: textGuide,
+        selectedBuilding: buildingName,
+        selectedFloor: floorLevel,
+        roomCode: roomCode,
+        createdAt: now,
+        // Add other fields if necessary
+      });
+      console.log("Data saved to visitorData2 collection successfully!");
 
-        if (!personDetail.trim()) {
-          alert("Before that. Please complete the form, thank you.");
-          return;
-        }
-
-        if (!purpose.trim()) {
-          alert("Before that. Please complete the form, thank you.");
-          return;
-        }
-
-        const now = serverTimestamp();
-        // Save the search result data to the "visitorData2" collection
-        const visitorDataRef = collection(db, "visitorData2");
-        await addDoc(visitorDataRef, {
-            personName: personName,
-            personDetail: personDetail,
-            purpose: purpose,
-            personToMeet: personToMeet,
-            status: selectedStatus,
-            selectedRoomName: roomName,
-            roomAnimation: roomAnimation,
-            selectedVoiceGuide: voiceGuide,
-            selectedTextGuide: textGuide,
-            selectedBuilding: buildingName,
-            selectedFloor: floorLevel,
-            roomCode: roomCode,
-            createdAt: now,
-            // Add other fields if necessary
-        });
-        console.log("Data saved to visitorData2 collection successfully!");
-        
-        setIsAnimationVisible(true);
-        setModalIsOpen(false);
-        setIsActive(false);
-        
+      setIsAnimationVisible(true);
+      setModalIsOpen(false);
+      setIsActive(false);
     } catch (error) {
-        console.error("Error saving data to visitorData2 collection: ", error);
+      console.error("Error saving data to visitorData2 collection: ", error);
     }
-};
+  };
 
   useEffect(() => {
     let unsubscribeAnnouncements: () => void;
@@ -246,31 +249,47 @@ const Layout: React.FC<ContainerProps> = ({ name }) => {
     try {
       const roomsCollection = collection(db, "roomData");
       let queryRoom;
-  
+
+      if (!searchValue.trim()) {
+        // alert("Before that. Please complete the form, thank you.");
+        toast.error(
+          "For successful navigation. Please enter details on search.",
+          {
+            position: "bottom-right",
+            className: "foo-bar",
+          }
+        );
+        return;
+      }
+
       // Check if searchValue is empty, fetch all rooms
-      if (!searchValue) {
-        alert("For successful navigation. Please enter destination on search.");
-        queryRoom = query(roomsCollection);
-      } else {
+      if (searchValue && personName && purpose && personToMeet) {
         // Fetch all rooms and filter based on searchValue
         const snapshot = await getDocs(query(roomsCollection));
         const roomsData = snapshot.docs.map((doc) => {
           const roomData = doc.data() as Room;
           return { ...roomData, id: doc.id } as Room;
         });
-        
+
         const searchValueLower = searchValue.toLowerCase(); // Convert searchValue to lowercase
-        
 
         // Check if the searchValue matches any room's name or code exactly
-        const exactMatchRoom = roomsData.find(room => 
-          room.roomCode.toLowerCase() === searchValueLower || // Check for exact match of roomCode
-          room.roomName.toLowerCase() === searchValueLower // Check for exact match of roomName
+        const exactMatchRoom = roomsData.find(
+          (room) =>
+            room.roomCode.toLowerCase() === searchValueLower || // Check for exact match of roomCode
+            room.roomName.toLowerCase() === searchValueLower // Check for exact match of roomName
         );
 
         // Display button if there's an exact match
         if (exactMatchRoom) {
           setDisplayButton(true);
+          toast.success(
+            `Exact match found: ${exactMatchRoom.roomName}`,
+            {
+                position: "bottom-right",
+                className: "foo-bar",
+            }
+          );
           console.log("Exact match found:", exactMatchRoom);
 
           // Pass the values to <Animation> component
@@ -283,19 +302,56 @@ const Layout: React.FC<ContainerProps> = ({ name }) => {
           setRoomCode(exactMatchRoom.roomCode);
         } else {
           setDisplayButton(false);
-          alert("No exact match found for the search value. Please try again.");
+          //  alert("No exact match found for the search value. Please try again.");
+          toast.error(
+            "No exact match found for the room destination. Please try again.",
+            {
+              position: "bottom-right",
+              className: "foo-bar",
+            }
+          );
         }
-
-        
+      } else {
+        toast.error(
+          "For successful navigation. Please complete the details on form.",
+          {
+            position: "bottom-right",
+            className: "foo-bar",
+          }
+        );
+        queryRoom = query(roomsCollection);
       }
     } catch (error) {
       console.error("Error searching rooms: ", error);
     }
-  };  
+  };
 
   const handleStatutsChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selected = event.target.value;
     setSelectedStatus(selected);
+  };
+
+  const onChangeInput = async (
+    event: ChangeEvent<HTMLInputElement>
+  ): Promise<void> => {
+    const input = event.target.value.toLowerCase();
+    setSearchValue(input);
+    keyboard.current?.setSearchValue(input);
+
+    if (rooms.length > 0) {
+      const filteredRooms = rooms.filter(
+        (room) =>
+          (room.roomCode && room.roomCode.toLowerCase().includes(input)) ||
+          (room.roomName && room.roomName.toLowerCase().includes(input)) ||
+          (room.buildingName && room.buildingName.toLowerCase().includes(input))
+      );
+
+      setFilteredRooms(filteredRooms);
+    }
+  };
+
+  const handleNavigateClick = ( roomName: string) => {
+    setSearchValue(roomName);
   };
 
   return (
@@ -337,11 +393,6 @@ const Layout: React.FC<ContainerProps> = ({ name }) => {
                     )
                     .join(" ----------------------- ")}
                 </span>
-              </div>
-            </div>
-            <div className="absolute z-50 bottom-40 right-80 ">
-              <div className="">
-                <ToastContainer className="mb-1" newestOnTop />
               </div>
             </div>
             <div className="absolute top-0 left-0 z-50 ">
@@ -567,7 +618,6 @@ const Layout: React.FC<ContainerProps> = ({ name }) => {
               isOpen={modalIsOpen}
               onRequestClose={() => setModalIsOpen(false)}
               style={modalStyle}
-              
             >
               <div className="ml-5">
                 {/* Modal content */}
@@ -578,9 +628,10 @@ const Layout: React.FC<ContainerProps> = ({ name }) => {
                 <select
                   className="w-full max-w-xs input input-bordered"
                   value={selectedStatus || status}
-                  onChange={handleStatutsChange}            
+                  onChange={handleStatutsChange}
+                  autoComplete="off"
                 >
-                  <option value="">Please select category</option>
+                  <option value="" disabled>Please select category</option>
                   <option value="Student">QCU student</option>
                   <option value="Staff">Staff</option>
                   <option value="Visitor">Visitor</option>
@@ -590,39 +641,42 @@ const Layout: React.FC<ContainerProps> = ({ name }) => {
                 <p>Name:</p>
                 <input
                   type="text"
-                  value={personName}
+                  value={personName || ""}
                   onChange={(e) => setPersonName(e.target.value)}
                   className="w-full max-w-xs input input-bordered"
-                  placeholder="What is your name?"                
+                  placeholder="What is your name?"
+                  autoComplete="off"
                 />
                 <br />
                 <br />
                 {selectedStatus === "Student" && (
-                    <>
-                      <p>Student ID</p>
-                      <input
-                        type="text"
-                        value={personDetail}
-                        onChange={(e) => setPersonDetail(e.target.value)}
-                        className="w-full max-w-xs input input-bordered"
-                        placeholder="Type your Student ID here"
-                      />
-                      <br/>
-                      <br/>
-                    </>
-                  )}
+                  <>
+                    <p>Student ID</p>
+                    <input
+                      type="text"
+                      value={personDetail || ""}
+                      onChange={(e) => setPersonDetail(e.target.value)}
+                      className="w-full max-w-xs input input-bordered"
+                      placeholder="Type your Student ID here"
+                      autoComplete="off"
+                    />
+                    <br />
+                    <br />
+                  </>
+                )}
                 {selectedStatus === "Staff" && (
                   <>
                     <p>Work</p>
                     <input
                       type="text"
-                      value={personDetail}
+                      value={personDetail || ""}
                       onChange={(e) => setPersonDetail(e.target.value)}
                       className="w-full max-w-xs input input-bordered"
-                      placeholder="Type your work here"                    
+                      placeholder="Type your work here"
+                      autoComplete="off"
                     />
-                    <br/>
-                    <br/>
+                    <br />
+                    <br />
                   </>
                 )}
                 <p>Purpose:</p>
@@ -632,6 +686,7 @@ const Layout: React.FC<ContainerProps> = ({ name }) => {
                   onChange={(e) => setPurpose(e.target.value)}
                   className="w-full max-w-xs input input-bordered"
                   placeholder="What is your purpose here?"
+                  autoComplete="off"
                 />
                 <br />
                 <br />
@@ -641,7 +696,8 @@ const Layout: React.FC<ContainerProps> = ({ name }) => {
                   value={personToMeet}
                   onChange={(e) => setPersonToMeet(e.target.value)}
                   className="w-full max-w-xs input input-bordered"
-                  placeholder="Leave blank if not applicable"
+                  placeholder="None or n/a if not applicable"
+                  autoComplete="off"
                 />
                 <br />
                 <br />
@@ -651,33 +707,82 @@ const Layout: React.FC<ContainerProps> = ({ name }) => {
                   className="w-full max-w-xs input input-bordered"
                   placeholder="Where do you want to go from here?"
                   value={searchValue}
-                  onChange={(e) => setSearchValue(e.target.value)}
+                  onChange={(e) => {
+                    setSearchValue(e.target.value);
+                    onChangeInput(e);
+                  }}
+                  autoComplete="off"
                 />
-
                 <br />
-                {displayButton && (
-                  <>
-                    {" "}
-                    <button className="btn" onClick={handleButtonClick}>
-                      Click me to navigate!
-                    </button>
-                  </>
-                )}
-                <br />
-                <br />
+                <br />      
+                {searchValue && (
+                <div className="w-auto">
+                  <div className="h-auto bg-white w-auto">
+                    {filteredRooms.length > 0 ? (
+                      <div className="w-full py-1 overflow-auto h-auto mb-3">
+                        <p className="text-base-content">Result: This is suggestion only</p>
+                        <ul className="flex gap-2">
+                          {filteredRooms
+                            .sort((a, b) =>
+                              a.roomCode.localeCompare(b.roomCode)
+                            )
+                            .map((room, index) => (
+                              <li key={index} className="space-y-3">
+                                <button
+                                  className="btn w-80"
+                                  onClick={() => handleNavigateClick(room.roomName)}
+                                >
+                                  {" "}
+                                  {room.roomCode === "" ||
+                                  room.roomName === "" ? (
+                                    <> {room.buildingName}</>
+                                  ) : (
+                                    <>
+                                      {room.buildingName} - {room.floorLevel} - {room.roomName}
+                                    </>
+                                  )}
+                                </button>
+                              </li>
+                            ))}
+                        </ul>
+                      </div>
+                    ) : (
+                      <div className="w-full h-full py-6 overflow-auto">
+                        <p className="text-base-content">No rooms found.</p>
+                        <p className="text-base-content">
+                          Enter another entry.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
                 <button onClick={handleSearch} className="btn btn-secondary">
                   Search
-                </button>{" "}
+                </button>{" "}              
                 <button
                   onClick={() => setModalIsOpen(false)}
                   className="btn btn-primary"
                 >
                   Close Modal
                 </button>
-              </div>
+                {displayButton && (
+                  <>
+                    {" "}
+                    <button className="btn" onClick={handleButtonClick}>
+                      Click me to navigate!
+                    </button>              
+                  </>
+                )}     
+              </div>         
             </Modal>
           </>
         )}
+        <div className="absolute z-50 bottom-40 right-80 ">
+          <div className="">
+            <ToastContainer className="mb-1" newestOnTop />
+          </div>
+        </div>
       </IonContent>
     </IonPage>
   );
